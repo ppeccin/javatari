@@ -1,4 +1,4 @@
-	/*******************************************************************************
+/*******************************************************************************
 Slate Theme for Github Pages
 by Jason Costello, @jsncostello
 *******************************************************************************/
@@ -105,7 +105,7 @@ p {
   margin: 10px 0 15px 0;
 }
 
-footer p {
+#footer p {
   color: #f2f2f2;
 }
 
@@ -131,7 +131,7 @@ a {
   text-shadow: #0090ff 0px 0px 2px;
 }
 
-footer a:hover {
+#footer a:hover {
   color: #43adff;
   text-shadow: #0090ff 0px 0px 2px;
 }
@@ -150,13 +150,18 @@ img {
   max-width: 739px;
   padding: 5px;
   margin: 10px 0 10px 0;
-  border: 1px solid #ebebeb;
+  border: none;
+  box-shadow: none;
 
+/*
+  border: 1px solid #ebebeb;
   box-shadow: 0 0 5px #ebebeb;
   -webkit-box-shadow: 0 0 5px #ebebeb;
   -moz-box-shadow: 0 0 5px #ebebeb;
   -o-box-shadow: 0 0 5px #ebebeb;
   -ms-box-shadow: 0 0 5px #ebebeb;
+*/
+
 }
 
 pre, code {
@@ -170,9 +175,6 @@ pre, code {
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
-
-
-
 }
 
 pre {
@@ -323,6 +325,7 @@ Full-Width Styles
 }
 
 #downloads {
+  display: none;
   position: absolute;
   width: 210px;
   z-index: 10;
@@ -333,7 +336,7 @@ Full-Width Styles
 }
 
 .zip_download_link {
-  display: block;
+  display: none;
   float: right;
   width: 90px;
   height:70px;
@@ -343,7 +346,7 @@ Full-Width Styles
 }
 
 .tar_download_link {
-  display: block;
+  display: none;
   float: right;
   width: 90px;
   height:70px;
@@ -359,10 +362,6 @@ Full-Width Styles
 
 .tar_download_link:hover {
   background: url(../images/sprite_download.png) no-repeat top right;
-}
-
-#downloads {
-  display: none;
 }
 
 #main_content_wrap {
