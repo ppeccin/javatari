@@ -30,6 +30,15 @@
 
   <body>
 
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <div class="inner">
@@ -123,10 +132,15 @@ Backspace:    Default Screen Size  </p>
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <div id="footer" class="inner">
-        <p>Java, Atari, Atari Video Computer System, Activision and Pitfall are trademarks of their respective owners.</p>
-        <p class="copyright">javatari maintained by <a href="https://github.com/ppeccin">ppeccin</a></p>
+
+	<div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="450" data-show-faces="false" data-colorscheme="dark"></div>
+        <p class="copyright">
+			javatari maintained by <a href="https://github.com/ppeccin">ppeccin</a>
+        </p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </div >
+	   <p>Java, Atari, Atari Video Computer System, Activision and Pitfall are trademarks of their respective owners.</p>
+     
+	 </div >
     </div>
 
   </body>
