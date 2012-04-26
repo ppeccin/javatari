@@ -96,7 +96,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 	private boolean newFrame() {
-		if (debug) window.setTitle(BASE_TITLE + " - " + line + " lines");
+		if (debug > 0) window.setTitle(BASE_TITLE + " - " + line + " lines");
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
 		// Copy only the contents needed (displayWidth x displayHight) to the frontBuffer
 		arrayCopyWithStride(
@@ -112,7 +112,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private boolean maxLineExceeded() {
 		if (line > signalHeight + VSYNC_TOLERANCE) {
-			if (debug) System.out.println("Display maximum scanlines exceeded, line: " + line);
+			if (debug > 0) System.out.println("Display maximum scanlines exceeded, line: " + line);
 			return newFrame();
 		}
 		return false;
@@ -132,7 +132,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private void cleanBackBuffer() {
 		// Clear screen if in debug mode, and put a nice green for detection of undrawn lines
-		if (debug) Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
+		if (debug > 0) Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
 	}
 
 	public void powerOn(){
@@ -460,7 +460,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 				adjustToVideoStandard(signalStandard);
 				break;
 			case DEBUG:
-				debug = !debug;
+				debug++;
+				if (debug > 4) debug = 0;
 				break;
 			case EXIT:
 				if (fullScreen) {
@@ -568,7 +569,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private boolean qualityRendering = QUALITY_RENDERING;
 	private int scanlinesRendering = SCANLINES_RENDERING;
 
-	private boolean debug = false;
+	private int debug = 0;
 	
 	private int line = 0;
 	

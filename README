@@ -1,3 +1,11 @@
 You can find executables in the downloads secton.
 
-Visit http://javatari.org for more information.
+Version 1.01
+============
+- Added support for illegal opcodes.
+- Added SuperChip support.
+- Improved ROM format detection.
+- Better compatibility for batari Basic ROMs.
+
+
+Visit http://javatari.org

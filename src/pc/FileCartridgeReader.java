@@ -57,6 +57,7 @@ public class FileCartridgeReader {
 	// TODO Find a better way to identify the type of Bankswitching and the VideoStandard of Cartridges
 	private static Cartridge create(byte[] content, String fileName) {
 		Cartridge cart = null; 
+		// Special case for Sliced "E0" format as indicated in filename
 		if (fileName.toUpperCase().indexOf("[SLICED]") >= 0 || fileName.toUpperCase().indexOf("[E0]") >= 0) {
 			switch (content.length) {
 				case Cartridge8KSliced.SIZE:
@@ -65,7 +66,12 @@ public class FileCartridgeReader {
 					throw new UnsupportedOperationException("Cartridge [SLICED, E0] size not supported: " + content.length);
 			}
 		} else {
-			boolean sc = fileName.toUpperCase().indexOf("[SC]") >= 0;
+			// Force SuperChip mode on or off as indicated in filename, otherwise leave it in auto mode (null)
+			Boolean sc = null;
+			if (fileName.toUpperCase().indexOf("[SC]") >= 0)
+				sc = true;
+			else if (fileName.toUpperCase().indexOf("[NOSC]") >= 0)
+					sc = false;
 			switch (content.length) {
 				case CartridgeDisconnected.SIZE:
 					cart = new CartridgeDisconnected(); break;

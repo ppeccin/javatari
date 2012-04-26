@@ -7,39 +7,46 @@ package atari.cartridge;
  */
 public abstract class CartridgeBanked extends Cartridge {
 
-	protected CartridgeBanked(boolean superChip) {
+	protected CartridgeBanked(Boolean superChip) {
 		super();
-		this.superChip = superChip;
-		if (this.superChip)
-			extraRAM = new byte[128];
-		else 
-			extraRAM = null;
+		// SuperChip mode. null = automatic mode
+		if (superChip == null) { 
+			superChipMode = false;
+			superChipAutoDetect = true;
+		} else {
+			superChipMode = superChip;
+			superChipAutoDetect = false;
+		}
 	}
 
 	@Override
 	public byte readByte(int address) {		
 		// Masking address will perform bank-switching as needed
 		int addr = maskAddress(address);
-		// Check for an Extra RAM read
-		if (superChip && (addr >= 0x80) && (addr <= 0xff))
+		// Check for Extra RAM reads
+		if (superChipMode && (addr >= 0x80) && (addr <= 0xff))
 			return extraRAM[addr - 0x80];
-		// Always add the correct offset to access bank selected
-		return bytes[addr + bankAddressOffset];	
+		else
+			// Always add the correct offset to access bank selected
+			return bytes[addr + bankAddressOffset];	
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {	
 		// Masking address will perform bank-switching as needed
 		int addr = maskAddress(address);
-		// Check for an Extra RAM write
-		if (superChip && (addr <= 0x7f))
+		// Check for Extra RAM writes and then turn superChip mode on
+		if (addr <= 0x7f && (superChipMode || superChipAutoDetect)) {
+			if (!superChipMode) superChipMode = true;	// Turn SuperChip mode from now on
 			extraRAM[addr] = b;
+		}
 	}
 
 	protected int bankAddressOffset = 0;
 	
-	private final boolean superChip;
-	private final byte[] extraRAM;
+	private boolean superChipMode = false;
+	private boolean superChipAutoDetect = false;
+	private final byte[] extraRAM = new byte[128];
 
 	private static final long serialVersionUID = 1L;
 

@@ -682,6 +682,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		debugLevel = level > 4 ? 0 : level;
 		debug = debugLevel != 0;
 		cpu.debug = debug;
+		pia.debug = debug;
 		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
 		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
 		if (debug) {

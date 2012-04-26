@@ -125,7 +125,6 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					console.showOSD((SWCHB & 0x40) != 0 ? "P1 Expert" : "P1 Novice"); return;
 			case DIFFICULTY1: if ((SWCHB & 0x80) == 0) SWCHB |= 0x80; else SWCHB &= 0x7f;		//  0 = Beginner, 1 = Advanced
 					console.showOSD((SWCHB & 0x80) != 0 ? "P2 Expert" : "P2 Novice"); return;
-			case DEBUG: debug = !debug; return;
 		}
 	}
 

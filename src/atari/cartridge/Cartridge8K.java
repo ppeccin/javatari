@@ -7,7 +7,7 @@ package atari.cartridge;
  */
 public final class Cartridge8K extends CartridgeBanked {
 
-	public Cartridge8K(byte[] content, boolean superChip) {
+	public Cartridge8K(byte[] content, Boolean superChip) {
 		super(superChip);
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);

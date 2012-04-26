@@ -244,7 +244,7 @@ public final class M6502 implements ClockDriven {
 
 	public void debug(String title) {
 		if (trace) showDebug(title);
-		else System.out.println(title);
+		else if (debug) System.out.println(title);
 	}
 	
 	public void showDebug(String title) {

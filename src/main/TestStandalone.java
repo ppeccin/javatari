@@ -17,7 +17,7 @@ public class TestStandalone {
 		Parameters.load();
 		
 		// Load cartridge passed, if any
-		final Cartridge cart = FileCartridgeReader.read("c:/cartridges/ThrustDemo.bin");
+		final Cartridge cart = FileCartridgeReader.read("c:/cartridges/seaweed_assault.bin");
 
 		// Create the Console with the available Cartridge
 		final Console console = cart != null ? new Console(cart) : new Console();
