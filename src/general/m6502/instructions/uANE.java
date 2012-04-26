@@ -3,25 +3,29 @@
 package general.m6502.instructions;
 
 import general.m6502.M6502;
-import general.m6502.Instruction;
+import general.m6502.UndocumentedInstruction;
 
-public class NOP extends Instruction {
+public class uANE extends UndocumentedInstruction {
 
-	public NOP(M6502 cpu) {
+	public uANE(M6502 cpu) {
 		super(cpu);
 	}
 
 	@Override
 	public int fetch() {
-		return 2;
+		ea = cpu.fetchImmediateAddress(); return 2;		
 	}
 
 	@Override
 	public void execute() {
-		// No effects
+		cpu.memory.readByte(ea);
+		// Exact operation unknown. Lets do nothing!
+		cpu.debug(">>> ANE (XAA)");
 	}
+
+	private int ea;
 	
 
 	private static final long serialVersionUID = 1L;
-	
+
 }

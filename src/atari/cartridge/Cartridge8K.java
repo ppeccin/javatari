@@ -2,14 +2,13 @@
 
 package atari.cartridge;
 
+/**
+ * Implements the 8K "F8" bank switching method
+ */
 public final class Cartridge8K extends CartridgeBanked {
 
-	public Cartridge8K() {
-		super(SIZE);
-	}
-
-	public Cartridge8K(byte[] content) {
-		this();
+	public Cartridge8K(byte[] content, boolean superChip) {
+		super(superChip);
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		setContent(content);

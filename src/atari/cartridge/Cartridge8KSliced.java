@@ -2,10 +2,13 @@
 
 package atari.cartridge;
 
+/**
+ * Implements the 8K "E0" sliced bank switching method. [sliced] [E0]
+ */
 public  class Cartridge8KSliced extends Cartridge {
 
 	public Cartridge8KSliced(byte[] content) {
-		super(SIZE);
+		super();
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		setContent(content);
@@ -26,7 +29,7 @@ public  class Cartridge8KSliced extends Cartridge {
 	}
 
 	public void writeByte(int address, byte b) {	
-		// Writing to roms is possible, but nothing is changed. 
+		// Writing to ROMs is possible, but nothing is changed. 
 		// Mask address anyway to perform bank switching as needed
 		maskAddress(address);
 	}

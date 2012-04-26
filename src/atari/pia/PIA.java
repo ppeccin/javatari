@@ -88,8 +88,8 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public void writeByte(int address, byte b) {
 		int i = b & 0xff;
 		switch(address & WRITE_ADDRESS_MASK) {
-			case 0x00:	/* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x\n", i)); return;		// Output to controllers not supported
-			case 0x01:	/* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x\n", i)); return;		// SWACNT configuration not supported
+			case 0x00:	/* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x\n", i)); return;	// Output to controllers not supported
+			case 0x01:	/* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x\n", i)); return;	// SWACNT configuration not supported
 			case 0x02:	swchbWrite(i); return;																	
 			case 0x03:	SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x\n", i)); return;	
 			case 0x04:	TIM1T  = i; setTimerInterval(i, 1); return;

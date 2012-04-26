@@ -12,6 +12,7 @@ import javax.swing.JFileChooser;
 import atari.cartridge.Cartridge;
 import atari.cartridge.Cartridge12K;
 import atari.cartridge.Cartridge16K;
+import atari.cartridge.Cartridge32K;
 import atari.cartridge.Cartridge4K;
 import atari.cartridge.Cartridge8K;
 import atari.cartridge.Cartridge8KSliced;
@@ -19,7 +20,7 @@ import atari.cartridge.CartridgeDisconnected;
 
 public class FileCartridgeReader {
 
-	// DASM Format 3, no header. Common 2600 cartrige rom format (.bin)
+	// DASM Format 3, no header. Common 2600 cartridge ROM format (.bin)
 	
 	public static Cartridge chooseFile() {
 		if (chooser == null)
@@ -56,14 +57,15 @@ public class FileCartridgeReader {
 	// TODO Find a better way to identify the type of Bankswitching and the VideoStandard of Cartridges
 	private static Cartridge create(byte[] content, String fileName) {
 		Cartridge cart = null; 
-		if (fileName.toUpperCase().indexOf("SLICED") >= 0) {
+		if (fileName.toUpperCase().indexOf("[SLICED]") >= 0 || fileName.toUpperCase().indexOf("[E0]") >= 0) {
 			switch (content.length) {
 				case Cartridge8KSliced.SIZE:
 					cart = new Cartridge8KSliced(content); break;
 				default:
-					throw new UnsupportedOperationException("Cartridge size not supported: " + content.length);
+					throw new UnsupportedOperationException("Cartridge [SLICED, E0] size not supported: " + content.length);
 			}
 		} else {
+			boolean sc = fileName.toUpperCase().indexOf("[SC]") >= 0;
 			switch (content.length) {
 				case CartridgeDisconnected.SIZE:
 					cart = new CartridgeDisconnected(); break;
@@ -71,17 +73,19 @@ public class FileCartridgeReader {
 				case Cartridge4K.SIZE:
 					cart = new Cartridge4K(content); break;
 				case Cartridge8K.SIZE:
-					cart = new Cartridge8K(content); break;
+					cart = new Cartridge8K(content, sc); break;
 				case Cartridge12K.SIZE:
-					cart = new Cartridge12K(content); break;
+					cart = new Cartridge12K(content, sc); break;
 				case Cartridge16K.SIZE:
-					cart = new Cartridge16K(content); break;
+					cart = new Cartridge16K(content, sc); break;
+				case Cartridge32K.SIZE:
+					cart = new Cartridge32K(content, sc); break;
 				default:
 					throw new UnsupportedOperationException("Cartridge size not supported: " + content.length);
 			}
 		}
 		// Set the Video Standard based on the filename. Default is NTSC
-		if (fileName.toUpperCase().indexOf("PAL") >= 0)
+		if (fileName.toUpperCase().indexOf("[PAL]") >= 0)
 			cart.forceVideoStandard(VideoStandard.PAL);
 		return cart;
 	}

@@ -101,11 +101,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					cpu.clockPulse();
 				}
 				objectsTriggerScanCounters();
-				if (!repeatLastLine)
+				if (!repeatLastLine) {
 					if (vBlankOn)
 						linePixels[clock] = vSyncOn ? vSyncColor : vBlankColor;
 					else					
 						setPixelValue();
+				}
 				objectsIncrementCounters();
 			}
 			// Send the last clock pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
@@ -279,6 +280,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		playfieldDelayedChangeClock = clock;
 		playfieldDelayedChangePart = part;
 		playfieldDelayedChangePattern = sprite;
+		if (debug) debugPixel(DEBUG_SPECIAL_COLOR2);
 	}
 
 	private void playfieldPerformDelayedSpriteChange() {
@@ -287,7 +289,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		switch (playfieldDelayedChangePart) {
 			case 0:	PF0 = playfieldDelayedChangePattern; break;
 			case 1:	PF1 = playfieldDelayedChangePattern; break;
-			case 2:	PF2 = playfieldDelayedChangePattern; break;
+			case 2:	PF2 = playfieldDelayedChangePattern;
 		}
 		playfieldPatternInvalid = true;
 		playfieldDelayedChangePart = -1;		// Marks the delayed change as nothing
@@ -765,10 +767,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x03:	RSYNC  = i; /* clock = 0; */ return;
 			case 0x04:	NUSIZ0 = i; player0SetShape(i); return;
 			case 0x05:	NUSIZ1 = i; player1SetShape(i); return;
-			case 0x06:	COLUP0 = i; if (!debug) { observableChange(); player0Color = missile0Color = pallete[i]; } return;
-			case 0x07:	COLUP1 = i; if (!debug) { observableChange(); player1Color = missile1Color = pallete[i]; } return;
-			case 0x08:	COLUPF = i; if (!debug) { observableChange(); playfieldColor = ballColor = pallete[i]; } return;
-			case 0x09:	COLUBK = i; if (!debug) { observableChange(); playfieldBackground = pallete[i]; } return;
+			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = pallete[i]; return;
+			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = pallete[i]; return;
+			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = pallete[i]; return;
+			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = pallete[i]; return;
 			case 0x0A:	CTRLPF = i; playfieldAndBallSetShape(i); return;
 			case 0x0B:	REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return;
 			case 0x0C:	REFP1  = i; observableChange(); player1Reflected = (i & 0x08) != 0; return;

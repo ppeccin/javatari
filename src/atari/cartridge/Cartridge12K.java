@@ -2,14 +2,13 @@
 
 package atari.cartridge;
 
+/**
+ * Implements the 12K "FA" bank switching method
+ */
 public final class Cartridge12K extends CartridgeBanked {
 
-	public Cartridge12K() {
-		super(SIZE);
-	}
-
-	public Cartridge12K(byte[] content) {
-		this();
+	public Cartridge12K(byte[] content, boolean superChip) {
+		super(superChip);
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		setContent(content);

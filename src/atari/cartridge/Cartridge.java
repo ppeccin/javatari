@@ -5,19 +5,10 @@ package atari.cartridge;
 import general.av.video.VideoStandard;
 import general.board.BUS16Bits;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
 public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
-
-	public Cartridge(int size) {
-		emptyContent(size);
-	}
-
-	public Cartridge(byte[] content) throws IOException {
-		setContent(content);
-	}
 
 	@Override
 	public byte readByte(int address) {		
@@ -31,7 +22,7 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	
 	@Override
 	public void writeByte(int address, byte b) {	
-		// Writing to roms is possible, but nothing is changed
+		// Writing to ROMs is possible, but nothing is changed
 	}
 
 	@Override
@@ -51,7 +42,7 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 		return address & 0x0fff;
 	}
 	
-	void setContent(byte[] content) {
+	protected void setContent(byte[] content) {
 		bytes = content;
 	}
 	

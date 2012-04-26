@@ -2,15 +2,14 @@
 
 package atari.cartridge;
 
+/**
+ * Implements the 4K unbanked format
+ */
 public final class Cartridge4K extends Cartridge {
 
-	public Cartridge4K() {
-		super(SIZE);
-	}
-
 	public Cartridge4K(byte[] content) {
-		this();
-		if (content.length != SIZE && content.length != 2048 )		// Also accepts 2K roms, but duplicates the content to form 4K
+		super();
+		if (content.length != SIZE && content.length != 2048 )		// Also accepts 2K ROMs, but duplicates the content to form 4K
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		if (content.length == 2048) {
 			byte[] newContent = new byte[4096];

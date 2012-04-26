@@ -22,7 +22,7 @@ public class BRK extends Instruction {
 
 	@Override
 	public void execute() {
-		cpu.debug("BREAK " + par);
+		cpu.debug(">>> BREAK " + par);
 		cpu.pushWord(cpu.PC);		
 		cpu.pushByte(cpu.PS());
 		cpu.INTERRUPT_DISABLE = true;

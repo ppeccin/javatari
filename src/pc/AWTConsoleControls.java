@@ -147,6 +147,8 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 			case KEY_P0_LEFT: return KEY_P1_LEFT;
 			case KEY_P0_RIGHT: return KEY_P1_RIGHT;
 			case KEY_P0_BUTTON: return KEY_P1_BUTTON;
+			case KEY_P0_BUTTON2: return KEY_P1_BUTTON;
+			case KEY_P0_BUTTON3: return KEY_P1_BUTTON;
 			case KEY_P1_UP: return KEY_P0_UP;
 			case KEY_P1_DOWN: return KEY_P0_DOWN;
 			case KEY_P1_LEFT: return KEY_P0_LEFT;

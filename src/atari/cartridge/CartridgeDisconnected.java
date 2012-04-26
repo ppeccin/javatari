@@ -4,10 +4,13 @@ package atari.cartridge;
 
 import utils.Randomizer;
 
+/**
+ * Implements no cartridge connected
+ */
 public final class CartridgeDisconnected extends Cartridge {
 
 	public CartridgeDisconnected() {
-		super(SIZE);
+		super();
 	}
 
 	@Override

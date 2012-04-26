@@ -3,12 +3,12 @@
 package general.m6502.instructions;
 
 import general.m6502.M6502;
-import general.m6502.Instruction;
 import general.m6502.OperandType;
+import general.m6502.UndocumentedInstruction;
 
-public class DEC extends Instruction {
+public class uSHA extends UndocumentedInstruction {
 
-	public DEC(M6502 cpu, OperandType type) {
+	public uSHA(M6502 cpu, OperandType type) {
 		super(cpu);
 		this.type = type;
 	}
@@ -16,25 +16,19 @@ public class DEC extends Instruction {
 	@Override
 	public int fetch() {
 		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 5;
-			case Z_PAGE_X:
+			case ABS_Y:
+				ea = cpu.fetchZeroPageXAddress(); return 5;
+			case IND_Y:
 				ea = cpu.fetchZeroPageXAddress(); return 6;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 6;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 7;
 			default:
-				throw new IllegalStateException("DEC Invalid Operand Type: " + type);
+				throw new IllegalStateException("uAXA Invalid Operand Type: " + type);
 		}
 	}
 
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.memory.readByte(ea) - 1); 
+		final byte val = (byte) (cpu.A & cpu.X & (byte)(((ea >>> 8) & 0xff) + 1));  // A & X & (High byte of address + 1) !!! 
 		cpu.memory.writeByte(ea, val);
-		cpu.ZERO = val == 0;
-		cpu.NEGATIVE = val < 0;
 	}
 
 	private final OperandType type;
