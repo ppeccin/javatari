@@ -13,7 +13,7 @@ public class uASR extends UndocumentedInstruction {
 
 	@Override
 	public int fetch() {
-		ea = cpu.fetchZeroPageAddress(); return 2;
+		ea = cpu.fetchImmediateAddress(); return 2;
 	}
 
 	@Override

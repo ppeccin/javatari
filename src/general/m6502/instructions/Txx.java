@@ -34,7 +34,7 @@ public class Txx extends Instruction {
 			case rSP:
 				val = cpu.SP; break;
 			default:
-				throw new IllegalStateException("Tx Invalid Source Register: " + source);
+				throw new IllegalStateException("Txx Invalid Source Register: " + source);
 		}
 		switch (dest) {
 			case rA:
@@ -46,7 +46,7 @@ public class Txx extends Instruction {
 			case rSP:
 				cpu.SP = val; break;
 			default:
-				throw new IllegalStateException("Tx Invalid Destination Register: " + dest);
+				throw new IllegalStateException("Txx Invalid Destination Register: " + dest);
 		}
 		if (dest != rSP) {		// Does not affect Status Bits when transferring to SP
 			cpu.ZERO = val == 0;

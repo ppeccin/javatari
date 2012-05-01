@@ -242,6 +242,13 @@ public final class M6502 implements ClockDriven {
 		return str;
 	}
 
+	public String printMemory(int fromAddress, int count) {
+		String str = "";
+		for(int i = 0; i < count; i++)
+			str = str + String.format("%02x ", memory.readByte(fromAddress + i));
+		return str;
+	}
+
 	public void debug(String title) {
 		if (trace) showDebug(title);
 		else if (debug) System.out.println(title);

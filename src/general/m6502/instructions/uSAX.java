@@ -30,7 +30,7 @@ public class uSAX extends UndocumentedInstruction {
 	}
 
 	@Override
-	// TODO Check. Some sources say it would affect N and Z flags, some say it woudnt't
+	// TODO Check. Some sources say it would affect N and Z flags, some say it woudnt't. Chose not to affect
 	public void execute() {
 		final byte val = (byte) (cpu.A & cpu.X);
 		cpu.memory.writeByte(ea, val);

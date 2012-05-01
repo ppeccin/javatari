@@ -30,7 +30,25 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	}
 	
 	public void paddleMode(boolean state) {
-		if (paddleMode != state) paddleModeToggle();
+		paddleMode = state;
+		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
+		paddle0Speed = paddle1Speed = 2;
+		paddle0Position = paddle1Position = (paddleMode ? 190 : -1);	// -1 = disconnected, won't charge POTs
+		// Reset all controls to default state
+		for (Control control : playerDigitalControls)
+			consoleControlsInput.controlStateChanged(control, false);
+		consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+		consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+		videoMonitor.showOSD((paddleMode ? "Paddles" : "Joysticks") + " connected");
+		if (paddleMode) {
+			if (paddlePositionUpdater != null && paddlePositionUpdater.isAlive()) return;	// All set
+			paddlePositionUpdater = new PaddlesPositionUpdater();
+			paddlePositionUpdater.start();
+		} else {
+			if (paddlePositionUpdater == null || !paddlePositionUpdater.isAlive()) return;	// All set
+			try { paddlePositionUpdater.join(); } catch (InterruptedException e) {}
+			paddlePositionUpdater = null;
+		}
 	}
 
 	@Override
@@ -76,7 +94,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 					videoMonitor.showOSD((p1ControlsMode ? "P2" : "P1") + " controls priority");
 					return true;
 				case KEY_LOCAL_PADDLE_MODE:
-					paddleModeToggle(); return true;
+					paddleMode(!paddleMode); return true;
 			}
 		if (paddleMode) {
 			switch(keyCode) {
@@ -173,28 +191,6 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 				return null;
 		}
 		return control;
-	}
-
-	private void paddleModeToggle() {
-		paddleMode = !paddleMode;
-		if (paddleMode) {
-			if (paddlePositionUpdater != null && paddlePositionUpdater.isAlive()) return;	// All set
-			paddlePositionUpdater = new PaddlesPositionUpdater();
-			paddlePositionUpdater.start();
-		} else {
-			if (paddlePositionUpdater == null || !paddlePositionUpdater.isAlive()) return;	// All set
-			try { paddlePositionUpdater.join(); } catch (InterruptedException e) {}
-			paddlePositionUpdater = null;
-		}
-		paddle0Position = paddle1Position = (paddleMode ? 190 : 0);
-		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
-		paddle0Speed = paddle1Speed = 2;
-		// Reset all controls to default state
-		for (Control control : playerDigitalControls)
-			consoleControlsInput.controlStateChanged(control, false);
-		consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
-		consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
-		videoMonitor.showOSD((paddleMode ? "Paddles" : "Joysticks") + " connected");
 	}
 
 	private void paddlesUpdatePosition() {

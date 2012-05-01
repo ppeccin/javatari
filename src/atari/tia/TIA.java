@@ -13,8 +13,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import parameters.Parameters;
-import pc.Speaker;
-import pc.screen.Screen;
 import atari.controls.ConsoleControls;
 import atari.controls.ConsoleControlsInput;
 import atari.pia.PIA;
@@ -61,6 +59,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public void powerOn() {
 		Arrays.fill(linePixels, HBLANK_COLOR);
 		Arrays.fill(debugPixels, 0);
+		groundLatchesAtPowerOn();
 		observableChange();
 		powerOn = true;
 	}
@@ -115,8 +114,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			cpu.clockPulse();
 			// End of scan line
 			// Handle Paddles capacitor charging
-			if (!paddleCapacitorsGrounded && (INPT0 == 0 || INPT1 == 0)) 
-				paddlesChargeCapacitors();
+			if (!paddleCapacitorsGrounded && paddle0Position != -1)
+				chargePaddleCapacitors();
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
@@ -149,20 +148,20 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		// Get the value for the PlayField and Ball first only if PlayField and Ball have higher priority
 		if (playfieldPriority) {
 			// Get the value for the Ball
-			if (playfieldCurrentPixel) { 
-				FL = true;
-				if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
-			}
 			if (ballScanCounter == 0) {
 				playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
 				if (ballEnabled) {
 					BL = true;
-					if (color == 0) color = ballColor;
+					color = ballColor;
 				}
+			}
+			if (playfieldCurrentPixel) { 
+				FL = true;
+				if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
 			}
 		}
 		// Get the value for Player0
-		if (player0ScanCounter >=0) {
+		if (player0ScanCounter >= 0) {
 			playersPerformDelayedSpriteChanges();
 			int sprite = player0VerticalDelay ? player0ActiveSprite : player0DelayedSprite;
 			if (sprite != 0)
@@ -189,20 +188,23 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			M1 = true;
 			if (color == 0) color = missile1Color;
 		}
-		// Get the value for the Ball (low priority)
-		if (ballScanCounter == 0) {
-			playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
-			if (ballEnabled) {
-				BL = true;
-				if (color == 0) color = ballColor;
+		if (!playfieldPriority) {
+			// Get the value for the Ball (low priority)
+			if (ballScanCounter == 0) {
+				playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
+				if (ballEnabled) {
+					BL = true;
+					if (color == 0) color = ballColor;
+				}
+			}
+			// Get the value for the the PlayField (low priority)
+			if (playfieldCurrentPixel) {
+				FL = true;
+				if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
 			}
 		}
-		// Get the value for the the PlayField (low priority)
-		if (playfieldCurrentPixel) {
-			FL = true;
-			if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
-		} else 
-			if (color == 0) color = playfieldBackground;	// If nothing more is showing, get the PlayField background value (low priority)
+		// If nothing more is showing, get the PlayField background value (low priority)
+		if (color == 0) color = playfieldBackground;	
 		// Set the correct pixel color
 		linePixels[clock] = color;
 		// Finish collision latches
@@ -234,7 +236,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void playfieldUpdateCurrentPixel() {
-		playfieldPerformDelayedSpriteChange();
+		playfieldPerformDelayedSpriteChange(false);
 		if (playfieldPatternInvalid) {
 			// Shortcuts if the Playfield is all clear
 			if (PF0 == 0 && PF1 == 0 && PF2 == 0) {
@@ -249,26 +251,26 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			} else {
 				s = 19; i = 1;
 			}
-			playfieldPattern[0]  = playfieldPattern[s+=i] = (PF0 & 0x10) > 0;
-			playfieldPattern[1]  = playfieldPattern[s+=i] = (PF0 & 0x20) > 0;
-			playfieldPattern[2]  = playfieldPattern[s+=i] = (PF0 & 0x40) > 0;
-			playfieldPattern[3]  = playfieldPattern[s+=i] = (PF0 & 0x80) > 0;
-			playfieldPattern[4]  = playfieldPattern[s+=i] = (PF1 & 0x80) > 0;
-			playfieldPattern[5]  = playfieldPattern[s+=i] = (PF1 & 0x40) > 0;
-			playfieldPattern[6]  = playfieldPattern[s+=i] = (PF1 & 0x20) > 0;
-			playfieldPattern[7]  = playfieldPattern[s+=i] = (PF1 & 0x10) > 0;
-			playfieldPattern[8]  = playfieldPattern[s+=i] = (PF1 & 0x08) > 0;
-			playfieldPattern[9]  = playfieldPattern[s+=i] = (PF1 & 0x04) > 0;
-			playfieldPattern[10] = playfieldPattern[s+=i] = (PF1 & 0x02) > 0;
-			playfieldPattern[11] = playfieldPattern[s+=i] = (PF1 & 0x01) > 0;
-			playfieldPattern[12] = playfieldPattern[s+=i] = (PF2 & 0x01) > 0;
-			playfieldPattern[13] = playfieldPattern[s+=i] = (PF2 & 0x02) > 0;
-			playfieldPattern[14] = playfieldPattern[s+=i] = (PF2 & 0x04) > 0;
-			playfieldPattern[15] = playfieldPattern[s+=i] = (PF2 & 0x08) > 0;
-			playfieldPattern[16] = playfieldPattern[s+=i] = (PF2 & 0x10) > 0;
-			playfieldPattern[17] = playfieldPattern[s+=i] = (PF2 & 0x20) > 0;
-			playfieldPattern[18] = playfieldPattern[s+=i] = (PF2 & 0x40) > 0;
-			playfieldPattern[19] = playfieldPattern[s+=i] = (PF2 & 0x80) > 0;
+			playfieldPattern[0]  = playfieldPattern[s+=i] = (PF0 & 0x10) != 0;
+			playfieldPattern[1]  = playfieldPattern[s+=i] = (PF0 & 0x20) != 0;
+			playfieldPattern[2]  = playfieldPattern[s+=i] = (PF0 & 0x40) != 0;
+			playfieldPattern[3]  = playfieldPattern[s+=i] = (PF0 & 0x80) != 0;
+			playfieldPattern[4]  = playfieldPattern[s+=i] = (PF1 & 0x80) != 0;
+			playfieldPattern[5]  = playfieldPattern[s+=i] = (PF1 & 0x40) != 0;
+			playfieldPattern[6]  = playfieldPattern[s+=i] = (PF1 & 0x20) != 0;
+			playfieldPattern[7]  = playfieldPattern[s+=i] = (PF1 & 0x10) != 0;
+			playfieldPattern[8]  = playfieldPattern[s+=i] = (PF1 & 0x08) != 0;
+			playfieldPattern[9]  = playfieldPattern[s+=i] = (PF1 & 0x04) != 0;
+			playfieldPattern[10] = playfieldPattern[s+=i] = (PF1 & 0x02) != 0;
+			playfieldPattern[11] = playfieldPattern[s+=i] = (PF1 & 0x01) != 0;
+			playfieldPattern[12] = playfieldPattern[s+=i] = (PF2 & 0x01) != 0;
+			playfieldPattern[13] = playfieldPattern[s+=i] = (PF2 & 0x02) != 0;
+			playfieldPattern[14] = playfieldPattern[s+=i] = (PF2 & 0x04) != 0;
+			playfieldPattern[15] = playfieldPattern[s+=i] = (PF2 & 0x08) != 0;
+			playfieldPattern[16] = playfieldPattern[s+=i] = (PF2 & 0x10) != 0;
+			playfieldPattern[17] = playfieldPattern[s+=i] = (PF2 & 0x20) != 0;
+			playfieldPattern[18] = playfieldPattern[s+=i] = (PF2 & 0x40) != 0;
+			playfieldPattern[19] = playfieldPattern[s+=i] = (PF2 & 0x80) != 0;
 			playfieldPatternInvalid = false;
 		}
 		playfieldCurrentPixel = playfieldPattern[(clock - HBLANK_DURATION) / 4 % 40];
@@ -276,16 +278,20 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void playfieldDelaySpriteChange(int part, int sprite) {
 		observableChange();
-		playfieldPerformDelayedSpriteChange();
+		playfieldPerformDelayedSpriteChange(true);
 		playfieldDelayedChangeClock = clock;
 		playfieldDelayedChangePart = part;
 		playfieldDelayedChangePattern = sprite;
 		if (debug) debugPixel(DEBUG_SPECIAL_COLOR2);
 	}
 
-	private void playfieldPerformDelayedSpriteChange() {
-		// Only commits change if there is one and the clock is not the current
-		if (playfieldDelayedChangePart < 0 || playfieldDelayedChangeClock == clock) return;
+	private void playfieldPerformDelayedSpriteChange(boolean force) {
+		// Only commits change if there is one and the delay has passed
+		if (playfieldDelayedChangePart == -1) return;
+		if (!force) {
+			int dif = clock - playfieldDelayedChangeClock;
+			if (dif >= 0 && dif <= 1) return;
+		}
 		switch (playfieldDelayedChangePart) {
 			case 0:	PF0 = playfieldDelayedChangePattern; break;
 			case 1:	PF1 = playfieldDelayedChangePattern; break;
@@ -475,13 +481,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		}
 	}
 
-	private void paddlesChargeCapacitors() {
-		if (INPT0 == 0)
-			if (++paddle0CapacitorCharge >= paddle0Position) INPT0 = 0x80;
-		if (INPT1 == 0)
-			if (++paddle1CapacitorCharge >= paddle1Position) INPT1 = 0x80;
-	}
-
 	private void adjustLineAtEnd() {
 		if (hMoveHitBlank) {
 		 	// Fills the extended HBLANK portion of the line if needed
@@ -504,7 +503,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void playerDelaySpriteChange(int player, int sprite) {
-		if (playersDelayedSpriteChangesCount >= PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT) return;
+		if (playersDelayedSpriteChangesCount >= PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT) { 
+			debugInfo(">>> Max player delayed changes reached: " + PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT); 
+			playersPerformDelayedSpriteChanges();
+		}	
 		observableChange();
 		playersDelayedSpriteChanges[playersDelayedSpriteChangesCount][0] = clock;
 		playersDelayedSpriteChanges[playersDelayedSpriteChangesCount][1] = player;
@@ -527,7 +529,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					player1DelayedSprite = change[2];
 					player0ActiveSprite = player0DelayedSprite;
 					ballEnabled = ballDelayedEnablement; 
-					break;
 			}
 		}
 		playersDelayedSpriteChangesCount = 0;
@@ -673,7 +674,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if ((blank & 0x80) != 0) {				// Ground paddle capacitors
 			paddleCapacitorsGrounded = true;
 			paddle0CapacitorCharge = paddle1CapacitorCharge = 0;
-			INPT0 = INPT1 = INPT2 = INPT3 = 0;
+			INPT0 &= 0x7f; INPT1 &= 0x7f; INPT2 &= 0x7f; INPT3 &= 0x7f;
 		} else
 			paddleCapacitorsGrounded = false;
 	}
@@ -700,8 +701,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void debugInfo(String str) {
-		if (debug)
-			System.out.println("Line: " + videoOutput.monitor.currentLine() + ", Pixel: " + clock + ", " + str);
+		if (debug) {
+			System.out.printf("Line: %3d, Pixel: %3d, " + str + "\n", videoOutput.monitor.currentLine(), clock);
+			// System.out.println(cpu.printState());
+			// System.out.println(cpu.printMemory(0x0090, 32));
+		}
 	}
 	
 	private void debugPixel(int color) {
@@ -714,10 +718,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			for (int i = 0; i < LINE_WIDTH; i++) {
 				if (debugPixels[i] != 0) continue;
 				if (i < HBLANK_DURATION) {
-					if (i % 5 == 0 || i >= HBLANK_DURATION - 8)
+					if (i % 6 == 0 || i == 66 || i == 63)
 						debugPixels[i] = DEBUG_MARKS_COLOR;
 				} else {
-					if ((i - HBLANK_DURATION) % 5 == 0)
+					if ((i - HBLANK_DURATION - 1) % 6 == 0)
 						debugPixels[i] = DEBUG_MARKS_COLOR;
 				}
 			}
@@ -730,6 +734,16 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		observableChange();
 	}
 	
+	private void chargePaddleCapacitors() {
+		if (INPT0 < 0x80 && ++paddle0CapacitorCharge >= paddle0Position) INPT0 |= 0x80;
+		if (INPT1 < 0x80 && ++paddle1CapacitorCharge >= paddle1Position) INPT1 |= 0x80;
+	}
+
+	private void groundLatchesAtPowerOn() {
+		CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0;
+		INPT0 = INPT1 = INPT2 = INPT3 = INPT4 = INPT5 = 0; 		
+	}
+
 	@Override
 	public byte readByte(int address) {
 		switch(address & READ_ADDRESS_MASK) {
@@ -820,21 +834,21 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case JOY0_BUTTON: 
 				if (state) {
 					controlsJOY0ButtonPressed = true;
-					INPT4 = 0;
+					INPT4 &= 0x7f;
 				} else {
 					controlsJOY0ButtonPressed = false;
 					if (!controlsButtonsLatched)			// Does not lift the button if Latched Mode is on
-						INPT4 = 0x80;
+						INPT4 |= 0x80;
 				}
 				return;
 			case JOY1_BUTTON:
 				if (state) {
 					controlsJOY1ButtonPressed = true;
-					INPT5 = 0;
+					INPT5 &= 0x7f;
 				} else {
 					controlsJOY1ButtonPressed = false;
-					if (!controlsButtonsLatched)
-						INPT5 = 0x80;
+					if (!controlsButtonsLatched)			// Does not lift the button if Latched Mode is on
+						INPT5 |= 0x80;
 				}
 				return;
 		}
@@ -1210,9 +1224,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private boolean controlsJOY1ButtonPressed = false;
 
 	private boolean paddleCapacitorsGrounded = false;
-	private int paddle0Position = 0;			// 380 = Left, 190 = Middle, 0 = Right
+	private int paddle0Position = -1;			// 380 = Left, 190 = Middle, 0 = Right. -1 = disconnected, won't charge POTs
 	private int paddle0CapacitorCharge = 0;
-	private int paddle1Position = 0;
+	private int paddle1Position = -1;
 	private int paddle1CapacitorCharge = 0;
 
 	// Read registers -------------------------------------------

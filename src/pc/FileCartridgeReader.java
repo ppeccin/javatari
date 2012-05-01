@@ -90,9 +90,12 @@ public class FileCartridgeReader {
 					throw new UnsupportedOperationException("Cartridge size not supported: " + content.length);
 			}
 		}
-		// Set the Video Standard based on the filename. Default is NTSC
+		// Force the Video Standard based on the filename. Default is NTSC
 		if (fileName.toUpperCase().indexOf("[PAL]") >= 0)
 			cart.forceVideoStandard(VideoStandard.PAL);
+		else
+			if (fileName.toUpperCase().indexOf("[NTSC]") >= 0)
+				cart.forceVideoStandard(VideoStandard.NTSC);
 		return cart;
 	}
 	

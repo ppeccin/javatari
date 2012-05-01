@@ -29,25 +29,25 @@ public class ScreenControlsAdapter implements KeyListener {
 		keyAltCodeMap.put(KEY_VIDEO_STAND, Screen.Control.VIDEO_STANDARD); 
 		keyAltCodeMap.put(KEY_SCANLINES,   Screen.Control.SCANLINES); 
 
-		keyAltCodeMap.put(KEY_UP,    Screen.Control.SIZE_MINUS); 
-		keyAltCodeMap.put(KEY_DOWN,  Screen.Control.SIZE_PLUS); 
-		keyAltCodeMap.put(KEY_LEFT,  Screen.Control.SIZE_MINUS); 
-		keyAltCodeMap.put(KEY_RIGHT, Screen.Control.SIZE_PLUS);
+		keyShiftCodeMap.put(KEY_UP,    Screen.Control.SIZE_MINUS); 
+		keyShiftCodeMap.put(KEY_DOWN,  Screen.Control.SIZE_PLUS); 
+		keyShiftCodeMap.put(KEY_LEFT,  Screen.Control.SIZE_MINUS); 
+		keyShiftCodeMap.put(KEY_RIGHT, Screen.Control.SIZE_PLUS);
 		
-		keyControlAltCodeMap.put(KEY_UP,    Screen.Control.SCALE_Y_MINUS); 
-		keyControlAltCodeMap.put(KEY_DOWN,  Screen.Control.SCALE_Y_PLUS); 
-		keyControlAltCodeMap.put(KEY_LEFT,  Screen.Control.SCALE_X_MINUS); 
-		keyControlAltCodeMap.put(KEY_RIGHT, Screen.Control.SCALE_X_PLUS); 
+		keyShiftAltCodeMap.put(KEY_UP,    Screen.Control.SCALE_Y_MINUS); 
+		keyShiftAltCodeMap.put(KEY_DOWN,  Screen.Control.SCALE_Y_PLUS); 
+		keyShiftAltCodeMap.put(KEY_LEFT,  Screen.Control.SCALE_X_MINUS); 
+		keyShiftAltCodeMap.put(KEY_RIGHT, Screen.Control.SCALE_X_PLUS); 
 
-		keyShiftControlCodeMap.put(KEY_UP,    Screen.Control.ORIGIN_Y_MINUS); 
-		keyShiftControlCodeMap.put(KEY_DOWN,  Screen.Control.ORIGIN_Y_PLUS); 
-		keyShiftControlCodeMap.put(KEY_LEFT,  Screen.Control.ORIGIN_X_MINUS); 
-		keyShiftControlCodeMap.put(KEY_RIGHT, Screen.Control.ORIGIN_X_PLUS); 
+		keyControlAltCodeMap.put(KEY_UP,    Screen.Control.ORIGIN_Y_MINUS); 
+		keyControlAltCodeMap.put(KEY_DOWN,  Screen.Control.ORIGIN_Y_PLUS); 
+		keyControlAltCodeMap.put(KEY_LEFT,  Screen.Control.ORIGIN_X_MINUS); 
+		keyControlAltCodeMap.put(KEY_RIGHT, Screen.Control.ORIGIN_X_PLUS); 
 
-		keyShiftAltCodeMap.put(KEY_UP,    Screen.Control.HEIGHT_MINUS); 
-		keyShiftAltCodeMap.put(KEY_DOWN,  Screen.Control.HEIGHT_PLUS); 
-		keyShiftAltCodeMap.put(KEY_LEFT,  Screen.Control.WIDTH_MINUS); 
-		keyShiftAltCodeMap.put(KEY_RIGHT, Screen.Control.WIDTH_PLUS);
+		keyShiftControlCodeMap.put(KEY_UP,    Screen.Control.HEIGHT_MINUS); 
+		keyShiftControlCodeMap.put(KEY_DOWN,  Screen.Control.HEIGHT_PLUS); 
+		keyShiftControlCodeMap.put(KEY_LEFT,  Screen.Control.WIDTH_MINUS); 
+		keyShiftControlCodeMap.put(KEY_RIGHT, Screen.Control.WIDTH_PLUS);
 
 		keyCodeMap.put(KEY_SIZE_DEFAULT, Screen.Control.SIZE_DEFAULT); 
 	}
@@ -77,6 +77,8 @@ public class ScreenControlsAdapter implements KeyListener {
 				return keyCodeMap.get(e.getKeyCode());
 			case KeyEvent.ALT_DOWN_MASK:
 				return keyAltCodeMap.get(e.getKeyCode());
+			case KeyEvent.SHIFT_DOWN_MASK:
+				return keyShiftCodeMap.get(e.getKeyCode());
 			case KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK:
 				return keyControlAltCodeMap.get(e.getKeyCode());
 			case KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK:
@@ -90,6 +92,7 @@ public class ScreenControlsAdapter implements KeyListener {
 
 	private Screen screen; 
 	private final Map<Integer, Screen.Control> keyCodeMap = new HashMap<Integer, Screen.Control>();
+	private final Map<Integer, Screen.Control> keyShiftCodeMap = new HashMap<Integer, Screen.Control>();
 	private final Map<Integer, Screen.Control> keyAltCodeMap = new HashMap<Integer, Screen.Control>();
 	private final Map<Integer, Screen.Control> keyShiftControlCodeMap = new HashMap<Integer, Screen.Control>();
 	private final Map<Integer, Screen.Control> keyShiftAltCodeMap = new HashMap<Integer, Screen.Control>();
