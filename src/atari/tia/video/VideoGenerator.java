@@ -13,6 +13,15 @@ public final class VideoGenerator implements VideoSignal {
 		return monitor.nextLine(pixels, vSynch);
 	}
 
+	public void showOSD(String message) {
+		if (monitor == null) return;
+		monitor.showOSD(message);
+	}
+
+	public VideoStandard videoStandardDetected() {
+		return monitor != null ? monitor.videoStandardDetected() : null;
+	}
+
 	@Override
 	public VideoStandard standard() {
 		return standard;
@@ -23,12 +32,7 @@ public final class VideoGenerator implements VideoSignal {
 		this.monitor = monitor;
 	}
 
-	public void showOSD(String message) {
-		if (monitor == null) return;
-		monitor.showOSD(message);
-	}
-	
 	public VideoMonitor monitor;
-	public VideoStandard standard = VideoStandard.NTSC;
+	public VideoStandard standard;
 	
 }

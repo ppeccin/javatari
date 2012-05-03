@@ -33,8 +33,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
-import pc.FileCartridgeReader;
 import pc.AWTConsoleControls;
+import pc.FileCartridgeReader;
 import utils.GraphicsDeviceHelper;
 import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
@@ -51,26 +51,31 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 	@Override
-	public boolean nextLine(final int[] pixels, boolean vSynch) {
+	public boolean nextLine(final int[] pixels, boolean vSynchSignal) {
 		// Adjusts to the new signal state (on or off) as necessary
 		if (!signalState(pixels != null))		// If signal is off, we are done
 			return false;
 		// Process new line received
-		boolean vSync = false;
+		boolean vSynced = false;
 		// Synchronize to avoid changing the standard while receiving lines / refreshing frame 
 		synchronized (newDataMonitor) {
 			if (line < signalHeight)
 				System.arraycopy(pixels, 0, backBuffer, line * signalWidth, signalWidth);
 			else 
-				vSync = maxLineExceeded();
+				vSynced = maxLineExceeded();
 			line++;
-			if (vSynch) {
+			if (vSynchSignal) {
 				if (--VSYNCDetectionCount == 0)
-					vSync = newFrame();
+					vSynced = newFrame();
 			} else
 				VSYNCDetectionCount = VSYNC_DETECTION;
 		}
-		return vSync;
+		return vSynced;
+	}
+
+	@Override
+	public VideoStandard videoStandardDetected() {
+		return videoStandardDetected;
 	}
 
 	@Override
@@ -106,6 +111,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		cleanBackBuffer();
+		if (videoStandardDetected != null) videoStandardDetectionNewFrame(line);
 		line = 0;
 		return true;
 	}
@@ -119,8 +125,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 	
 	private boolean signalState(boolean state) {
-		if (state && !signalOn)
-			adjustToVideoSignal();		// If signal was off before, adjust to the new signal Video Standard
+		if (state) {
+			adjustToVideoSignal();
+			// If signal was off before, start a bew VideoStandard detection
+			if (!signalOn) videoStandardDetectionReset();
+		}
 		signalOn = state;
 		// Paints the Logo if the signal is off
 		if (!signalOn) {
@@ -141,6 +150,22 @@ public class Screen implements ClockDriven, VideoMonitor {
 			paintLogo();
 			clock.go();
 		}});
+	}
+
+	private void videoStandardDetectionReset() {
+		videoStandardDetected = null;
+		videoStandardDetectionFrameCount = videoStandardDetectionLinesCount = 0;
+	}
+
+	private void videoStandardDetectionNewFrame(int linesCount) {
+		if (videoStandardDetectionFrameCount > 20) return;
+		videoStandardDetectionLinesCount += linesCount;
+		if (++videoStandardDetectionFrameCount > 20) {
+			if (videoStandardDetectionLinesCount / videoStandardDetectionFrameCount > 275)
+				videoStandardDetected = VideoStandard.PAL;
+			else
+				videoStandardDetected = VideoStandard.NTSC;
+		}
 	}
 
 	private void openWindow() {
@@ -251,14 +276,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 	private void adjustToVideoSignal() {
-		// if (signalStandard != null && signalStandard.equals(videoSignal.standard())) return;
-		signalStandard = videoSignal.standard();
-		adjustToVideoStandard(signalStandard);
+		if (signalStandard == videoSignal.standard()) return;
+		adjustToVideoStandard(videoSignal.standard());
 	}
 
 	private void adjustToVideoStandard(VideoStandard videoStandard) {
 		// Synchronize on nextLine() and refresh() monitors to avoid changing the standard while receiving lines / refreshing frame 
 		synchronized (refreshMonitor) { synchronized (newDataMonitor) {
+			signalStandard = videoSignal.standard();
 			signalWidth = videoStandard.width;
 			signalHeight = videoStandard.height;
 			setDisplaySize(displayWidth, displayHeightPct);
@@ -268,7 +293,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 			frameBuffer = new int[signalWidth * signalHeight];
 			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_RGB);
 			if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
-			showOSD(videoStandard.name);
+			// showOSD(videoStandard.name);
 		}}
 	}
 
@@ -456,8 +481,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 				scanlinesToggleMode();
 				break;
 			case VIDEO_STANDARD:
-				signalStandard = signalStandard.equals(VideoStandard.NTSC) ? VideoStandard.PAL : VideoStandard.NTSC;
-				adjustToVideoStandard(signalStandard);
+//				signalStandard = signalStandard.equals(VideoStandard.NTSC) ? VideoStandard.PAL : VideoStandard.NTSC;
+//				adjustToVideoStandard(signalStandard);
 				break;
 			case DEBUG:
 				debug++;
@@ -545,6 +570,10 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private VideoStandard signalStandard;
 	private int signalWidth;
 	private int signalHeight;
+
+	private VideoStandard videoStandardDetected;
+	private int videoStandardDetectionFrameCount;
+	private int videoStandardDetectionLinesCount;
 
 	private int[] backBuffer;
 	private int[] frontBuffer;

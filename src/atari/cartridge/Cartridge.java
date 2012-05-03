@@ -30,12 +30,12 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 		return super.clone();
 	}
 
-	public VideoStandard videoStandard() {
-		return videoStandard;
+	public VideoStandard forcedVideoStandard() {
+		return forcedVideoStandard;
 	}
 	
 	public void forceVideoStandard(VideoStandard videoStandard) {
-		this.videoStandard = videoStandard;
+		this.forcedVideoStandard = videoStandard;
 	}
 	
 	protected int maskAddress(int address) {
@@ -53,7 +53,7 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	
 	protected byte[] bytes;
 	
-	private VideoStandard videoStandard = VideoStandard.NTSC;
+	private VideoStandard forcedVideoStandard = null;
 
 	private static final long serialVersionUID = 1L;
 

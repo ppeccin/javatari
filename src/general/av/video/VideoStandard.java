@@ -18,6 +18,11 @@ public class VideoStandard implements Serializable {
 		return this.name.equals(((VideoStandard)obj).name);
 	}
 
+	@Override
+	public String toString() {
+		return this.name;
+	}
+
 	public final String name;
 	public final int width;
 	public final int height;

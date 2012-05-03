@@ -67,7 +67,7 @@ public class ServerConsole extends Console implements ClockDriven {
 	public synchronized void clockPulse() {
 		List<ControlChange> controlChanges = ((ServerConsoleControlsSocketAdapter) controlsSocket).commitAndGetChangesToSend();
 		if (powerOn) tia.clockPulse();
-		if (remoteTransmitter.isClientConnected()) {
+		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
 			ServerUpdate update = new ServerUpdate();
 			if (!controlChanges.isEmpty()) update.controlChanges = controlChanges;
 			update.isClockPulse = powerOn;

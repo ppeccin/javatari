@@ -19,6 +19,7 @@ public class ROL extends Instruction {
 	public int fetch() {
 		switch (type) {
 			case ACC:
+				ea = -1;
 				return 2;
 			case Z_PAGE:
 				ea = cpu.fetchZeroPageAddress(); return 5;

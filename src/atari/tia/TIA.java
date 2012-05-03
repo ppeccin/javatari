@@ -13,25 +13,26 @@ import java.util.Arrays;
 import java.util.Map;
 
 import parameters.Parameters;
+import utils.Array2DCopy;
+import atari.console.Console;
 import atari.controls.ConsoleControls;
 import atari.controls.ConsoleControlsInput;
 import atari.pia.PIA;
 import atari.tia.audio.AudioGenerator;
 import atari.tia.audio.AudioMonoGenerator;
-import atari.tia.video.NTSCPallete;
-import atari.tia.video.PALPallete;
+import atari.tia.video.NTSCPalette;
+import atari.tia.video.PALPalette;
 import atari.tia.video.VideoGenerator;
 
 @SuppressWarnings("unused")
 public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
-	public TIA(M6502 cpu, PIA pia, VideoStandard videoStandard) {
+	public TIA(Console console, M6502 cpu, PIA pia) {
+		this.console = console;
 		this.cpu = cpu;
 		this.pia = pia;
 		videoOutput = new VideoGenerator();
 		audioOutput = new AudioMonoGenerator();
-		videoStandard(videoStandard);
-		powerOn();
 	}
 
 	public VideoSignal videoOutput() {
@@ -44,7 +45,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public void videoStandard(VideoStandard standard) {
 		videoOutput.standard = standard;
-		pallete = standard.equals(VideoStandard.NTSC) ? NTSCPallete.getPallete() : PALPallete.getPallete();
+		palette = standard.equals(VideoStandard.NTSC) ? NTSCPalette.getPalette() : PALPalette.getPalette();
 	}
 	
 	public double desiredClockForVideoStandard() {
@@ -71,7 +72,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	@Override
 	public void clockPulse() {
-		if (!debugHook()) return;
+		if (!debugPauseHook()) return;
 		boolean videoOutputVSynched = false;	
 		do {
 			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
@@ -101,10 +102,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				}
 				objectsTriggerScanCounters();
 				if (!repeatLastLine) {
-					if (vBlankOn)
-						linePixels[clock] = vSyncOn ? vSyncColor : vBlankColor;
-					else					
-						setPixelValue();
+					if (vBlankOn) linePixels[clock] = vSyncOn ? vSyncColor : vBlankColor;
+					else setPixelValue();
 				}
 				objectsIncrementCounters();
 			}
@@ -114,8 +113,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			cpu.clockPulse();
 			// End of scan line
 			// Handle Paddles capacitor charging
-			if (!paddleCapacitorsGrounded && paddle0Position != -1)
-				chargePaddleCapacitors();
+			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
@@ -124,14 +122,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
 			audioOutput.sendGeneratedSamplesToMonitor();
-			if (SYNC_WITH_AUDIO_MONITOR)
-				audioOutput.monitor.synchOutput();					// If needed, synch audio output after v-sync (each frame)
-			if (SYNC_WITH_VIDEO_MONITOR)
-				videoOutput.monitor.synchOutput();					// If needed, synch video output
+			// If needed, synch audio output after v-sync (each frame)
+			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor.synchOutput();
+			// If needed, synch video output
+			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor.synchOutput();
 		}
 	}
 
-	private boolean debugHook() {
+	private boolean debugPauseHook() {
 		if (!debugPause) return true;
 		if (debugPauseMoreFrames <= 0) return false;
 		debugPauseMoreFrames--;
@@ -325,10 +323,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void objectsTriggerScanCounters() {
 		switch (player0Counter) {					// Sets the delay countdown to actually start the scan of each copy
 			case 156:
-				if (player0RecentResetHit)
-					player0RecentResetHit = false;
-				else
-					player0ScanStartCountdown = player0ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock 
+				if (player0RecentResetHit) player0RecentResetHit = false;
+				else player0ScanStartCountdown = player0ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock 
 				break;
 			case 12:
 				if (player0CloseCopy) player0ScanStartCountdown = 5;
@@ -347,10 +343,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			}
 		switch (player1Counter) {					// Sets the delay countdown to actually start the scan of each copy
 			case 156:
-				if (player1RecentResetHit)
-					player1RecentResetHit = false;
-				else
-					player1ScanStartCountdown = player1ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock
+				if (player1RecentResetHit) player1RecentResetHit = false;
+				else player1ScanStartCountdown = player1ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock
 				break;
 			case 12:
 				if (player1CloseCopy) player1ScanStartCountdown = 5;
@@ -503,23 +497,22 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void playerDelaySpriteChange(int player, int sprite) {
+		observableChange();
+		if (debug) debugPixel(player == 0 ? DEBUG_P0_GR_COLOR : DEBUG_P1_GR_COLOR);
 		if (playersDelayedSpriteChangesCount >= PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT) { 
 			debugInfo(">>> Max player delayed changes reached: " + PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT); 
-			playersPerformDelayedSpriteChanges();
+			return;
 		}	
-		observableChange();
 		playersDelayedSpriteChanges[playersDelayedSpriteChangesCount][0] = clock;
 		playersDelayedSpriteChanges[playersDelayedSpriteChangesCount][1] = player;
 		playersDelayedSpriteChanges[playersDelayedSpriteChangesCount][2] = sprite;
 		playersDelayedSpriteChangesCount++;
-		if (debug) debugPixel(player == 0 ? DEBUG_P0_GR_COLOR : DEBUG_P1_GR_COLOR);
 	}
 
 	private void playersPerformDelayedSpriteChanges() {
-		if (playersDelayedSpriteChangesCount == 0) return;
+		if (playersDelayedSpriteChangesCount == 0 || playersDelayedSpriteChanges[0][0] == clock) return;
 		for (int i = 0; i < playersDelayedSpriteChangesCount; i++) {
 			int[] change = playersDelayedSpriteChanges[i];
-			if (change[0] == clock) return;
 			switch (change[1]) {
 				case 0: 
 					player0DelayedSprite = change[2];
@@ -686,18 +679,22 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		pia.debug = debug;
 		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
 		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
-		if (debug) {
-			player0Color = DEBUG_P0_COLOR;
-			player1Color = DEBUG_P1_COLOR;
-			missile0Color = DEBUG_M0_COLOR;
-			missile1Color = DEBUG_M1_COLOR;
-			ballColor = DEBUG_BL_COLOR;
-			playfieldColor = DEBUG_PF_COLOR;
-			playfieldBackground = DEBUG_BK_COLOR;
-		} else {
+		if (debug)
+			debugSetColors();
+		else {
 			Arrays.fill(linePixels, hBlankColor);
 			observableChange();
 		}
+	}
+
+	private void debugSetColors() {
+		player0Color = DEBUG_P0_COLOR;
+		player1Color = DEBUG_P1_COLOR;
+		missile0Color = DEBUG_M0_COLOR;
+		missile1Color = DEBUG_M1_COLOR;
+		ballColor = DEBUG_BL_COLOR;
+		playfieldColor = DEBUG_PF_COLOR;
+		playfieldBackground = DEBUG_BK_COLOR;
 	}
 
 	private void debugInfo(String str) {
@@ -782,10 +779,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x03:	RSYNC  = i; /* clock = 0; */ return;
 			case 0x04:	NUSIZ0 = i; player0SetShape(i); return;
 			case 0x05:	NUSIZ1 = i; player1SetShape(i); return;
-			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = pallete[i]; return;
-			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = pallete[i]; return;
-			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = pallete[i]; return;
-			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = pallete[i]; return;
+			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return;
+			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return;
+			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
+			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return;
 			case 0x0A:	CTRLPF = i; playfieldAndBallSetShape(i); return;
 			case 0x0B:	REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return;
 			case 0x0C:	REFP1  = i; observableChange(); player1Reflected = (i & 0x08) != 0; return;
@@ -820,7 +817,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x29:	RESMP1 = i; missile1SetResetToPlayer(i); return;
 			case 0x2A:	HMOVE  = i; hitHMOVE();	return;						   	
 			case 0x2B:	HMCLR  = i; HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return;
-			case 0x2C:	CXCLR  = i; CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return;
+			case 0x2C:	CXCLR  = i; observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return;
 			case 0x2D:	// Register DOES NOT EXIST
 			case 0x2E:	// Register DOES NOT EXIST
 			case 0x2F:	// Register DOES NOT EXIST
@@ -885,12 +882,15 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public TIAState saveState() {
 		TIAState state = new TIAState();
-		state.debug                       	   =  debug;                      
-		state.debugLevel                       =  debugLevel;                      
-		state.debugNoCollisions           	   =  debugNoCollisions;          
+		state.debug                       	   =  debug;
+		state.debugLevel                       =  debugLevel;
+		state.debugNoCollisions           	   =  debugNoCollisions;
+		state.linePixels					   =  linePixels.clone();
+		state.lastObservableChangeClock		   =  lastObservableChangeClock;
+		state.repeatLastLine 				   =  repeatLastLine;
 		state.vSyncOn                     	   =  vSyncOn;                    
 		state.vBlankOn                    	   =  vBlankOn;
-		state.playfieldPattern            	   =  playfieldPattern;           
+		state.playfieldPattern            	   =  playfieldPattern.clone();
 		state.playfieldPatternInvalid     	   =  playfieldPatternInvalid;    
 		state.playfieldCurrentPixel       	   =  playfieldCurrentPixel;      
 		state.playfieldColor              	   =  playfieldColor;             
@@ -900,8 +900,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		state.playfieldPriority           	   =  playfieldPriority;          
 		state.player0ActiveSprite         	   =  player0ActiveSprite;        
 		state.player0DelayedSprite        	   =  player0DelayedSprite;
-		state.player0SpriteChangeClock    	   =  player0SpriteChangeClock;   
-		state.player0ScheduledSprite      	   =  player0ScheduledSprite;     
 		state.player0Color                	   =  player0Color;               
 		state.player0RecentResetHit       	   =  player0RecentResetHit;      
 		state.player0Counter	          	   =  player0Counter;	         
@@ -916,8 +914,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		state.player0Reflected            	   =  player0Reflected;
 		state.player1ActiveSprite         	   =  player1ActiveSprite;        
 		state.player1DelayedSprite        	   =  player1DelayedSprite;
-		state.player1SpriteChangeClock    	   =  player1SpriteChangeClock;   
-		state.player1ScheduledSprite      	   =  player1ScheduledSprite;     
 		state.player1Color                	   =  player1Color;               
 		state.player1RecentResetHit       	   =  player1RecentResetHit;      
 		state.player1Counter              	   =  player1Counter;             
@@ -957,13 +953,15 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		state.playfieldDelayedChangeClock	   =  playfieldDelayedChangeClock;
 		state.playfieldDelayedChangePart	   =  playfieldDelayedChangePart;
 		state.playfieldDelayedChangePattern	   =  playfieldDelayedChangePattern;
-		state.playersDelayedSpriteChanges      =  playersDelayedSpriteChanges;     
+		state.playersDelayedSpriteChanges      =  Array2DCopy.copy(playersDelayedSpriteChanges);
 		state.playersDelayedSpriteChangesCount =  playersDelayedSpriteChangesCount;
 		state.controlsButtonsLatched      	   =  controlsButtonsLatched;     
 		state.controlsJOY0ButtonPressed   	   =  controlsJOY0ButtonPressed;  
 		state.controlsJOY1ButtonPressed   	   =  controlsJOY1ButtonPressed;  
 		state.paddle0Position				   =  paddle0Position;
+		state.paddle0CapacitorCharge 		   =  paddle0CapacitorCharge;
 		state.paddle1Position				   =  paddle1Position;
+		state.paddle1CapacitorCharge 		   =  paddle1CapacitorCharge;
 		state.PF0						  	   =  PF0;	  
 		state.PF1						  	   =  PF1;
 		state.PF2						  	   =  PF2;  		
@@ -996,10 +994,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	public void loadState(TIAState state) {
-		observableChange();
-		debug                       	 =  state.debug;                       
-		debugLevel                     	 =  state.debugLevel;                       
-		debugNoCollisions           	 =  state.debugNoCollisions;           
+//		debug                       	 =  state.debug;				// Keep the current debug modes
+//		debugLevel                     	 =  state.debugLevel;
+//		debugNoCollisions           	 =  state.debugNoCollisions;
+		linePixels						 =  state.linePixels;
+		lastObservableChangeClock		 =	state.lastObservableChangeClock;
+		repeatLastLine 					 =	state.repeatLastLine;
 		vSyncOn                     	 =  state.vSyncOn;                     
 		vBlankOn                    	 =  state.vBlankOn;
 		playfieldPattern            	 =  state.playfieldPattern;            
@@ -1012,8 +1012,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		playfieldPriority           	 =  state.playfieldPriority;           
 		player0ActiveSprite         	 =  state.player0ActiveSprite;         
 		player0DelayedSprite        	 =  state.player0DelayedSprite;
-		player0SpriteChangeClock    	 =  state.player0SpriteChangeClock;    
-		player0ScheduledSprite      	 =  state.player0ScheduledSprite;      
 		player0Color                	 =  state.player0Color;                
 		player0RecentResetHit       	 =  state.player0RecentResetHit;       
 		player0Counter	            	 =  state.player0Counter;	          
@@ -1028,8 +1026,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		player0Reflected            	 =  state.player0Reflected;
 		player1ActiveSprite         	 =  state.player1ActiveSprite;         
 		player1DelayedSprite        	 =  state.player1DelayedSprite;
-		player1SpriteChangeClock    	 =  state.player1SpriteChangeClock;    
-		player1ScheduledSprite      	 =  state.player1ScheduledSprite;      
 		player1Color                	 =  state.player1Color;                
 		player1RecentResetHit       	 =  state.player1RecentResetHit;       
 		player1Counter              	 =  state.player1Counter;              
@@ -1075,7 +1071,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		controlsJOY0ButtonPressed		 =  state.controlsJOY0ButtonPressed;   
 		controlsJOY1ButtonPressed		 =  state.controlsJOY1ButtonPressed;
 		paddle0Position					 =  state.paddle0Position;
+		paddle0CapacitorCharge 		     =  state.paddle0CapacitorCharge;
 		paddle1Position					 =  state.paddle1Position;
+		paddle1CapacitorCharge 		     =  state.paddle1CapacitorCharge;
 		PF0								 =  state.PF0;
 		PF1								 =  state.PF1;
 		PF2								 =  state.PF2;
@@ -1098,12 +1096,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		CXM1FB							 =  state.CXM1FB;
 		CXBLPF							 =  state.CXBLPF;
 		CXPPMM							 =  state.CXPPMM;
-		// INPT0 						 =  state.INPT0;		// Do not load controls state 
-		// INPT1 						 =  state.INPT1; 
-		// INPT2 						 =  state.INPT2; 
-		// INPT3 						 =  state.INPT3; 
-		// INPT4 						 =  state.INPT4; 
-		// INPT5 						 =  state.INPT5; 
+		// INPT0 					 	 =	state.INPT0;	// Do not load controls state 
+		// INPT1 					 	 =	state.INPT1;
+		// INPT2 					 	 =	state.INPT2;
+		// INPT3 					 	 =	state.INPT3;
+		// INPT4 						 =	state.INPT4;
+		// INPT5 					 	 =	state.INPT5;
+		if (debug) debugSetColors();						// IF debug is on, ensures debug colors are used
 	}
 	
 	
@@ -1114,20 +1113,20 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private int clock = 0;
 
-	private final int linePixels[] = new int[LINE_WIDTH];
-	private int lastObservableChangeClock = -1;
-	private boolean repeatLastLine;
-	
+	private final Console console;
 	private final M6502 cpu;
 	private final PIA pia;
 
 	private boolean powerOn = false;
 	private final int debugPixels[] = new int[LINE_WIDTH];
 	
-	private int[] pallete;
+	private int[] palette;
 	private int vBlankColor = 0xff000000;
 	private int vSyncColor = 0xffdddddd;
 	private int hBlankColor = 0xff000000;
+
+	private boolean debugPause = false;
+	private int debugPauseMoreFrames = 0;
 	
 
 	// State Variables ----------------------------------------------
@@ -1135,8 +1134,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private boolean debug = false;
 	private int debugLevel = 0;
 	private boolean debugNoCollisions = false;
-	private boolean debugPause = false;
-	private int debugPauseMoreFrames = 0;
+
+	private int[] linePixels = new int[LINE_WIDTH];
+	private int lastObservableChangeClock = -1;
+	private boolean repeatLastLine;
 
 	private boolean vSyncOn = false;
 	private boolean vBlankOn = false;
@@ -1157,8 +1158,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private int player0ActiveSprite = 0;
 	private int player0DelayedSprite = 0;
-	private int player0SpriteChangeClock = -1;
-	private int player0ScheduledSprite = 0;
 	private int player0Color = 0xff000000;
 	private boolean player0RecentResetHit = false;
 	private int player0Counter = 0;							// Position!	
@@ -1174,8 +1173,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private int player1ActiveSprite = 0;
 	private int player1DelayedSprite = 0;
-	private int player1SpriteChangeClock = -1;
-	private int player1ScheduledSprite = 0;
 	private int player1Color = 0xff000000;
 	private boolean player1RecentResetHit = false;
 	private int player1Counter = 0;
@@ -1340,11 +1337,15 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public static final double DEFAUL_CLOCK_NTSC = Parameters.TIA_DEFAULT_CLOCK_NTSC;		
 	public static final double DEFAUL_CLOCK_PAL = Parameters.TIA_DEFAULT_CLOCK_PAL;		
 
+
 	// Used to save/load states
 	public static class TIAState implements Serializable {
 		boolean debug;
 		int debugLevel;
 		boolean debugNoCollisions;
+		int[] linePixels;
+		int lastObservableChangeClock;
+		boolean repeatLastLine;
 		boolean vSyncOn;
 		boolean vBlankOn;
 		boolean[] playfieldPattern;
@@ -1357,8 +1358,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		boolean playfieldPriority;
 		int player0ActiveSprite;
 		int player0DelayedSprite;
-		int player0SpriteChangeClock;
-		int player0ScheduledSprite;
 		int player0Color;
 		boolean player0RecentResetHit;
 		int player0Counter;	
@@ -1373,8 +1372,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		boolean player0Reflected;
 		int player1ActiveSprite;
 		int player1DelayedSprite;
-		int player1SpriteChangeClock;
-		int player1ScheduledSprite;
 		int player1Color;
 		boolean player1RecentResetHit;
 		int player1Counter;
@@ -1420,7 +1417,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		boolean controlsJOY0ButtonPressed;
 		boolean controlsJOY1ButtonPressed;
 		int paddle0Position;
+		int paddle0CapacitorCharge;
 		int paddle1Position;
+		int paddle1CapacitorCharge;
 		int PF0;
 		int PF1;
 		int PF2;
@@ -1450,7 +1449,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int INPT4; 
 		int INPT5; 
 	
-		public static final long serialVersionUID = 1L;
+		public static final long serialVersionUID = 2L;
 	}
 
 }

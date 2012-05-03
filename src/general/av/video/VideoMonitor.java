@@ -9,5 +9,6 @@ public interface VideoMonitor {
 	public void synchOutput();
 
 	public int currentLine();
+	public VideoStandard videoStandardDetected();
 	
 }

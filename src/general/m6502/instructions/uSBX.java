@@ -18,14 +18,6 @@ public class uSBX extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-//		byte newX = (byte) (cpu.A & cpu.X);
-//		int uVal = cpu.memory.unsignedByte(ea); 
-//		cpu.X = (byte) (newX - uVal);
-//
-//		cpu.CARRY = newX >= uVal;
-//		cpu.ZERO = newX == uVal;
-//		cpu.NEGATIVE = ((byte)(newX - uVal)) < 0;
-	
 		byte b = (byte) (cpu.A & cpu.X);
 		int uB = M6502.toUunsignedByte(b);
 		int uVal = cpu.memory.unsignedByte(ea); 

@@ -237,11 +237,12 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 		keyCodeMap.put(KEY_RESET,        Control.RESET); 
 		keyCodeMap.put(KEY_FAST_SPEED,   Control.FAST_SPEED); 
 		
-		keyAltCodeMap.put(KEY_PAUSE,         Control.PAUSE); 
-		keyAltCodeMap.put(KEY_FRAME,         Control.FRAME); 
-		keyAltCodeMap.put(KEY_TRACE,         Control.TRACE); 
-		keyAltCodeMap.put(KEY_DEBUG,         Control.DEBUG); 
-		keyAltCodeMap.put(KEY_DEBUG_NO_COL,  Control.DEBUG_NO_COLLISIONS); 
+		keyAltCodeMap.put(KEY_PAUSE,          Control.PAUSE);
+		keyAltCodeMap.put(KEY_FRAME,          Control.FRAME);
+		keyAltCodeMap.put(KEY_TRACE,          Control.TRACE);
+		keyAltCodeMap.put(KEY_DEBUG,          Control.DEBUG);
+		keyAltCodeMap.put(KEY_DEBUG_NO_COL,   Control.DEBUG_NO_COLLISIONS);
+		keyAltCodeMap.put(KEY_VIDEO_STANDARD, Control.VIDEO_STANDARD);
 	
 		keyControlCodeMap.put(KEY_STATE_0,   Control.SAVE_STATE_0); 
 		keyControlCodeMap.put(KEY_STATE_1,   Control.SAVE_STATE_1); 
@@ -323,6 +324,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	private static final int KEY_FAST_SPEED     = KeyEvent.VK_TAB;
 	private static final int KEY_DEBUG          = KeyEvent.VK_D;
 	private static final int KEY_DEBUG_NO_COL   = KeyEvent.VK_C;
+	private static final int KEY_VIDEO_STANDARD = KeyEvent.VK_V;
 	
 	private static final int KEY_STATE_0        = KeyEvent.VK_QUOTE;
 	private static final int KEY_STATE_1        = KeyEvent.VK_1;

@@ -19,7 +19,7 @@ public class uKIL extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		cpu.debug(">>> KIL (HLT)");
+		cpu.debug(">>> Undocumented opcode KIL (HLT)");
 	}
 
 	

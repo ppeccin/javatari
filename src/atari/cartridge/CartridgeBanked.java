@@ -37,7 +37,10 @@ public abstract class CartridgeBanked extends Cartridge {
 		int addr = maskAddress(address);
 		// Check for Extra RAM writes and then turn superChip mode on
 		if (addr <= 0x7f && (superChipMode || superChipAutoDetect)) {
-			if (!superChipMode) superChipMode = true;	// Turn SuperChip mode from now on
+			if (!superChipMode) {
+				superChipMode = true;
+				System.out.println("SC mode ON");
+			}
 			extraRAM[addr] = b;
 		}
 	}

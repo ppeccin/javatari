@@ -10,10 +10,14 @@ import utils.Randomizer;
 
 public final class RAM implements BUS16Bits {
 
-	public RAM() {
-		init();
+	public void powerOn() {
+		// RAMs come totally random at power on!
+		Randomizer.instance.nextBytes(bytes);
 	}
-	
+
+	public void powerOff() {
+	}
+
 	public byte readByte(int address) {		
 		return bytes[(address & ADDRESS_MASK)];	
 	}
@@ -24,11 +28,6 @@ public final class RAM implements BUS16Bits {
 	
 	public void writeByte(int address, byte b) {	
 		bytes[(address & ADDRESS_MASK)] = b;		
-	}
-
-	private void init() {
-		// RAMs come totally random at power on!
-		Randomizer.instance.nextBytes(bytes);
 	}
 
 	public void dump() {
@@ -60,7 +59,7 @@ public final class RAM implements BUS16Bits {
 	// Used to save/load states
 	public static class RAMState implements Serializable {
 		byte[] bytes;
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 2L;
 	}
 
 }

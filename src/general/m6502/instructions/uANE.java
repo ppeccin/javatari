@@ -20,7 +20,7 @@ public class uANE extends UndocumentedInstruction {
 	public void execute() {
 		cpu.memory.readByte(ea);
 		// Exact operation unknown. Lets do nothing!
-		cpu.debug(">>> ANE (XAA)");
+		cpu.debug(">>> Undocumented opcode ANE (XAA)");
 	}
 
 	private int ea;

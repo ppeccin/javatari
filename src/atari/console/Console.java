@@ -4,6 +4,7 @@ package atari.console;
 
 import general.av.audio.AudioSignal;
 import general.av.video.VideoSignal;
+import general.av.video.VideoStandard;
 import general.board.Clock;
 import general.m6502.M6502;
 
@@ -32,9 +33,10 @@ public class Console {
 	}
 
 	public Console(Cartridge cartridge) {
-		mainComponentsCreate(cartridge);
+		mainComponentsCreate();
 		socketsCreate();
 		mainClockCreate();
+		videoStandardAuto();
 		cartridge(cartridge);
 	}
 
@@ -60,6 +62,7 @@ public class Console {
 	
 	public void powerOn() {
 		if (powerOn) powerOff();
+		ram.powerOn();
 		cpu.powerOn();
 		pia.powerOn();
 		tia.powerOn();
@@ -71,7 +74,9 @@ public class Console {
 	public void powerOff() {
 		mainClockPause();
 		tia.powerOff();
-		bus.ram(ram = new RAM());  // Sets a new random memory !!!						
+		pia.powerOff();
+		cpu.powerOff();
+		ram.powerOff();
 		powerOn = false;
 		controlsSocket.controlsStatesRedefined();
 	}
@@ -80,6 +85,25 @@ public class Console {
 		tia.showOSD(message);
 	}
 	
+	public VideoStandard videoStandard() {
+		return videoStandard;
+	}
+		
+	public void videoStandard(VideoStandard videoStandard) {
+		if (videoStandard != this.videoStandard) {
+			this.videoStandard = videoStandard;
+			tia.videoStandard(this.videoStandard);
+			mainClockAdjustToNormal();
+		}
+		videoStandardShowOSD();
+	}
+
+	public void videoStandardDetected(VideoStandard detectedVideoStandard) {
+		System.out.println("VideoStandard detected: " + detectedVideoStandard);
+		if (!videoStandardAuto) return;
+		videoStandard(detectedVideoStandard);
+	}
+
 	// For debug purposes
 	public Clock mainClock() {
 		return mainClock;
@@ -91,16 +115,31 @@ public class Console {
 
 	protected void cartridge(Cartridge cartridge) {
 		bus.cartridge(cartridge);
-		tia.videoStandard(cartridge.videoStandard());
-		mainClockAdjustToNormal();
+		if (cartridge.forcedVideoStandard() != null) 
+			videoStandardForced(cartridge.forcedVideoStandard());
 	}
 
-	protected void mainComponentsCreate(Cartridge cartridge) {
+	protected void videoStandardAuto() {
+		videoStandardAuto = true;
+		if (videoStandard == null) videoStandard(VideoStandard.NTSC);
+		else showOSD("AUTO");
+	}
+
+	protected void videoStandardForced(VideoStandard forcedVideoStandard) {
+		videoStandardAuto = false;
+		videoStandard(forcedVideoStandard);
+	}
+
+	public void videoStandardShowOSD() {
+		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard);
+	}
+
+	protected void mainComponentsCreate() {
 		cpu = new M6502();
 		pia = new PIA(this);
 		ram = new RAM();
-		tia = new TIA(cpu, pia, cartridge.videoStandard());
-		bus = new BUS(tia, pia, ram, cartridge);
+		tia = new TIA(this, cpu, pia);
+		bus = new BUS(tia, pia, ram);
 		cpu.connectBus(bus);
 	}
 
@@ -143,8 +182,7 @@ public class Console {
 	}
 
 	protected ConsoleState saveState() {
-		ConsoleState state = new ConsoleState(tia.saveState(), pia.saveState(), ram.saveState(), cpu.saveState(), cartridge());
-		return state;
+		return new ConsoleState(tia.saveState(), pia.saveState(), ram.saveState(), cpu.saveState(), cartridge());
 	}
 
 	public boolean powerOn = false;
@@ -154,6 +192,8 @@ public class Console {
 	protected TIA tia;
 	protected PIA pia;
 	protected RAM ram;
+	protected VideoStandard videoStandard;
+	protected boolean videoStandardAuto = true;
 	
 	protected ConsoleControlsSocket controlsSocket;
 	protected CartridgeSocketAdapter cartridgeSocket;
@@ -192,6 +232,10 @@ public class Console {
 				case LOAD_STATE_6: case LOAD_STATE_7: case LOAD_STATE_8: case LOAD_STATE_9: case LOAD_STATE_10: case LOAD_STATE_11: case LOAD_STATE_12:
 					saveStateSocket.loadState(control.slot);
 					break;
+				case VIDEO_STANDARD:
+					if (videoStandardAuto) videoStandardForced(VideoStandard.NTSC);
+					else if (videoStandard() == VideoStandard.NTSC) videoStandardForced(VideoStandard.PAL); 
+						else videoStandardAuto();
 			}
 		}
 		@Override

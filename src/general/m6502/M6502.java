@@ -94,7 +94,6 @@ public final class M6502 implements ClockDriven {
 
 	public void connectBus(BUS16Bits bus) {
 		this.memory = bus;
-		powerOn();
 	}
 	
 	public void reset() {
@@ -123,7 +122,7 @@ public final class M6502 implements ClockDriven {
 		cyclesToExecute = instructionToExecute.fetch() - 1;					// One cycle was just executed already!
 	}
 
-	public void powerOn() {	// Initializes the CPU as if it were just powered on. Does NOT perform a RESET
+	public void powerOn() {	// Initializes the CPU as if it were just powered on
 		PC = 0;
 		SP = STACK_INITIAL_SP;
 		A = X = Y = 0;
@@ -133,6 +132,9 @@ public final class M6502 implements ClockDriven {
 		reset();
 	}
 	
+	public void powerOff() {
+	}
+
 	public char fetchImmediateAddress() {
 		return PC++;
 	}
@@ -605,7 +607,7 @@ public final class M6502 implements ClockDriven {
 		Instruction instructionToExecute;
 		int cyclesToExecute;
 
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 2L;
 	}
 
 }

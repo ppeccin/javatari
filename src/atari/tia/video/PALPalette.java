@@ -2,9 +2,9 @@
 
 package atari.tia.video;
 
-public class PALPallete {
+public class PALPalette {
 
-	public static int[] getPallete() {
+	public static int[] getPalette() {
 		int[] pal = new int[256];
 		for (int i = 0; i < baseRGB.length; i++) {
 			pal[i*2] = pal[i*2+1] = (baseRGB[i] | 0xff000000);		// Adds 100% alfa for ARGB

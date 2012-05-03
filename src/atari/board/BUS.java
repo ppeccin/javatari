@@ -10,8 +10,7 @@ import atari.tia.TIA;
 
 public final class BUS implements BUS16Bits {
 
-	public BUS(TIA tia, PIA pia, RAM ram, Cartridge cart) {
-		this.cartridge = cart;
+	public BUS(TIA tia, PIA pia, RAM ram) {
 		this.ram = ram;
 		this.tia = tia;
 		this.pia = pia;
@@ -66,10 +65,6 @@ public final class BUS implements BUS16Bits {
 		this.cartridge = cartridge;
 	}
 
-	public void ram(RAM ram) {
-		this.ram = ram;
-	}
-	
 	private int selectDevice(int address) {
 		if ((address & CART_MASK) == CART_SEL)
 			return CART;
@@ -83,7 +78,7 @@ public final class BUS implements BUS16Bits {
 	}
 
 	public Cartridge cartridge;
-	public RAM ram;
+	public final RAM ram;
 	public final TIA tia;
 	public final PIA pia;
 	

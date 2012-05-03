@@ -18,10 +18,12 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public PIA(Console console) {
 		this.console = console;
-		powerOn();
 	}
 
 	public void powerOn() {
+	}
+
+	public void powerOff() {
 	}
 
 	@Override
@@ -74,8 +76,8 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x04:									
 			case 0x06:	readFromINTIM(); return (byte) INTIM;								
 			case 0x05:									
-			case 0x07:	return (byte) INSTAT;						// Undocumented
-			default:	debugInfo(String.format("Invalid TIA read register address: %04x", address)); return 0;
+			case 0x07:  return (byte) INSTAT;						// Undocumented
+			default:	debugInfo(String.format("Invalid PIA read register address: %04x", address)); return 0;
 		}
 	}
 
@@ -91,12 +93,12 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x00:	/* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x\n", i)); return;	// Output to controllers not supported
 			case 0x01:	/* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x\n", i)); return;	// SWACNT configuration not supported
 			case 0x02:	swchbWrite(i); return;																	
-			case 0x03:	SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x\n", i)); return;	
+			case 0x03:	SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x\n", i)); return;
 			case 0x04:	TIM1T  = i; setTimerInterval(i, 1); return;
 			case 0x05:	TIM8T  = i; setTimerInterval(i, 8); return;
 			case 0x06:	TIM64T = i; setTimerInterval(i, 64); return;
 			case 0x07:	T1024T = i; setTimerInterval(i, 1024); return;
-			default:	debugInfo(String.format("Invalid PIA write register address: %04x value %d", address, b)); 
+			default:	debugInfo(String.format("Invalid PIA write register address: %04x value %d\n", address, b));
 		}
 	}
 
@@ -163,11 +165,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 	
 	public void loadState(PIAState state) {
-		debug                = state.debug;
+		// debug			 = state.debug;			// Keeps the current debug modes
 		timerCount           = state.timerCount;
 		currentTimerInterval = state.currentTimerInterval;
 		lastSetTimerInterval = state.lastSetTimerInterval;
-		// SWCHA             = state.SWCHA;					// Do not load controls state 
+		// SWCHA           	 = state.SWCHA;			// Do not load controls state
 		SWACNT               = state.SWACNT;
 		SWCHB                = state.SWCHB;
 		SWBCNT               = state.SWBCNT;
@@ -211,6 +213,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int READ_ADDRESS_MASK = 0x0007;
 	private static final int WRITE_ADDRESS_MASK = 0x0007;
 	
+
 	// Used to save/load states
 	public static class PIAState implements Serializable {
 		boolean debug;
@@ -228,7 +231,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int TIM64T;     
 		int T1024T;
 		
-		static final long serialVersionUID = 1L;
+		static final long serialVersionUID = 2L;
 	}
 
 }
