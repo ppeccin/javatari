@@ -35,11 +35,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		audioOutput = new AudioMonoGenerator();
 	}
 
-	public VideoSignal videoOutput() {
+	public VideoGenerator videoOutput() {	// VideoSignal
 		return videoOutput;
 	}
 
-	public AudioGenerator audioOutput() {
+	public AudioGenerator audioOutput() {	// AudioSignal
 		return audioOutput;
 	}
 
@@ -51,10 +51,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public double desiredClockForVideoStandard() {
 		if (FORCED_CLOCK != 0) return FORCED_CLOCK;
 		return videoOutput.standard().equals(VideoStandard.NTSC) ? DEFAUL_CLOCK_NTSC : DEFAUL_CLOCK_PAL;
-	}
-	
-	public void showOSD(String message) {
-		videoOutput.showOSD(message);
 	}
 	
 	public void powerOn() {
@@ -1448,7 +1444,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int INPT3; 
 		int INPT4; 
 		int INPT5; 
-	
+
 		public static final long serialVersionUID = 2L;
 	}
 

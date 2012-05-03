@@ -111,7 +111,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		cleanBackBuffer();
-		if (videoStandardDetected != null) videoStandardDetectionNewFrame(line);
+		if (videoStandardDetected == null) videoStandardDetectionNewFrame(line);
 		line = 0;
 		return true;
 	}
@@ -127,7 +127,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private boolean signalState(boolean state) {
 		if (state) {
 			adjustToVideoSignal();
-			// If signal was off before, start a bew VideoStandard detection
+			// If signal was off before, start a new VideoStandard detection
 			if (!signalOn) videoStandardDetectionReset();
 		}
 		signalOn = state;
@@ -165,6 +165,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 				videoStandardDetected = VideoStandard.PAL;
 			else
 				videoStandardDetected = VideoStandard.NTSC;
+			System.out.println("VideoStandard detected: " + videoStandardDetected);
 		}
 	}
 

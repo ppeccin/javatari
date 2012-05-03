@@ -82,7 +82,7 @@ public class Console {
 	}
 
 	public void showOSD(String message) {
-		tia.showOSD(message);
+		tia.videoOutput().showOSD(message);
 	}
 	
 	public VideoStandard videoStandard() {
@@ -99,7 +99,6 @@ public class Console {
 	}
 
 	public void videoStandardDetected(VideoStandard detectedVideoStandard) {
-		System.out.println("VideoStandard detected: " + detectedVideoStandard);
 		if (!videoStandardAuto) return;
 		videoStandard(detectedVideoStandard);
 	}
@@ -178,11 +177,19 @@ public class Console {
 		ram.loadState(state.ramState);
 		cpu.loadState(state.cpuState);
 		cartridge(state.cartridge);
+		videoStandard(state.videoStandard);
 		controlsSocket.controlsStatesRedefined();
 	}
 
 	protected ConsoleState saveState() {
-		return new ConsoleState(tia.saveState(), pia.saveState(), ram.saveState(), cpu.saveState(), cartridge());
+		return new ConsoleState(
+			tia.saveState(),
+			pia.saveState(),
+			ram.saveState(),
+			cpu.saveState(),
+			cartridge(),
+			videoStandard()
+		);
 	}
 
 	public boolean powerOn = false;

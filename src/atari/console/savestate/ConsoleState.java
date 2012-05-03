@@ -4,6 +4,7 @@ package atari.console.savestate;
 
 import java.io.Serializable;
 
+import general.av.video.VideoStandard;
 import general.m6502.M6502.M6502State;
 import atari.cartridge.Cartridge;
 import atari.pia.PIA.PIAState;
@@ -12,7 +13,7 @@ import atari.tia.TIA.TIAState;
 
 public class ConsoleState implements Serializable {
 
-	public ConsoleState(TIAState tia, PIAState pia, RAMState ram, M6502State cpu, Cartridge cartridge) {
+	public ConsoleState(TIAState tia, PIAState pia, RAMState ram, M6502State cpu, Cartridge cartridge, VideoStandard videoStandard) {
 		this.tiaState = tia;
 		this.piaState = pia;
 		this.ramState = ram;
@@ -20,6 +21,7 @@ public class ConsoleState implements Serializable {
 		try { 
 			this.cartridge = (Cartridge)cartridge.clone(); 
 		} catch (CloneNotSupportedException e) {}
+		this.videoStandard = videoStandard;
 	}
 
 	public TIAState tiaState;
@@ -27,7 +29,9 @@ public class ConsoleState implements Serializable {
 	public RAMState ramState;
 	public M6502State cpuState;
 	public Cartridge cartridge;
+	public VideoStandard videoStandard;
 
-	private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 2L;
 
 }

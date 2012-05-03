@@ -28,7 +28,7 @@ public interface ConsoleControls {
 		public boolean isStateControl() {
 			return slot >= 0;
 		}
-		public int slot;
+		public final int slot;
 	};
 	
 }
