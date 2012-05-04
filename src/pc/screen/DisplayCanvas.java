@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 public interface DisplayCanvas {
 	
 	public void canvasSize(Dimension size);
+	public void canvasCenter();
 	
 	public Dimension canvasEffectiveSize();
 	

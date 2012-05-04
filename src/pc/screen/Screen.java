@@ -36,6 +36,7 @@ import parameters.Parameters;
 import pc.AWTConsoleControls;
 import pc.FileCartridgeReader;
 import utils.GraphicsDeviceHelper;
+import utils.Terminator;
 import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
@@ -64,9 +65,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 			else 
 				vSynced = maxLineExceeded();
 			line++;
+			if (videoStandardDetected == null) videoStandardDetectionLines++;
 			if (vSynchSignal) {
-				if (--VSYNCDetectionCount == 0)
+				if (--VSYNCDetectionCount == 0) {
+					if (videoStandardDetected == null) videoStandardDetectionNewFrame();
 					vSynced = newFrame();
+				}
 			} else
 				VSYNCDetectionCount = VSYNC_DETECTION;
 		}
@@ -76,6 +80,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 	@Override
 	public VideoStandard videoStandardDetected() {
 		return videoStandardDetected;
+	}
+
+	@Override
+	public void videoStandardDetectionStart() {
+		videoStandardDetected = null;
+		videoStandardDetectionFrameCount = videoStandardDetectionTotalLinesCount = 0;
 	}
 
 	@Override
@@ -96,6 +106,21 @@ public class Screen implements ClockDriven, VideoMonitor {
 		osdFramesLeft = OSD_FRAMES;
 	}
 	
+	@Override
+	public void clockPulse() {
+		synchOutput();
+		// If in "On Demand" mode (fps < 0) then just wait for the next frame to interrupt the sleep, but no more than 2 frames
+		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
+	}
+
+	public void powerOn(){
+		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			fullScreen(false);
+			paintLogo();
+			clock.go();
+		}});
+	}
+
 	public void p1ControlsMode(boolean state) {
 		toolkitControls.p1ControlsMode(state);
 	}
@@ -111,7 +136,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		cleanBackBuffer();
-		if (videoStandardDetected == null) videoStandardDetectionNewFrame(line);
 		line = 0;
 		return true;
 	}
@@ -125,14 +149,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 	
 	private boolean signalState(boolean state) {
-		if (state) {
-			adjustToVideoSignal();
-			// If signal was off before, start a new VideoStandard detection
-			if (!signalOn) videoStandardDetectionReset();
-		}
 		signalOn = state;
-		// Paints the Logo if the signal is off
-		if (!signalOn) {
+		if (signalOn)
+			adjustToVideoSignal();
+		else {
+			// Paints the Logo if the signal is off
 			canvas.canvasClear();
 			paintLogo();
 		}
@@ -144,35 +165,20 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (debug > 0) Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
 	}
 
-	public void powerOn(){
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			fullScreen(false);
-			paintLogo();
-			clock.go();
-		}});
-	}
-
-	private void videoStandardDetectionReset() {
-		videoStandardDetected = null;
-		videoStandardDetectionFrameCount = videoStandardDetectionLinesCount = 0;
-	}
-
-	private void videoStandardDetectionNewFrame(int linesCount) {
-		if (videoStandardDetectionFrameCount > 20) return;
-		videoStandardDetectionLinesCount += linesCount;
-		if (++videoStandardDetectionFrameCount > 20) {
-			if (videoStandardDetectionLinesCount / videoStandardDetectionFrameCount > 275)
-				videoStandardDetected = VideoStandard.PAL;
-			else
-				videoStandardDetected = VideoStandard.NTSC;
-			System.out.println("VideoStandard detected: " + videoStandardDetected);
-		}
+	private void videoStandardDetectionNewFrame() {
+		int linesCount = videoStandardDetectionLines;
+		videoStandardDetectionLines = 0;
+		// Only consider frames with linesCount in range
+		if (linesCount < 250 || linesCount > 325) return;
+		videoStandardDetectionTotalLinesCount += linesCount;
+		if (++videoStandardDetectionFrameCount < 4) return;
+		int averageLPF = videoStandardDetectionTotalLinesCount / videoStandardDetectionFrameCount;
+		videoStandardDetected = averageLPF < 290 ? VideoStandard.NTSC : VideoStandard.PAL;
 	}
 
 	private void openWindow() {
 		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (dev.isFullScreenSupported())
-			dev.setFullScreenWindow(null);
+		if (dev.isFullScreenSupported()) dev.setFullScreenWindow(null);
 		fullWindow.setVisible(false);
 		window.setVisible(true);
 		fullScreen = false;
@@ -181,24 +187,25 @@ public class Screen implements ClockDriven, VideoMonitor {
 		float scX = canvas.getDefaultOpenningScaleX(displayWidth, displayHeight);
 		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
 		canvasUpdateSize();
+		canvasCenter();
 	}
 
 	private void openFullWindow() {
 		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (dev.isFullScreenSupported()) {
-			window.setVisible(false);
-			fullWindow.setVisible(true);
-			dev.setFullScreenWindow(fullWindow);
-			fullScreen = true;
-			canvas = fullWindow;
-			canvasSetRenderingMode();
-			float scX = canvas.getDefaultOpenningScaleX(displayWidth, displayHeight);
-			setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
-			canvasUpdateSize();
-		}
+		if (!dev.isFullScreenSupported()) return;
+		window.setVisible(false);
+		fullWindow.setVisible(true);
+		dev.setFullScreenWindow(fullWindow);
+		fullScreen = true;
+		canvas = fullWindow;
+		canvasSetRenderingMode();
+		float scX = canvas.getDefaultOpenningScaleX(displayWidth, displayHeight);
+		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
+		canvasUpdateSize();
+		canvasCenter();
 	}
 
-	public void canvasUpdateSize() {
+	private void canvasUpdateSize() {
 		synchronized (refreshMonitor) {
 			Dimension size = new Dimension((int) (displayWidth * displayScaleX), (int) (displayHeight * displayScaleY));
 			if (!fullScreen) {
@@ -207,6 +214,13 @@ public class Screen implements ClockDriven, VideoMonitor {
 			} else {
 				fullWindow.canvasSize(size);
 			}
+		}
+	}
+
+	private void canvasCenter() {
+		if (canvas == null) return;
+		synchronized (refreshMonitor) {
+			canvas.canvasCenter();
 		}
 	}
 
@@ -294,7 +308,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 			frameBuffer = new int[signalWidth * signalHeight];
 			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_RGB);
 			if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
-			// showOSD(videoStandard.name);
 		}}
 	}
 
@@ -391,20 +404,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 		}
 	}
 	
-	@Override
-	public void clockPulse() {
-		synchOutput();
-		// If in "On Demand" mode (fps < 0) then just wait for the next frame to interrupt the sleep, but no more than 2 frames
-		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
-	}
-
 	private void setDisplayDefaultSize() {
 		setDisplaySize(DEFAULT_WIDTH, DEFAULT_HEIGHT_PCT);
 		setDisplayOrigin(DEFAULT_ORIGIN_X, DEFAULT_ORIGIN_Y_PCT);
 		setDisplayScale(DEFAULT_SCALE_X, DEFAULT_SCALE_Y);
+		canvasCenter();
 	}
 
-	public void setDisplayOrigin(int x, double yPct) {
+	private void setDisplayOrigin(int x, double yPct) {
 		displayOriginX = x;
 		if (displayOriginX < 0) displayOriginX = 0;
 		else if (displayOriginX > signalWidth - displayWidth) displayOriginX = signalWidth - displayWidth;
@@ -414,7 +421,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		displayOriginY = (int) (displayOriginYPct / 100 * signalHeight);
 	}
 
-	public void setDisplaySize(int width, double heightPct) {
+	private void setDisplaySize(int width, double heightPct) {
 		displayWidth = width;
 		if (displayWidth < 10) displayWidth = 10;
 		else if (displayWidth > signalWidth) displayWidth = signalWidth;
@@ -426,7 +433,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvasUpdateSize();
 	}
 
-	public void setDisplayScale(float x, float y) {
+	private void setDisplayScale(float x, float y) {
 		displayScaleX = x;
 		if (displayScaleX < 1) displayScaleX = 1;
 		displayScaleY = y;
@@ -434,13 +441,13 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvasUpdateSize();
 	}
 
-	public void setDisplayScaleDefaultAspect(float y) {
+	private void setDisplayScaleDefaultAspect(float y) {
 		int scaleY = (int) y;
 		if (scaleY < 1) scaleY = 1;
 		setDisplayScale(scaleY * DEFAULT_SCALE_ASPECT_X, scaleY);
 	}
 
-	public void loadCartridge() {
+	private void loadCartridge() {
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileCartridgeReader.chooseFile();
 		if (cart != null) cartridgeSocket.insert(cart);
@@ -448,10 +455,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private void fullScreen(boolean state) {
 		synchronized (refreshMonitor) {
-			if (state)
-				openFullWindow();
-			else
-				openWindow();
+			if (state) openFullWindow();
+			else openWindow();
 		}
 	}
 
@@ -469,22 +474,15 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (!state) return;
 		switch(control) {
 			case LOAD_CARTRIDGE:
-				loadCartridge();
-				break;
+				loadCartridge(); break;
 			case FULL_SCREEN:
-				fullScreen(!fullScreen);
-				break;
+				fullScreen(!fullScreen); break;
 			case QUALITY:
 				qualityRendering = !qualityRendering;
 				showOSD(qualityRendering ? "Filter ON" : "Filter OFF");
 				break;
 			case SCANLINES:
-				scanlinesToggleMode();
-				break;
-			case VIDEO_STANDARD:
-//				signalStandard = signalStandard.equals(VideoStandard.NTSC) ? VideoStandard.PAL : VideoStandard.NTSC;
-//				adjustToVideoStandard(signalStandard);
-				break;
+				scanlinesToggleMode(); break;
 			case DEBUG:
 				debug++;
 				if (debug > 4) debug = 0;
@@ -494,57 +492,40 @@ public class Screen implements ClockDriven, VideoMonitor {
 					fullScreen(false);
 					break;
 				}
-				System.out.println("<<<<<<<<<<<<  EXIT   >>>>>>>>>>>>>");
-				System.exit(0);
-				break;
+				// Close program
+				Terminator.terminate();
 			case HELP:
-				window.consolePanelWindow.toggle();
-				break;
+				window.consolePanelWindow.toggle();	break;
 			case ORIGIN_X_MINUS:
-				setDisplayOrigin(displayOriginX + 1, displayOriginYPct);
-				break;
+				setDisplayOrigin(displayOriginX + 1, displayOriginYPct); break;
 			case ORIGIN_X_PLUS:		
-				setDisplayOrigin(displayOriginX - 1, displayOriginYPct);
-				break;
+				setDisplayOrigin(displayOriginX - 1, displayOriginYPct); break;
 			case ORIGIN_Y_MINUS:
-				setDisplayOrigin(displayOriginX, displayOriginYPct + 0.5);
-				break;
+				setDisplayOrigin(displayOriginX, displayOriginYPct + 0.5); break;
 			case ORIGIN_Y_PLUS:
-				setDisplayOrigin(displayOriginX, displayOriginYPct - 0.5);
-				break;
+				setDisplayOrigin(displayOriginX, displayOriginYPct - 0.5); break;
 			case WIDTH_MINUS:
-				setDisplaySize(displayWidth - 1, displayHeightPct);
-				break;
+				setDisplaySize(displayWidth - 1, displayHeightPct); break;
 			case WIDTH_PLUS:		
-				setDisplaySize(displayWidth + 1, displayHeightPct);
-				break;
+				setDisplaySize(displayWidth + 1, displayHeightPct); break;
 			case HEIGHT_MINUS:
-				setDisplaySize(displayWidth, displayHeightPct - 0.5);
-				break;
+				setDisplaySize(displayWidth, displayHeightPct - 0.5); break;
 			case HEIGHT_PLUS:
-				setDisplaySize(displayWidth, displayHeightPct + 0.5);
-				break;
+				setDisplaySize(displayWidth, displayHeightPct + 0.5); break;
 			case SCALE_X_MINUS:
-				setDisplayScale(displayScaleX - 0.5f, displayScaleY);
-				break;
+				setDisplayScale(displayScaleX - 0.5f, displayScaleY); break;
 			case SCALE_X_PLUS:		
-				setDisplayScale(displayScaleX + 0.5f, displayScaleY);
-				break;
+				setDisplayScale(displayScaleX + 0.5f, displayScaleY); break;
 			case SCALE_Y_MINUS:
-				setDisplayScale(displayScaleX, displayScaleY - 0.5f);
-				break;
+				setDisplayScale(displayScaleX, displayScaleY - 0.5f); break;
 			case SCALE_Y_PLUS:
-				setDisplayScale(displayScaleX, displayScaleY + 0.5f);
-				break;
+				setDisplayScale(displayScaleX, displayScaleY + 0.5f); break;
 			case SIZE_MINUS:
-				setDisplayScaleDefaultAspect(displayScaleY - 1);
-				break;
+				setDisplayScaleDefaultAspect(displayScaleY - 1); break;
 			case SIZE_PLUS:
-				setDisplayScaleDefaultAspect(displayScaleY + 1);
-				break;
+				setDisplayScaleDefaultAspect(displayScaleY + 1); break;
 			case SIZE_DEFAULT:
 				setDisplayDefaultSize();
-				break;
 		}
 	}
 
@@ -574,7 +555,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private VideoStandard videoStandardDetected;
 	private int videoStandardDetectionFrameCount;
-	private int videoStandardDetectionLinesCount;
+	private int videoStandardDetectionTotalLinesCount;
+	private int videoStandardDetectionLines = 0;
 
 	private int[] backBuffer;
 	private int[] frontBuffer;
@@ -621,7 +603,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private String newDataMonitor = "nextLineMonitor";		// Used only for synchronization
 	private String refreshMonitor = "refreshMonitor";		// Used only for synchronization
 
-	private static final String BASE_TITLE = "Atari";
+	private static final String BASE_TITLE = "javatari";
 
 	private static final int VSYNC_DETECTION = 2;
 	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
@@ -648,8 +630,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float SCANLINES1_ACCELERATION = Parameters.SCREEN_SCANLINES1_ACCELERATION; 
 
 	
-	public static final int a = 1;
-	
 	public static final long serialVersionUID = 0L;
 
 	public static enum Control {
@@ -661,7 +641,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 		SCALE_X_MINUS, SCALE_Y_MINUS, 
 		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
-		VIDEO_STANDARD,
 		EXIT, LOAD_CARTRIDGE,
 		FULL_SCREEN, QUALITY, SCANLINES, 
 		HELP, DEBUG
@@ -700,4 +679,3 @@ class TVTriadComposite implements Composite {
 		return context;
 	}
 }
-

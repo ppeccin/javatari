@@ -1,3 +1,5 @@
+// Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
+
 package utils;
 
 public class Array2DCopy {

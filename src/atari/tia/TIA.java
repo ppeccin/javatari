@@ -27,8 +27,7 @@ import atari.tia.video.VideoGenerator;
 @SuppressWarnings("unused")
 public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
-	public TIA(Console console, M6502 cpu, PIA pia) {
-		this.console = console;
+	public TIA(M6502 cpu, PIA pia) {
 		this.cpu = cpu;
 		this.pia = pia;
 		videoOutput = new VideoGenerator();
@@ -118,9 +117,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
 			audioOutput.sendGeneratedSamplesToMonitor();
-			// If needed, synch audio output after v-sync (each frame)
+			// If needed, synch with audio output after each frame
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor.synchOutput();
-			// If needed, synch video output
+			// If needed, synch with video output
 			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor.synchOutput();
 		}
 	}
@@ -1109,7 +1108,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private int clock = 0;
 
-	private final Console console;
 	private final M6502 cpu;
 	private final PIA pia;
 

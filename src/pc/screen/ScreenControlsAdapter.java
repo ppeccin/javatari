@@ -26,7 +26,6 @@ public class ScreenControlsAdapter implements KeyListener {
 		keyAltCodeMap.put(KEY_FULL_SCR,    Screen.Control.FULL_SCREEN); 
 		keyAltCodeMap.put(KEY_QUALITY,     Screen.Control.QUALITY); 
 		keyAltCodeMap.put(KEY_DEBUG,       Screen.Control.DEBUG); 
-		keyAltCodeMap.put(KEY_VIDEO_STAND, Screen.Control.VIDEO_STANDARD); 
 		keyAltCodeMap.put(KEY_SCANLINES,   Screen.Control.SCANLINES); 
 
 		keyShiftCodeMap.put(KEY_UP,    Screen.Control.SIZE_MINUS); 

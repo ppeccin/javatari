@@ -18,8 +18,8 @@ public final class VideoGenerator implements VideoSignal {
 		monitor.showOSD(message);
 	}
 
-	public VideoStandard videoStandardDetected() {
-		return monitor != null ? monitor.videoStandardDetected() : null;
+	public VideoMonitor monitor() {
+		return monitor;
 	}
 
 	@Override

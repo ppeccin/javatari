@@ -69,6 +69,7 @@ public class Console {
 		powerOn = true;
 		controlsSocket.controlsStatesRedefined();
 		mainClockGo();
+		videoStandardAutoDetectionStart();
 	}
 
 	public void powerOff() {
@@ -95,12 +96,7 @@ public class Console {
 			tia.videoStandard(this.videoStandard);
 			mainClockAdjustToNormal();
 		}
-		videoStandardShowOSD();
-	}
-
-	public void videoStandardDetected(VideoStandard detectedVideoStandard) {
-		if (!videoStandardAuto) return;
-		videoStandard(detectedVideoStandard);
+		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard);
 	}
 
 	// For debug purposes
@@ -114,14 +110,35 @@ public class Console {
 
 	protected void cartridge(Cartridge cartridge) {
 		bus.cartridge(cartridge);
-		if (cartridge.forcedVideoStandard() != null) 
-			videoStandardForced(cartridge.forcedVideoStandard());
 	}
 
 	protected void videoStandardAuto() {
 		videoStandardAuto = true;
-		if (videoStandard == null) videoStandard(VideoStandard.NTSC);
-		else showOSD("AUTO");
+		if (powerOn) videoStandardAutoDetectionStart();
+		else videoStandard(VideoStandard.NTSC);
+	}
+
+	protected void videoStandardAutoDetectionStart() {
+		if (!videoStandardAuto || videoStandardAutoDetectionInProgress) return;
+		// If the Cartridge has specified a VideoStandard, use it
+		if (bus.cartridge.suggestedVideoStandard() != null) {
+			videoStandard(bus.cartridge.suggestedVideoStandard());
+			return;
+		}
+		// Otherwise use the VideoStandard detected by the monitor
+		videoStandardAutoDetectionInProgress = true;
+		tia.videoOutput().monitor().videoStandardDetectionStart();
+		new Thread() { public void run() {
+			VideoStandard std;
+			int tries = 0;
+			do {
+				try { Thread.sleep(20); } catch (InterruptedException e) {};
+				std = tia.videoOutput().monitor().videoStandardDetected();
+			} while (std == null && ++tries < 1000/20);
+			if (std != null) videoStandard(std);
+			else showOSD("AUTO: FAILED");
+			videoStandardAutoDetectionInProgress = false;
+		}}.start();
 	}
 
 	protected void videoStandardForced(VideoStandard forcedVideoStandard) {
@@ -129,15 +146,11 @@ public class Console {
 		videoStandard(forcedVideoStandard);
 	}
 
-	public void videoStandardShowOSD() {
-		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard);
-	}
-
 	protected void mainComponentsCreate() {
 		cpu = new M6502();
 		pia = new PIA(this);
 		ram = new RAM();
-		tia = new TIA(this, cpu, pia);
+		tia = new TIA(cpu, pia);
 		bus = new BUS(tia, pia, ram);
 		cpu.connectBus(bus);
 	}
@@ -200,7 +213,9 @@ public class Console {
 	protected PIA pia;
 	protected RAM ram;
 	protected VideoStandard videoStandard;
+
 	protected boolean videoStandardAuto = true;
+	private boolean videoStandardAutoDetectionInProgress = false;
 	
 	protected ConsoleControlsSocket controlsSocket;
 	protected CartridgeSocketAdapter cartridgeSocket;

@@ -94,12 +94,22 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		// Redefines the entire Window bounds, and the internal Canvas will follow accordingly
 		Dimension winDim = windowDimensionForCanvasDimension(size);
 		if (getSize().equals(winDim)) return;
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		int x = (tk.getScreenSize().width - winDim.width) / 2;
-		int y = (tk.getScreenSize().height - winDim.height - ConsolePanel.EXPANDED_HEIGHT) / 4;
-		setBounds(x, y, winDim.width, winDim.height);
+		// Maintain the window center
+		int centerX = getX() + getWidth() / 2;
+		int centerY = getY() + (getHeight() + ConsolePanel.EXPANDED_HEIGHT) / 4;
+		int newX = centerX - winDim.width / 2;
+		int newY = centerY - (winDim.height + ConsolePanel.EXPANDED_HEIGHT) / 4;
+		setBounds(newX, newY, winDim.width, winDim.height);
 		validate();
 		repaint();
+	}
+
+	@Override
+	public void canvasCenter() {
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		int x = (tk.getScreenSize().width - getWidth()) / 2;
+		int y = (tk.getScreenSize().height - getHeight() - ConsolePanel.EXPANDED_HEIGHT) / 4;
+		setLocation(x, y);
 	}
 
 	@Override

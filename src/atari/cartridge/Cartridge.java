@@ -26,16 +26,17 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
+	public Cartridge clone() {
+		try { return (Cartridge)super.clone(); } catch (CloneNotSupportedException e) {}
+		return null;
 	}
 
-	public VideoStandard forcedVideoStandard() {
-		return forcedVideoStandard;
+	public VideoStandard suggestedVideoStandard() {
+		return suggestedVideoStandard;
 	}
 	
-	public void forceVideoStandard(VideoStandard videoStandard) {
-		this.forcedVideoStandard = videoStandard;
+	public void suggestedVideoStandard(VideoStandard videoStandard) {
+		this.suggestedVideoStandard = videoStandard;
 	}
 	
 	protected int maskAddress(int address) {
@@ -53,7 +54,7 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	
 	protected byte[] bytes;
 	
-	private VideoStandard forcedVideoStandard = null;
+	private VideoStandard suggestedVideoStandard = null;
 
 	private static final long serialVersionUID = 1L;
 

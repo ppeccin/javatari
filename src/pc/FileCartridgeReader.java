@@ -66,7 +66,7 @@ public class FileCartridgeReader {
 					throw new UnsupportedOperationException("Cartridge [SLICED, E0] size not supported: " + content.length);
 			}
 		} else {
-			// Force SuperChip mode on or off as indicated in filename, otherwise leave it in auto mode (null)
+			// Force SuperChip mode ON or OFF as indicated in filename, otherwise leave it in auto mode (null)
 			Boolean sc = null;
 			if (fileName.toUpperCase().indexOf("[SC]") >= 0)
 				sc = true;
@@ -90,12 +90,12 @@ public class FileCartridgeReader {
 					throw new UnsupportedOperationException("Cartridge size not supported: " + content.length);
 			}
 		}
-		// Force the Video Standard based on the filename. Default is null (auto)
+		// Use VideoStandard specified on the filename. Default is null (auto)
 		if (fileName.toUpperCase().indexOf("[PAL]") >= 0)
-			cart.forceVideoStandard(VideoStandard.PAL);
+			cart.suggestedVideoStandard(VideoStandard.PAL);
 		else
 			if (fileName.toUpperCase().indexOf("[NTSC]") >= 0)
-				cart.forceVideoStandard(VideoStandard.NTSC);
+				cart.suggestedVideoStandard(VideoStandard.NTSC);
 		return cart;
 	}
 	

@@ -46,6 +46,11 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 	}
 
 	@Override
+	public void canvasCenter() {
+		// Full window is always centered
+	}
+
+	@Override
 	public Dimension canvasEffectiveSize() {
 		return canvasEffectiveSize;
 	}
@@ -122,7 +127,7 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 		float scaleX = getWidth() / displayWidth;
 		scaleX -= (scaleX % Screen.DEFAULT_SCALE_ASPECT_X);				// Round multiple of the default X scale
 		float h = scaleX / Screen.DEFAULT_SCALE_ASPECT_X * displayHeight;
-		while (h > getHeight() + 20) {							// 20 is a little tolerance
+		while (h > getHeight() + 20) {									// 20 is a little tolerance
 			scaleX -= Screen.DEFAULT_SCALE_ASPECT_X;					// Decrease one full default X scale
 			h = scaleX / Screen.DEFAULT_SCALE_ASPECT_X * displayHeight;
 		}
