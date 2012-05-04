@@ -90,7 +90,7 @@ public class RMIRemoteTransmitter extends UnicastRemoteObject implements RMIRemo
 	public static final String SERVICE_NAME = Parameters.SERVER_SERVICE_NAME;
 	public static final int SERVICE_PORT = Parameters.SERVER_SERVICE_PORT;
 	
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 	
 	private class UpdatesSender extends Thread {

@@ -59,7 +59,7 @@ public final class RAM implements BUS16Bits {
 	// Used to save/load states
 	public static class RAMState implements Serializable {
 		byte[] bytes;
-		private static final long serialVersionUID = 2L;
+		public static final long serialVersionUID = 2L;
 	}
 
 }

@@ -35,6 +35,6 @@ public class JMP extends Instruction {
 	private char newPC;
 	
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 	
 }

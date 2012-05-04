@@ -34,7 +34,7 @@ public final class Cartridge12K extends CartridgeBanked {
 
 	public static final int SIZE = 12288;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }
 

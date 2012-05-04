@@ -26,7 +26,7 @@ public final class CartridgeDisconnected extends Cartridge {
 
 	public static final int SIZE = 0;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }
 

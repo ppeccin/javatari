@@ -24,7 +24,7 @@ public final class Cartridge4K extends Cartridge {
 	public static final int SIZE = 4096;
 	public static final int HALF_SIZE = 2048;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }
 

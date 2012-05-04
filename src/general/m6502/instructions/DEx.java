@@ -40,6 +40,6 @@ public class DEx extends Instruction {
 	private final Register reg;
 	
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

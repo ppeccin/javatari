@@ -30,6 +30,6 @@ public class ConsoleState implements Serializable {
 	public VideoStandard videoStandard;
 
 
-	private static final long serialVersionUID = 2L;
+	public static final long serialVersionUID = 2L;
 
 }

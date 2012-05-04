@@ -48,6 +48,6 @@ public abstract class CartridgeBanked extends Cartridge {
 	private boolean superChipAutoDetect = false;
 	private final byte[] extraRAM = new byte[128];
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

@@ -231,7 +231,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int TIM64T;     
 		int T1024T;
 		
-		static final long serialVersionUID = 2L;
+		public static final long serialVersionUID = 2L;
 	}
 
 }

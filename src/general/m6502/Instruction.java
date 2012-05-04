@@ -17,6 +17,6 @@ public abstract class Instruction implements Serializable {
 	protected transient M6502 cpu;
 
 	
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

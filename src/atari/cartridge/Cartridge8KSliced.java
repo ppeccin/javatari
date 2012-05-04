@@ -64,6 +64,6 @@ public  class Cartridge8KSliced extends Cartridge {
 
 	public static final int SIZE = 8192;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

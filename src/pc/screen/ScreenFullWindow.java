@@ -142,7 +142,6 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 
 	private BufferStrategy bufferStrategy;
 
-	private static final long serialVersionUID = 1L;
-
+	public static final long serialVersionUID = 1L;
 
 }

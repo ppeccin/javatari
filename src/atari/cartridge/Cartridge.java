@@ -56,6 +56,6 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	
 	private VideoStandard suggestedVideoStandard = null;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

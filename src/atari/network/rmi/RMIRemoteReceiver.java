@@ -66,7 +66,7 @@ public class RMIRemoteReceiver extends UnicastRemoteObject implements RMIRemoteR
 
 	private static final int MAX_UPDATES_PENDING = Parameters.CLIENT_MAX_UPDATES_PENDING;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 
 	private class UpdatesConsumer extends Thread {

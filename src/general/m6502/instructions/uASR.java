@@ -29,6 +29,6 @@ public class uASR extends UndocumentedInstruction {
 	private int ea;
 	
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 	
 }

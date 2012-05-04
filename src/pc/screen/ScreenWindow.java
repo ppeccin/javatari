@@ -288,6 +288,6 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
 	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
 	
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

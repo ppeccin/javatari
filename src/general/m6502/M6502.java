@@ -607,7 +607,7 @@ public final class M6502 implements ClockDriven {
 		Instruction instructionToExecute;
 		int cyclesToExecute;
 
-		private static final long serialVersionUID = 2L;
+		public static final long serialVersionUID = 2L;
 	}
 
 }

@@ -14,6 +14,6 @@ public class ServerUpdate implements Serializable {
 	public ConsoleState consoleState = null;
 	public boolean isClockPulse = false;
 	
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }

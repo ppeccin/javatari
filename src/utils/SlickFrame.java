@@ -148,7 +148,7 @@ public class SlickFrame extends JFrame {
 
 	private static final int RESIZE_CORNER_SIZE = 18;
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 }
 

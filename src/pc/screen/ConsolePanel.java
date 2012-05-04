@@ -362,7 +362,7 @@ public class ConsolePanel extends SlickFrame implements ConsoleControls, Console
 	private static final Set<Control> visibleControls = new HashSet<Control>(
 		Arrays.asList(new Control[] { Control.POWER, Control.BLACK_WHITE, Control.SELECT, Control.RESET, Control.DIFFICULTY0, Control.DIFFICULTY1 }));
 	
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 
 	
 }

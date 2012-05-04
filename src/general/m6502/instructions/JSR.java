@@ -26,6 +26,6 @@ public class JSR extends Instruction {
 	private char newPC;
 	
 
-	private static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 1L;
 	
 }
