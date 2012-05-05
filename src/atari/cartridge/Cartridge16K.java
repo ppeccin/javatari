@@ -3,12 +3,12 @@
 package atari.cartridge;
 
 /**
- * Implements the 16K "F6" bank switching method
+ * Implements the 16K "F6" and "F6SC" bank switching method
  */
 public final class Cartridge16K extends CartridgeBanked {
 
 	public Cartridge16K(byte[] content, Boolean superChip) {
-		super(superChip);
+		super(superChip, 128);
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		setContent(content);

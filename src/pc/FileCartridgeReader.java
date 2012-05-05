@@ -12,6 +12,7 @@ import javax.swing.JFileChooser;
 import atari.cartridge.Cartridge;
 import atari.cartridge.Cartridge12K;
 import atari.cartridge.Cartridge16K;
+import atari.cartridge.Cartridge28K;
 import atari.cartridge.Cartridge32K;
 import atari.cartridge.Cartridge4K;
 import atari.cartridge.Cartridge8K;
@@ -81,9 +82,11 @@ public class FileCartridgeReader {
 				case Cartridge8K.SIZE:
 					cart = new Cartridge8K(content, sc); break;
 				case Cartridge12K.SIZE:
-					cart = new Cartridge12K(content, sc); break;
+					cart = new Cartridge12K(content); break;
 				case Cartridge16K.SIZE:
 					cart = new Cartridge16K(content, sc); break;
+				case Cartridge28K.SIZE:
+					cart = new Cartridge28K(content); break;
 				case Cartridge32K.SIZE:
 					cart = new Cartridge32K(content, sc); break;
 				default:

@@ -3,7 +3,7 @@
 package atari.cartridge;
 
 /**
- * Implements the 4K unbanked format
+ * Implements the 4K and 2K unbanked format
  */
 public final class Cartridge4K extends Cartridge {
 

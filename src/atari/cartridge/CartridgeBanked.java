@@ -3,12 +3,14 @@
 package atari.cartridge;
 
 /**
- * Implements the generic bank switching method, with or without SuperChip (extra RAM). Used by several n * 4K bank formats.
+ * Implements the generic bank switching method, with or without SuperChip (extra RAM). 
+ * Used by several n * 4K bank formats with varying extra RAM sizes
  */
 public abstract class CartridgeBanked extends Cartridge {
 
-	protected CartridgeBanked(Boolean superChip) {
+	protected CartridgeBanked(Boolean superChip, int extraRAMSize) {
 		super();
+		this.extraRAMSize = extraRAMSize;
 		// SuperChip mode. null = automatic mode
 		if (superChip == null) { 
 			superChipMode = false;
@@ -17,6 +19,7 @@ public abstract class CartridgeBanked extends Cartridge {
 			superChipMode = superChip;
 			superChipAutoDetect = false;
 		}
+		extraRAM = superChip != false ? new byte[this.extraRAMSize] : null;
 	}
 
 	@Override
@@ -24,8 +27,8 @@ public abstract class CartridgeBanked extends Cartridge {
 		// Masking address will perform bank-switching as needed
 		int addr = maskAddress(address);
 		// Check for Extra RAM reads
-		if (superChipMode && (addr >= 0x80) && (addr <= 0xff))
-			return extraRAM[addr - 0x80];
+		if (superChipMode && (addr >= extraRAMSize) && (addr < extraRAMSize * 2))
+			return extraRAM[addr - extraRAMSize];
 		else
 			// Always add the correct offset to access bank selected
 			return bytes[addr + bankAddressOffset];	
@@ -36,7 +39,7 @@ public abstract class CartridgeBanked extends Cartridge {
 		// Masking address will perform bank-switching as needed
 		int addr = maskAddress(address);
 		// Check for Extra RAM writes and then turn superChip mode on
-		if (addr <= 0x7f && (superChipMode || superChipAutoDetect)) {
+		if (addr < extraRAMSize && (superChipMode || superChipAutoDetect)) {
 			if (!superChipMode) superChipMode = true;
 			extraRAM[addr] = b;
 		}
@@ -45,8 +48,9 @@ public abstract class CartridgeBanked extends Cartridge {
 	protected int bankAddressOffset = 0;
 	
 	private boolean superChipMode = false;
-	private boolean superChipAutoDetect = false;
-	private final byte[] extraRAM = new byte[128];
+	private final boolean superChipAutoDetect;
+	private final int extraRAMSize;
+	private final byte[] extraRAM;
 
 	public static final long serialVersionUID = 1L;
 
