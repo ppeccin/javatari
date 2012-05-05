@@ -19,7 +19,7 @@ public abstract class CartridgeBanked extends Cartridge {
 			superChipMode = superChip;
 			superChipAutoDetect = false;
 		}
-		extraRAM = superChip != false ? new byte[this.extraRAMSize] : null;
+		extraRAM = (superChip == null || superChip) ? new byte[this.extraRAMSize] : null;
 	}
 
 	@Override
