@@ -93,7 +93,7 @@ public class ServerConsole extends Console implements ClockDriven {
 	}
 
 	private void sendStateUpdate() {
-		if (remoteTransmitter != null) {
+		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
 			ServerUpdate update = new ServerUpdate();
 			update.consoleState = saveState();
 			remoteTransmitter.sendUpdate(update);

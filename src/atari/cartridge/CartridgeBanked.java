@@ -45,12 +45,18 @@ public abstract class CartridgeBanked extends Cartridge {
 		}
 	}
 
+	@Override
+	public CartridgeBanked clone() {
+		CartridgeBanked clone = (CartridgeBanked)super.clone();
+		if (extraRAM != null) clone.extraRAM = extraRAM.clone();
+		return clone;
+	}
+
 	protected int bankAddressOffset = 0;
-	
 	private boolean superChipMode = false;
 	private final boolean superChipAutoDetect;
 	private final int extraRAMSize;
-	private final byte[] extraRAM;
+	private byte[] extraRAM;
 
 	public static final long serialVersionUID = 1L;
 

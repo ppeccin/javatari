@@ -55,7 +55,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public void powerOn() {
 		Arrays.fill(linePixels, HBLANK_COLOR);
 		Arrays.fill(debugPixels, 0);
-		groundLatchesAtPowerOn();
+		initLatchesAtPowerOn();
 		observableChange();
 		powerOn = true;
 	}
@@ -108,7 +108,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			cpu.clockPulse();
 			// End of scan line
 			// Handle Paddles capacitor charging
-			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();
+			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();	// Only if paddles are connected (position != -1)
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
@@ -731,9 +731,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (INPT1 < 0x80 && ++paddle1CapacitorCharge >= paddle1Position) INPT1 |= 0x80;
 	}
 
-	private void groundLatchesAtPowerOn() {
+	private void initLatchesAtPowerOn() {
 		CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0;
-		INPT0 = INPT1 = INPT2 = INPT3 = INPT4 = INPT5 = 0; 		
+		INPT0 = INPT1 = INPT2 = INPT3 = 0;
+		INPT4 = INPT5 = 0x80;
 	}
 
 	@Override
@@ -1063,12 +1064,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		playersDelayedSpriteChanges      =  state.playersDelayedSpriteChanges;      
 		playersDelayedSpriteChangesCount =  state.playersDelayedSpriteChangesCount; 
 		controlsButtonsLatched   		 =  state.controlsButtonsLatched;      
-		controlsJOY0ButtonPressed		 =  state.controlsJOY0ButtonPressed;   
-		controlsJOY1ButtonPressed		 =  state.controlsJOY1ButtonPressed;
-		paddle0Position					 =  state.paddle0Position;
-		paddle0CapacitorCharge 		     =  state.paddle0CapacitorCharge;
-		paddle1Position					 =  state.paddle1Position;
-		paddle1CapacitorCharge 		     =  state.paddle1CapacitorCharge;
+		// controlsJOY0ButtonPressed	 =  state.controlsJOY0ButtonPressed;	// Do not load controls state
+		// controlsJOY1ButtonPressed	 =  state.controlsJOY1ButtonPressed;
+		// paddle0Position				 =  state.paddle0Position;
+		// paddle0CapacitorCharge 		 =  state.paddle0CapacitorCharge;
+		// paddle1Position				 =  state.paddle1Position;
+		// paddle1CapacitorCharge 		 =  state.paddle1CapacitorCharge;
 		PF0								 =  state.PF0;
 		PF1								 =  state.PF1;
 		PF2								 =  state.PF2;
@@ -1091,13 +1092,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		CXM1FB							 =  state.CXM1FB;
 		CXBLPF							 =  state.CXBLPF;
 		CXPPMM							 =  state.CXPPMM;
-		// INPT0 					 	 =	state.INPT0;	// Do not load controls state 
+		// INPT0 					 	 =	state.INPT0;	// Do not load controls state
 		// INPT1 					 	 =	state.INPT1;
 		// INPT2 					 	 =	state.INPT2;
 		// INPT3 					 	 =	state.INPT3;
 		// INPT4 						 =	state.INPT4;
-		// INPT5 					 	 =	state.INPT5;
-		if (debug) debugSetColors();						// IF debug is on, ensures debug colors are used
+		// INPT5 				 		 =	state.INPT5;
+		if (debug) debugSetColors();						// IF debug is on, ensure debug colors are used
 	}
 	
 	

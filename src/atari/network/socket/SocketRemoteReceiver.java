@@ -110,10 +110,8 @@ public class SocketRemoteReceiver implements RemoteReceiver {
 				}
 			} catch (IOException e) {
 				disconnect();
-				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
 				disconnect();
-				e.printStackTrace();
 			}
 	
 		}

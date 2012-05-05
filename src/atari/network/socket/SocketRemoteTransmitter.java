@@ -131,10 +131,8 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
 				disconnectReceiver();
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
 				disconnectReceiver();
 			}
 		}
