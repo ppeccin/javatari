@@ -66,6 +66,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	@Override
+	// To perform better, TIA is using one clock cycle per frame
 	public void clockPulse() {
 		if (!debugPauseHook()) return;
 		boolean videoOutputVSynched = false;	
@@ -83,8 +84,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				pia.clockPulse();
 				cpu.clockPulse();
 			}
+			// 67
 			// Display period
 			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
+				// Clock delay decodes
+				if (vBlankDecode.isActive) vBlankDecode.clockPulse();
 				// If one entire line since last observable change has just completed, enter repeatLastLine mode
 				if (clock == lastObservableChangeClock) {
 					repeatLastLine = true;
@@ -96,10 +100,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					cpu.clockPulse();
 				}
 				objectsTriggerScanCounters();
-				if (!repeatLastLine) {
-					if (vBlankOn) linePixels[clock] = vSyncOn ? vSyncColor : vBlankColor;
-					else setPixelValue();
-				}
+				if (!repeatLastLine) setPixelValue();
 				objectsIncrementCounters();
 			}
 			// Send the last clock pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
@@ -133,7 +134,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void setPixelValue() {
 		// Updates the current PlayFiled pixel to draw only each 4 pixels, or at the first calculated pixel after stopped using cached line
-		if (clock == lastObservableChangeClock || clock % 4 == 0) playfieldUpdateCurrentPixel();
+		if (clock >= 68 && (clock == lastObservableChangeClock || clock % 4 == 0))
+			playfieldUpdateCurrentPixel();
+		// No need to calculate all possibilities in vBlank. TODO No collisions will be detected during vBlank
+		if (vBlankOn) {
+			linePixels[clock] = vSyncOn ? vSyncColor : vBlankColor;
+			return;
+		}
 		// Pixel color
 		int color = -1;
 		// Flags for Collision latches
@@ -651,8 +658,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void vBlankSet(int blank) {
 		observableChange();
-		vBlankOn = (blank & 0x02) != 0;
-		if ((blank & 0x40) != 0) {				// Enable latches
+		vBlankDecode.start((blank & 0x02) != 0);
+		if ((blank & 0x40) != 0) {				// Enable Joystick Button latches
 			controlsButtonsLatched = true;
 		} else {								
 			controlsButtonsLatched = false;		// Disable latches and update registers with the current button state
@@ -1135,7 +1142,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private boolean repeatLastLine;
 
 	private boolean vSyncOn = false;
+
 	private boolean vBlankOn = false;
+	private VBlankDecode vBlankDecode = new VBlankDecode();
+
 	private boolean hMoveHitBlank = false;
 	
 	private boolean[] playfieldPattern = new boolean[40];
@@ -1312,7 +1322,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int DEBUG_M0_COLOR     = 0xff6666ff;
 	private static final int DEBUG_M1_COLOR     = 0xffff6666;
 
-	private static final int DEBUG_PF_COLOR  = 0xff336633;
+	private static final int DEBUG_PF_COLOR  = 0xff448844;
 	private static final int DEBUG_BK_COLOR  = 0xff333322;
 	private static final int DEBUG_BL_COLOR  = 0xffffff00;
 
@@ -1327,11 +1337,25 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public static final boolean SYNC_WITH_AUDIO_MONITOR = Parameters.TIA_SYNC_WITH_AUDIO_MONITOR;
 	public static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
 	
-	public static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;		//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
+	public static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
 
 	public static final double DEFAUL_CLOCK_NTSC = Parameters.TIA_DEFAULT_CLOCK_NTSC;		
 	public static final double DEFAUL_CLOCK_PAL = Parameters.TIA_DEFAULT_CLOCK_PAL;		
 
+
+	// Delayed decodes
+	private class VBlankDecode {
+		private boolean isActive = false;
+		private boolean newState;
+		private void start(boolean state) {
+			newState = state;
+			isActive = true;
+		}
+		private void clockPulse() {
+			isActive = false;
+			vBlankOn = newState;
+		}
+	}
 
 	// Used to save/load states
 	public static class TIAState implements Serializable {
