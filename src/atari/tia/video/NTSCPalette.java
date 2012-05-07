@@ -7,8 +7,11 @@ public class NTSCPalette {
 	public static int[] getPalette() {
 		int[] pal = new int[256];
 		for (int i = 0; i < baseRGB.length; i++) {
-			pal[i*2] = pal[i*2+1] = (baseRGB[i] | 0xff000000);		// Adds 100% alfa for ARGB
+			pal[i*2] = pal[i*2+1] = (baseRGB[i] | 0xff000000);		// Adds 100% alpha for ARGB use
 		}
+
+		pal[0] = pal[1] = 0;	// Full transparency for blacks. Needed for CRT emulation modes
+
 		return pal;
 	}
 	

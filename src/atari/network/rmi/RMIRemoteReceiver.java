@@ -51,12 +51,6 @@ public class RMIRemoteReceiver extends UnicastRemoteObject implements RMIRemoteR
 		console.connected();
 	}
 	
-//	TODO Find a way to detect connection lost
-//	private void disconnect() {
-//		console.disconnected();
-//		transmitter = null;
-//	}
-
 
 	private ClientConsole console;
 	private RMIRemoteTransmitterInterface transmitter;

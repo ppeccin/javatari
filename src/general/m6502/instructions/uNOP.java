@@ -32,7 +32,6 @@ public class uNOP extends UndocumentedInstruction {
 	}
 
 	@Override
-	// TODO Check. Should it really ready the target memory or just fetch the effective address?
 	public void execute() {
 		cpu.memory.readByte(ea);
 		// No effects besides fetching and reading memory

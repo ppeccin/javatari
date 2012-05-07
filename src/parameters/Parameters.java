@@ -42,14 +42,14 @@ public class Parameters {
 		SCREEN_OSD_FRAMES = Integer.valueOf(p.getProperty("SCREEN_OSD_FRAMES", String.valueOf(SCREEN_OSD_FRAMES)));
 		SCREEN_VSYNC_TOLERANCE = Integer.valueOf(p.getProperty("SCREEN_VSYNC_TOLERANCE", String.valueOf(SCREEN_VSYNC_TOLERANCE)));
 		SCREEN_QUALITY_RENDERING = Boolean.valueOf(p.getProperty("SCREEN_QUALITY_RENDERING", String.valueOf(SCREEN_QUALITY_RENDERING)));
-		SCREEN_SCANLINES_RENDERING = Integer.valueOf(p.getProperty("SCREEN_SCANLINES_RENDERING", String.valueOf(SCREEN_SCANLINES_RENDERING)));
-		SCREEN_SCANLINES1_STRENGTH = Float.valueOf(p.getProperty("SCREEN_SCANLINES1_STRENGTH", String.valueOf(SCREEN_SCANLINES1_STRENGTH)));
+		SCREEN_CRT_MODE = Integer.valueOf(p.getProperty("SCREEN_CRT_MODE", String.valueOf(SCREEN_CRT_MODE)));
+		SCREEN_SCANLINES_STRENGTH = Float.valueOf(p.getProperty("SCREEN_SCANLINES_STRENGTH", String.valueOf(SCREEN_SCANLINES_STRENGTH)));
 		SCREEN_MULTI_BUFFERING = Integer.valueOf(p.getProperty("SCREEN_MULTI_BUFFERING", String.valueOf(SCREEN_MULTI_BUFFERING)));
 		SCREEN_PAGE_FLIPPING = Boolean.valueOf(p.getProperty("SCREEN_PAGE_FLIPPING", String.valueOf(SCREEN_PAGE_FLIPPING)));
 		SCREEN_VSYNC = Boolean.valueOf(p.getProperty("SCREEN_VSYNC", String.valueOf(SCREEN_VSYNC)));
 		SCREEN_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_FRAME_ACCELERATION", String.valueOf(SCREEN_FRAME_ACCELERATION)));
 		SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_INTERM_FRAME_ACCELERATION", String.valueOf(SCREEN_INTERM_FRAME_ACCELERATION)));
-		SCREEN_SCANLINES1_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_SCANLINES1_ACCELERATION", String.valueOf(SCREEN_SCANLINES1_ACCELERATION)));
+		SCREEN_SCANLINES_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_SCANLINES_ACCELERATION", String.valueOf(SCREEN_SCANLINES_ACCELERATION)));
 		
 		SPEAKER_DEFAULT_FPS = Double.valueOf(p.getProperty("SPEAKER_DEFAULT_FPS", String.valueOf(SPEAKER_DEFAULT_FPS)));
 		SPEAKER_INPUT_BUFFER_SIZE = Integer.valueOf(p.getProperty("SPEAKER_INPUT_BUFFER_SIZE", String.valueOf(SPEAKER_INPUT_BUFFER_SIZE)));
@@ -92,14 +92,14 @@ public class Parameters {
 	public static int 		SCREEN_OSD_FRAMES = 160;
 	public static int 		SCREEN_VSYNC_TOLERANCE = 10;
 	public static boolean 	SCREEN_QUALITY_RENDERING = false;
-	public static int	 	SCREEN_SCANLINES_RENDERING = 0;
-	public static float 	SCREEN_SCANLINES1_STRENGTH = 0.5f;
+	public static int	 	SCREEN_CRT_MODE = 0;
+	public static float 	SCREEN_SCANLINES_STRENGTH = 0.5f;
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;
 	public static boolean 	SCREEN_VSYNC = false;
 	public static float		SCREEN_FRAME_ACCELERATION = 0;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
-	public static float		SCREEN_SCANLINES1_ACCELERATION = -1; 
+	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)

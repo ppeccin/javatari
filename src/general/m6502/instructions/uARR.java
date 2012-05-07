@@ -17,7 +17,7 @@ public class uARR extends UndocumentedInstruction {
 	}
 
 	@Override
-	// TODO Check. Some sources say flags are affected per ROR, others say its more complex. The complex one is chosen
+	// Some sources say flags are affected per ROR, others say its more complex. The complex one is chosen
 	public void execute() {
 		byte val = (byte) (cpu.A & cpu.memory.readByte(ea)); 
 		int oldCarry = cpu.CARRY?1:0;

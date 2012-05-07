@@ -135,7 +135,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		// Updates the current PlayFiled pixel to draw only each 4 pixels, or at the first calculated pixel after stopped using cached line
 		if (clock == lastObservableChangeClock || clock % 4 == 0) playfieldUpdateCurrentPixel();
 		// Pixel color
-		int color = 0;
+		int color = -1;
 		// Flags for Collision latches
 		boolean P0 = false, P1 = false, M0 = false, M1 = false, FL = false, BL = false;
 		// Get the value for the PlayField and Ball first only if PlayField and Ball have higher priority
@@ -150,7 +150,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			}
 			if (playfieldCurrentPixel) { 
 				FL = true;
-				if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
+				if (color == -1) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
 			}
 		}
 		// Get the value for Player0
@@ -160,12 +160,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			if (sprite != 0)
 				if (((sprite >> (player0Reflected ? (7 - player0ScanCounter) : player0ScanCounter)) & 0x01) != 0) {
 					P0 = true;
-					if (color == 0) color = player0Color;
+					if (color == -1) color = player0Color;
 				}
 		}
 		if (missile0ScanCounter == 0 && missile0Enabled && !missile0ResetToPlayer) {
 			M0 = true;
-			if (color == 0) color = missile0Color;
+			if (color == -1) color = missile0Color;
 		}
 		// Get the value for Player1
 		if (player1ScanCounter >= 0) {
@@ -174,12 +174,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			if (sprite != 0)
 				if (((sprite >> (player1Reflected ? (7 - player1ScanCounter) : player1ScanCounter)) & 0x01) != 0) {
 					P1 = true;
-					if (color == 0) color = player1Color;
+					if (color == -1) color = player1Color;
 				}
 		}
 		if (missile1ScanCounter == 0 && missile1Enabled && !missile1ResetToPlayer) {
 			M1 = true;
-			if (color == 0) color = missile1Color;
+			if (color == -1) color = missile1Color;
 		}
 		if (!playfieldPriority) {
 			// Get the value for the Ball (low priority)
@@ -187,17 +187,17 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
 				if (ballEnabled) {
 					BL = true;
-					if (color == 0) color = ballColor;
+					if (color == -1) color = ballColor;
 				}
 			}
 			// Get the value for the the PlayField (low priority)
 			if (playfieldCurrentPixel) {
 				FL = true;
-				if (color == 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
+				if (color == -1) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
 			}
 		}
 		// If nothing more is showing, get the PlayField background value (low priority)
-		if (color == 0) color = playfieldBackground;	
+		if (color == -1) color = playfieldBackground;
 		// Set the correct pixel color
 		linePixels[clock] = color;
 		// Finish collision latches
@@ -1116,9 +1116,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private final int debugPixels[] = new int[LINE_WIDTH];
 	
 	private int[] palette;
-	private int vBlankColor = 0xff000000;
 	private int vSyncColor = 0xffdddddd;
-	private int hBlankColor = 0xff000000;
+	private int vBlankColor = VBLANK_COLOR;
+	private int hBlankColor = VBLANK_COLOR;
 
 	private boolean debugPause = false;
 	private int debugPauseMoreFrames = 0;
@@ -1290,8 +1290,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	// Constants --------------------------------------------------
 	
-	private static final int HBLANK_COLOR = 0xff000000;
-	private static final int VBLANK_COLOR = 0xff000000;
+	private static final int HBLANK_COLOR = 0x00000000;		// Full transparency needed for CRT emulation modes
+	private static final int VBLANK_COLOR = 0x00000000;
 
 	private static final int HBLANK_DURATION = 68;
 	private static final int LINE_WIDTH = 228;
@@ -1313,7 +1313,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int DEBUG_M1_COLOR     = 0xffff6666;
 
 	private static final int DEBUG_PF_COLOR  = 0xff336633;
-	private static final int DEBUG_BK_COLOR  = 0xff000000;
+	private static final int DEBUG_BK_COLOR  = 0xff333322;
 	private static final int DEBUG_BL_COLOR  = 0xffffff00;
 
 	private static final int DEBUG_SPECIAL_COLOR  = 0xff00ffff;

@@ -95,8 +95,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	@Override
 	public void synchOutput() {
-		// Saves data from the frontBuffer for rendering, so the next frame can change it without visual artifacts
-		System.arraycopy(frontBuffer, 0, frameBuffer, 0, displayWidth * displayHeight);
 		refresh();
 	}
 
@@ -263,17 +261,17 @@ public class Screen implements ClockDriven, VideoMonitor {
 		osdComponent.setBackground(new Color(0x50000000, true));
 		osdComponent.setFont(new Font(osdComponent.getName(), Font.BOLD, 15));
 		osdComponent.setBorder(new EmptyBorder(5, 12, 5, 12));
-		// Prepare Scanlines mode 1 texture
-		scanlines1TextureImage = new BufferedImage(2048, 1280, BufferedImage.TYPE_INT_ARGB_PRE);
-		Graphics2D g = scanlines1TextureImage.createGraphics();
-		g.setColor(new Color((int)(SCANLINES1_STRENGTH * 255) << 24, true));
-		for(int i = 1; i < scanlines1TextureImage.getHeight(); i += 2)
-			g.drawLine(0, i, scanlines1TextureImage.getWidth(), i);
+		// Prepare CRT mode 2 texture
+		scanlinesTextureImage = new BufferedImage(2048, 1280, BufferedImage.TYPE_INT_ARGB_PRE);
+		Graphics2D g = scanlinesTextureImage.createGraphics();
+		g.setColor(new Color((int)(SCANLINES_STRENGTH * 255) << 24, true));
+		for(int i = 1; i < scanlinesTextureImage.getHeight(); i += 2)
+			g.drawLine(0, i, scanlinesTextureImage.getWidth(), i);
 		g.dispose();
-		if (SCANLINES1_ACCELERATION >= 0) scanlines1TextureImage.setAccelerationPriority(SCANLINES1_ACCELERATION);
-		// Prepare Scanlines mode 2 composition 
-		scanlines2Composite = new TVTriadComposite();
-		// Prepare intermediate image for Scanlines or OSD rendering in SingleBuffer mode
+		if (SCANLINES_ACCELERATION >= 0) scanlinesTextureImage.setAccelerationPriority(SCANLINES_ACCELERATION);
+		// Prepare CRT mode 3 and 4 composition
+		crtTriadComposite = new CRTTriadComposite();
+		// Prepare intermediate image for CRT modes or OSD rendering in SingleBuffer mode
 		intermFrameImage = new BufferedImage(2048, 1280, BufferedImage.TYPE_INT_RGB);
 		if (IMTERM_FRAME_ACCELERATION >= 0) intermFrameImage.setAccelerationPriority(IMTERM_FRAME_ACCELERATION);
 	}
@@ -305,8 +303,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 			setDisplayOrigin(displayOriginX, displayOriginYPct);
 			backBuffer = new int[signalWidth * signalHeight];
 			frontBuffer = new int[signalWidth * signalHeight];
-			frameBuffer = new int[signalWidth * signalHeight];
-			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_RGB);
+			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_ARGB);
 			if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
 		}}
 	}
@@ -346,62 +343,77 @@ public class Screen implements ClockDriven, VideoMonitor {
 			paintLogo();
 			return;
 		}
-		// Synchronize to avoid changing image properties while refreshing frame 
+		// Synchronize to avoid changing image properties while refreshing frame
 		synchronized (refreshMonitor) {
 			Graphics2D canvasGraphics = canvasGraphics();
 			if (canvasGraphics == null) return;
-			// Update the image to draw with contents stored in the frameBuffer
-			frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, frameBuffer);
 			// Get the entire Canvas
 			int canvasEffectiveWidth = canvas.canvasEffectiveSize().width;
 			int canvasEffectiveHeight = canvas.canvasEffectiveSize().height;
-			// Scanlines mode 2 OR no MultiBuffering active and needs to superimpose (Scanlines mode 1 or OSD)
+			// CRT mode 3 OR no MultiBuffering active and needs to superimpose (CRT mode 1, 2 or OSD)
 			// draw frameImage to intermediate image with composite then transfer to Canvas
-			if (scanlinesRendering == 2 || (MULTI_BUFFERING < 2 && (osdFramesLeft >= 0 || scanlinesRendering == 1))) { 
+			if (crtMode >= 3 || (MULTI_BUFFERING < 2 && (osdFramesLeft >= 0 || crtMode > 0))) {
+				int intermWidth = Math.min(canvasEffectiveWidth, 2048);
+				int intermHeight = Math.min(canvasEffectiveHeight, 1280);
+				// Ensures the intermediate image is clean
 				Graphics2D intermGraphics = intermFrameImage.createGraphics();
-				// If Scanlines mode 2, sets the Composite
-				if (scanlinesRendering == 2) 
-					intermGraphics.setComposite(scanlines2Composite);
-				intermGraphics.drawImage(
-					frameImage, 
-					0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
-					0, 0, displayWidth, displayHeight,
-					null);
-				if (scanlinesRendering == 2) 
-					intermGraphics.setComposite(AlphaComposite.SrcOver);
-				// If Scanlines mode 1, alpha-superimpose the prepared scanlines image
-				if (scanlinesRendering == 1) 
+				intermGraphics.setBackground(Color.BLACK);
+				intermGraphics.clearRect(0, 0, intermWidth, intermHeight);
+				// Renders to intermediate image
+				renderFrame(intermGraphics, intermWidth, intermHeight);
+				// If CRT mode 2, alpha-superimpose the prepared scanlines image
+				if (crtMode == 2)
 					intermGraphics.drawImage(
-						scanlines1TextureImage, 
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
+						scanlinesTextureImage,
+						0, 0, intermWidth, intermHeight,
+						0, 0, intermWidth, intermHeight,
 						null);
-				paintOSD(intermGraphics);
+				// If CRT mode 3 or 4, sets the CRTTriadComposite and rewrite
+				if (crtMode >= 3) {
+					intermGraphics.setComposite(crtTriadComposite);
+					intermGraphics.drawImage(
+						intermFrameImage,
+						0, 0, intermWidth, intermHeight,
+						0, 0, intermWidth, intermHeight,
+						null);
+				}
 				intermGraphics.dispose();
-				// Then finally transfer to Canvas
+				// Then transfer to Canvas
 				canvasGraphics.drawImage(
-					intermFrameImage, 
-					0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
-					0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
+					intermFrameImage,
+					0, 0, intermWidth, intermHeight,
+					0, 0, intermWidth, intermHeight,
 					null);
+				paintOSD(canvasGraphics);
 			} else {
 				// Renders directly to Canvas
-				canvasGraphics.drawImage(
-					frameImage, 
-					0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
-					0, 0, displayWidth, displayHeight,
-					null);
-				// If Scanlines mode 1, alpha-superimpose the prepared scanlines image
-				if (scanlinesRendering == 1) 
+				renderFrame(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight);
+				// If CRT mode 2, alpha-superimpose the prepared scanlines image
+				if (crtMode == 2)
 					canvasGraphics.drawImage(
-						scanlines1TextureImage, 
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight, 
+						scanlinesTextureImage,
+						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
+						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
 						null);
 				paintOSD(canvasGraphics);
 			}
 			canvasFinish(canvasGraphics);
 		}
+	}
+
+	private void renderFrame(Graphics2D graphics, int canvasWidth, int canvasHeight) {
+		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
+		if (crtMode > 0 && crtMode != 3) {
+			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+			// Draw old frame
+			graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
+		}
+		// Update the image to draw with contents stored in the frontBuffer
+		frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, frontBuffer);
+		// Draw new frame
+		graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
+		// If needed return composite to normal
+		if (crtMode > 0 && crtMode != 3) graphics.setComposite(AlphaComposite.SrcOver);
 	}
 	
 	private void setDisplayDefaultSize() {
@@ -460,12 +472,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 		}
 	}
 
-	private void scanlinesToggleMode() {
+	private void crtModeToggle() {
 		synchronized (refreshMonitor) {
-			scanlinesRendering++; 
-			if (scanlinesRendering > 2) scanlinesRendering = 0;
+			crtMode++;
+			if (crtMode > 4) crtMode = 0;
 			canvasSetRenderingMode();
-			showOSD(scanlinesRendering == 0 ? "Scanlines OFF" : "Scanlines " + scanlinesRendering);
+			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode);
 		}
 	}
 
@@ -482,7 +494,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 				showOSD(qualityRendering ? "Filter ON" : "Filter OFF");
 				break;
 			case SCANLINES:
-				scanlinesToggleMode(); break;
+				crtModeToggle(); break;
 			case DEBUG:
 				debug++;
 				if (debug > 4) debug = 0;
@@ -560,7 +572,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private int[] backBuffer;
 	private int[] frontBuffer;
-	private int[] frameBuffer;
 
 	private int displayWidth;
 	private int displayHeight;
@@ -579,7 +590,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private JButton osdComponent;
 	
 	private boolean qualityRendering = QUALITY_RENDERING;
-	private int scanlinesRendering = SCANLINES_RENDERING;
+	private int crtMode = CRT_MODE;
 
 	private int debug = 0;
 	
@@ -592,8 +603,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private BufferedImage frameImage;
 	
-	private BufferedImage scanlines1TextureImage;
-	private TVTriadComposite scanlines2Composite;
+	private BufferedImage scanlinesTextureImage;
+	private CRTTriadComposite crtTriadComposite;
 	private BufferedImage intermFrameImage;
 	
 	private Image logoIcon;
@@ -620,14 +631,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final int OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
 
 	public static final boolean QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
-	public static final int SCANLINES_RENDERING = Parameters.SCREEN_SCANLINES_RENDERING;
-	public static final float SCANLINES1_STRENGTH = Parameters.SCREEN_SCANLINES1_STRENGTH;
+	public static final int CRT_MODE = Parameters.SCREEN_CRT_MODE;
+	public static final float SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
 	public static final int MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
 	public static final boolean PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
 	public static final boolean VSYNC = Parameters.SCREEN_VSYNC;
 	public static final float FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
 	public static final float IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
-	public static final float SCANLINES1_ACCELERATION = Parameters.SCREEN_SCANLINES1_ACCELERATION; 
+	public static final float SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 
 	
 	public static final long serialVersionUID = 0L;
@@ -650,7 +661,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 
 // Simulates the TV display at the sub pixel level (triads) 
-class TVTriadComposite implements Composite {
+class CRTTriadComposite implements Composite {
 	private int[] data = new int[3000];
 	public CompositeContext context = new CompositeContext() {
 		@Override
@@ -670,7 +681,7 @@ class TVTriadComposite implements Composite {
 				}
 				if (c < w) data[c] = (int) Math.min((data[c] & 0xff0000) * 1.30f, 0xff0000) & 0xff0000;
 				if (c < w - 1) data[c+1] = (int) Math.min((data[c+1] & 0xff00) * 1.30f, 0xff00) & 0xff00;
-				dstOut.setDataElements(dstOut.getMinX(), dstOut.getMinY(), w, 1, data);
+				dstOut.setDataElements(dstOut.getMinX(), dstOut.getMinY() + y, w, 1, data);
 			}
 		}
 	};

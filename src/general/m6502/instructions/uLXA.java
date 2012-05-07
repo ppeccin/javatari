@@ -17,7 +17,7 @@ public class uLXA extends UndocumentedInstruction {
 	}
 	
 	@Override
-	// TODO Check. Some sources say its an OR with $EE then AND with IMM, others exclude the OR, others exclude both the OR and the AND. Exluding just the OR
+	// Some sources say its an OR with $EE then AND with IMM, others exclude the OR, others exclude both the OR and the AND. Excluding just the OR
 	public void execute() {
 		byte val = (byte) (cpu.A /* | 0xEE) */ & cpu.memory.readByte(ea)); 
 		cpu.A = val;
