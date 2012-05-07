@@ -6,15 +6,16 @@ Alt + J:       Swap P1<>P2 Controls
 Alt + L:       Connect/Disconnect Paddles
 
 Alt + ENTER:   Toggle FullScreen
-Alt + S:       Toggle Scanlines
+Alt + R:       Toggle CRT modes
 Alt + Q:       Toggle Filter
-Alt + D:       Toggle Debug mode
+Alt + D:       Toggle Debug modes
 Alt + C:       Toggle Collisions
 Alt + V:       Toggle NTSC/PAL
 Alt + P:       Toggle Pause
+Alt + F:       Next Frame (during Pause)
 
-Ctr + 1-9:     Save State
-Alt + 1-9:     Load State
+Ctr + 1-0      Save State
+Alt + 1-0      Load State
 
 Shft + Arrows: Screen Size	
 Backspace:     Default Screen Size

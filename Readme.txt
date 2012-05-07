@@ -2,13 +2,19 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
-Version 1.03
+
+Version 1.04
 ============
-- FA / FA2 ROM format support
-- StarCastle started working
+- New CRT Emulation Modes. Alt + R to toggle 
+- StarCastle (AtariAge) working ok
 
 
 Previous Versions:
+
+Version 1.03
+============
+- FA / FA2 ROM format support
+- StarCastle (AtariAge) started working
 
 Version 1.02
 ============
