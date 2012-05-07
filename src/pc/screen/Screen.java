@@ -404,7 +404,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void renderFrame(Graphics2D graphics, int canvasWidth, int canvasHeight) {
 		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
 		if (crtMode > 0 && crtMode != 3) {
-			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f));
+			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, CRT_RETENTION_ALPHA));
 			// Draw old frame
 			graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
 		}
@@ -493,7 +493,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 				qualityRendering = !qualityRendering;
 				showOSD(qualityRendering ? "Filter ON" : "Filter OFF");
 				break;
-			case SCANLINES:
+			case CRT_MODES:
 				crtModeToggle(); break;
 			case DEBUG:
 				debug++;
@@ -632,6 +632,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	public static final boolean QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
 	public static final int CRT_MODE = Parameters.SCREEN_CRT_MODE;
+	public static final float CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
 	public static final float SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
 	public static final int MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
 	public static final boolean PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
@@ -653,7 +654,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
 		EXIT, LOAD_CARTRIDGE,
-		FULL_SCREEN, QUALITY, SCANLINES, 
+		FULL_SCREEN, QUALITY, CRT_MODES,
 		HELP, DEBUG
 	}
 

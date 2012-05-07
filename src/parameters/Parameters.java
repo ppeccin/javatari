@@ -43,6 +43,7 @@ public class Parameters {
 		SCREEN_VSYNC_TOLERANCE = Integer.valueOf(p.getProperty("SCREEN_VSYNC_TOLERANCE", String.valueOf(SCREEN_VSYNC_TOLERANCE)));
 		SCREEN_QUALITY_RENDERING = Boolean.valueOf(p.getProperty("SCREEN_QUALITY_RENDERING", String.valueOf(SCREEN_QUALITY_RENDERING)));
 		SCREEN_CRT_MODE = Integer.valueOf(p.getProperty("SCREEN_CRT_MODE", String.valueOf(SCREEN_CRT_MODE)));
+		SCREEN_CRT_RETENTION_ALPHA = Float.valueOf(p.getProperty("SCREEN_CRT_RETENTION_ALPHA", String.valueOf(SCREEN_CRT_RETENTION_ALPHA)));
 		SCREEN_SCANLINES_STRENGTH = Float.valueOf(p.getProperty("SCREEN_SCANLINES_STRENGTH", String.valueOf(SCREEN_SCANLINES_STRENGTH)));
 		SCREEN_MULTI_BUFFERING = Integer.valueOf(p.getProperty("SCREEN_MULTI_BUFFERING", String.valueOf(SCREEN_MULTI_BUFFERING)));
 		SCREEN_PAGE_FLIPPING = Boolean.valueOf(p.getProperty("SCREEN_PAGE_FLIPPING", String.valueOf(SCREEN_PAGE_FLIPPING)));
@@ -93,6 +94,7 @@ public class Parameters {
 	public static int 		SCREEN_VSYNC_TOLERANCE = 10;
 	public static boolean 	SCREEN_QUALITY_RENDERING = false;
 	public static int	 	SCREEN_CRT_MODE = 0;
+	public static float	 	SCREEN_CRT_RETENTION_ALPHA = 0.75f;
 	public static float 	SCREEN_SCANLINES_STRENGTH = 0.5f;
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;

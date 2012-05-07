@@ -26,7 +26,7 @@ public class ScreenControlsAdapter implements KeyListener {
 		keyAltCodeMap.put(KEY_FULL_SCR,    Screen.Control.FULL_SCREEN); 
 		keyAltCodeMap.put(KEY_QUALITY,     Screen.Control.QUALITY); 
 		keyAltCodeMap.put(KEY_DEBUG,       Screen.Control.DEBUG); 
-		keyAltCodeMap.put(KEY_SCANLINES,   Screen.Control.SCANLINES); 
+		keyAltCodeMap.put(KEY_CRT_MODES,   Screen.Control.CRT_MODES);
 
 		keyShiftCodeMap.put(KEY_UP,    Screen.Control.SIZE_MINUS); 
 		keyShiftCodeMap.put(KEY_DOWN,  Screen.Control.SIZE_PLUS); 
@@ -108,7 +108,7 @@ public class ScreenControlsAdapter implements KeyListener {
 	public static final int KEY_CART        = KeyEvent.VK_F5;  
 	public static final int KEY_FULL_SCR    = KeyEvent.VK_ENTER;  
 	public static final int KEY_QUALITY     = KeyEvent.VK_Q;  
-	public static final int KEY_SCANLINES   = KeyEvent.VK_S;  
+	public static final int KEY_CRT_MODES   = KeyEvent.VK_R;
 	public static final int KEY_VIDEO_STAND = KeyEvent.VK_V;    
 
 	public static final int KEY_DEBUG = KeyEvent.VK_D;  
