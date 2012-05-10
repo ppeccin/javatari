@@ -9,7 +9,8 @@ import java.util.Properties;
 public class Parameters {
 
 	public static void load() {
-		InputStream is = ClassLoader.getSystemResourceAsStream("parameters/Emulator.properties");
+		InputStream is = Thread.currentThread().getContextClassLoader().
+				getResourceAsStream("parameters/Emulator.properties");
 		Properties p = new Properties();
 		try {
 			p.clear();
@@ -47,7 +48,7 @@ public class Parameters {
 		SCREEN_SCANLINES_STRENGTH = Float.valueOf(p.getProperty("SCREEN_SCANLINES_STRENGTH", String.valueOf(SCREEN_SCANLINES_STRENGTH)));
 		SCREEN_MULTI_BUFFERING = Integer.valueOf(p.getProperty("SCREEN_MULTI_BUFFERING", String.valueOf(SCREEN_MULTI_BUFFERING)));
 		SCREEN_PAGE_FLIPPING = Boolean.valueOf(p.getProperty("SCREEN_PAGE_FLIPPING", String.valueOf(SCREEN_PAGE_FLIPPING)));
-		SCREEN_VSYNC = Boolean.valueOf(p.getProperty("SCREEN_VSYNC", String.valueOf(SCREEN_VSYNC)));
+		SCREEN_BUFFER_VSYNC = Integer.valueOf(p.getProperty("SCREEN_BUFFER_VSYNC", String.valueOf(SCREEN_BUFFER_VSYNC)));
 		SCREEN_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_FRAME_ACCELERATION", String.valueOf(SCREEN_FRAME_ACCELERATION)));
 		SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_INTERM_FRAME_ACCELERATION", String.valueOf(SCREEN_INTERM_FRAME_ACCELERATION)));
 		SCREEN_SCANLINES_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_SCANLINES_ACCELERATION", String.valueOf(SCREEN_SCANLINES_ACCELERATION)));
@@ -98,7 +99,7 @@ public class Parameters {
 	public static float 	SCREEN_SCANLINES_STRENGTH = 0.5f;
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;
-	public static boolean 	SCREEN_VSYNC = false;
+	public static int	 	SCREEN_BUFFER_VSYNC = -1;
 	public static float		SCREEN_FRAME_ACCELERATION = 0;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;

@@ -23,7 +23,7 @@ public class MultiplayerServer {
 		Parameters.load();
 		
 		// Load cartridge passed, if any
-		final Cartridge cart = (args.length > 0) ? FileCartridgeReader.read(args[0]) : null;
+		final Cartridge cart = (args.length > 0) ? FileCartridgeReader.readFile(args[0]) : null;
 
 		// Use Socket implementation
 		final SocketRemoteTransmitter remoteTransmitter = new SocketRemoteTransmitter();

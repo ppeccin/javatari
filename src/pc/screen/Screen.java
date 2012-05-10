@@ -23,10 +23,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.net.URL;
+import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.Arrays;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -248,14 +248,22 @@ public class Screen implements ClockDriven, VideoMonitor {
 		// Create the window for Windowed display
 		window = new ScreenWindow(this);
 		window.setTitle(BASE_TITLE);
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		try {
+			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		} catch(AccessControlException ex) {
+			// Ignore. Cannot set DefaultCloseOperation if running from an Applet
+		}
 		// Create the window for FullScreen display
 		fullWindow = new ScreenFullWindow();
 		fullWindow.setTitle(BASE_TITLE);
 		// Prepare the Logo image
-		URL url = ClassLoader.getSystemResource("pc/screen/images/Logo.png");
-		logoIcon = new ImageIcon(url).getImage();
-		// Prepare the OSD paint compoment
+		try {
+			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Logo.png");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Prepare the OSD paint component
 		osdComponent = new JButton();
 		osdComponent.setForeground(Color.GREEN);
 		osdComponent.setBackground(new Color(0x50000000, true));
@@ -636,7 +644,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
 	public static final int MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
 	public static final boolean PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
-	public static final boolean VSYNC = Parameters.SCREEN_VSYNC;
+	public static final int BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
 	public static final float FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
 	public static final float IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
 	public static final float SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;

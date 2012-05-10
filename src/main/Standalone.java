@@ -17,7 +17,7 @@ public class Standalone {
 		Parameters.load();
 		
 		// Load cartridge passed, if any
-		final Cartridge cart = (args.length > 0) ? FileCartridgeReader.read(args[0]) : null;
+		final Cartridge cart = (args.length > 0) ? FileCartridgeReader.readFile(args[0]) : null;
 
 		// Create the Console with the available Cartridge
 		final Console console = cart != null ? new Console(cart): new Console();

@@ -5,7 +5,7 @@ package atari.tia.audio;
 public final class ChannelStream {
 
 	public float nextSample() {
-		if (--dividerCountdown == 0) {
+		if (--dividerCountdown <= 0) {
 			dividerCountdown = divider;
 			currentSample = (nextSampleForControl() * 2 - 1) * volume;
 		}
@@ -17,12 +17,13 @@ public final class ChannelStream {
 	}
 
 	public void setDivider(int divider) {
+		if (this.divider == divider) return;
 		this.divider = divider;
-		if (dividerCountdown > divider)
-			dividerCountdown = divider;
+		if (dividerCountdown > divider) dividerCountdown = divider;
 	}
 
 	public void setControl(int control) {
+		if (this.control == control) return;
 		this.control = control;
 	}
 	

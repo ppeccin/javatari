@@ -18,7 +18,7 @@ import javax.imageio.ImageIO;
 public class GraphicsDeviceHelper {
 
 	public static BufferedImage loadImage(String fileName) throws IOException {
-		URL url = ClassLoader.getSystemResource(fileName);
+		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);
 		if (url == null)
 			throw new IOException("Could not find image: " + fileName);
 		return ImageIO.read(url);
