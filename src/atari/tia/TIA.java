@@ -783,7 +783,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x05:	NUSIZ1 = i; player1SetShape(i); return;
 			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return;
 			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return;
-			case 0x08:	COLUPF = i; if (debug) debugPixel(DEBUG_SPECIAL_COLOR); observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
+			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
 			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return;
 			case 0x0A:	CTRLPF = i; playfieldAndBallSetShape(i); return;
 			case 0x0B:	REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return;

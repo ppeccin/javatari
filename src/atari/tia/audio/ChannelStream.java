@@ -7,19 +7,19 @@ public final class ChannelStream {
 	public float nextSample() {
 		if (--dividerCountdown <= 0) {
 			dividerCountdown = divider;
-			currentSample = (nextSampleForControl() * 2 - 1) * volume;
+			currentSample = nextSampleForControl() == 1 ? volume : -volume;
 		}
 		return currentSample;
 	}
 	
-	public void setVolume(int volume) {
-		this.volume = (float)Math.pow(((float)volume / MAX_VOLUME), NON_LINEAR_CONVERSION);
+	public void setVolume(int newVolume) {
+		volume = (float)Math.pow(((float)newVolume / MAX_VOLUME), NON_LINEAR_CONVERSION);
 	}
 
-	public void setDivider(int divider) {
-		if (this.divider == divider) return;
-		this.divider = divider;
-		if (dividerCountdown > divider) dividerCountdown = divider;
+	public void setDivider(int newDivider) {
+		if (divider == newDivider) return;
+		dividerCountdown = (int)(((float)dividerCountdown / divider) * newDivider);
+		divider = newDivider;
 	}
 
 	public void setControl(int control) {
@@ -48,10 +48,7 @@ public final class ChannelStream {
 			case 0x06:						// div 31 pure tone (18 high, 13, low)
 			case 0x0a:						// div 31 pure tone (18 high, 13, low)
 				return nextTone31();
-			case 0x07:						// 5 bit poly > div 2 (same as 5 bit poly? Peccin: NOT!)
-				return nextPoly5() == 1
-					? nextTone2()
-					: currentTone2();
+			case 0x07:						// 5 bit poly > div 2 (same as 5 bit poly)
 			case 0x09:						// 5 bit poly
 				return nextPoly5();
 			case 0x08:						// 9 bit poly
@@ -109,10 +106,6 @@ public final class ChannelStream {
 		return carry;
 	}
 
-	private int currentTone2() {
-		return tone2;
-	}
-
 	private int nextTone2() {
 		return tone2 = tone2 == 0 ? 1 : 0;
 	}
@@ -144,7 +137,7 @@ public final class ChannelStream {
 	private int divider = 1;					// Changes to dividers will only be reflected at the next countdown cycle
 	private int dividerCountdown = 1;
 	
-	private float currentSample = 0;
+	private float currentSample = 1;
 	
 	private int poly4 = 0x0f;
 	private int poly5 = 0x1f;
