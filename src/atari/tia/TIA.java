@@ -85,6 +85,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				cpu.clockPulse();
 			}
 			// 67
+			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.generateNextSamples(1);
 			// Display period
 			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
 				// Clock delay decodes
@@ -113,8 +115,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
-			// 2 audio samples per scan line ~ 31440 KHz
-			audioOutput.generateNextSamples(2);		
+			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.generateNextSamples(1);
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
 			audioOutput.sendGeneratedSamplesToMonitor();
@@ -595,10 +597,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void hitHMOVE() {
 		// Only if needed
 		if (clock >= HBLANK_DURATION && clock < 210) return;		// 210 is maybe the minimum clock to hit HMOVE for effect in the next line
-		if (clock < HBLANK_DURATION)
-			hMoveHitBlank = true;
-		else
-			hMoveHitBlank = false;
+		hMoveHitBlank = clock < HBLANK_DURATION;
 		if (debug) debugPixel(DEBUG_HMOVE_COLOR);
 		int add;
 		boolean inv = false;
@@ -784,7 +783,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x05:	NUSIZ1 = i; player1SetShape(i); return;
 			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return;
 			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return;
-			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
+			case 0x08:	COLUPF = i; if (debug) debugPixel(DEBUG_SPECIAL_COLOR); observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
 			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return;
 			case 0x0A:	CTRLPF = i; playfieldAndBallSetShape(i); return;
 			case 0x0B:	REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return;

@@ -31,24 +31,27 @@ public final class ChannelStream {
 		switch (control) {
 			case 0x00:						// Silence  ("set to 1" per specification)
 			case 0x0b:						// Set last 4 bits to 1	(same as silence)
-				return 0;	
+				return 1;
 			case 0x01:						// 4 bit poly
 				return nextPoly4();
 			case 0x02:						// div 15 > 4 bit poly
 				return currentTone31() != nextTone31()
-						? nextPoly4()
-						: currentPoly4();
+					? nextPoly4()
+					: currentPoly4();
 			case 0x03:						// 5 bit poly > 4 bit poly
 				return nextPoly5() == 1
-						? nextPoly4()
-						: currentPoly4();
+					? nextPoly4()
+					: currentPoly4();
 			case 0x04:						// div 2 pure tone
 			case 0x05:						// div 2 pure tone
 				return nextTone2();
 			case 0x06:						// div 31 pure tone (18 high, 13, low)
 			case 0x0a:						// div 31 pure tone (18 high, 13, low)
 				return nextTone31();
-			case 0x07:						// 5 bit poly > div 2 (same as 5 bit poly) 	
+			case 0x07:						// 5 bit poly > div 2 (same as 5 bit poly? Peccin: NOT!)
+				return nextPoly5() == 1
+					? nextTone2()
+					: currentTone2();
 			case 0x09:						// 5 bit poly
 				return nextPoly5();
 			case 0x08:						// 9 bit poly
@@ -57,13 +60,13 @@ public final class ChannelStream {
 			case 0x0d:						// div 6 pure tone (3 high, 3 low)
 				return nextTone6();
 			case 0x0e:						// div 93 pure tone	(31 tone each 3)
-				return currentTone6() != nextTone6()
-						? nextTone31()
-						: currentTone31();
+				return currentTone31() != nextTone31()
+					? nextTone6()
+					: currentTone6();
 			case 0x0f:						// 5 bit poly div 6 (poly 5 each 3)		
-				return currentTone6() != nextTone6()
-						? nextPoly5()
-						: currentPoly5();
+				return nextPoly5() == 1
+					? nextTone6()
+					: currentTone6();
 			default:	
 				throw new IllegalStateException("Invalid TIA Audio Channel Control: " + control);
 		}
@@ -82,10 +85,6 @@ public final class ChannelStream {
 		else
 			poly4 |= 0x08;
 		return carry;
-	}
-
-	private int currentPoly5() {
-		return poly5 & 0x01;
 	}
 
 	private int nextPoly5() {
@@ -108,6 +107,10 @@ public final class ChannelStream {
 		else
 			poly9 |= 0x100;
 		return carry;
+	}
+
+	private int currentTone2() {
+		return tone2;
 	}
 
 	private int nextTone2() {

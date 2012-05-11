@@ -259,10 +259,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		// Prepare the Logo image
 		try {
 			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Logo.png");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} catch (IOException e) {}
 		// Prepare the OSD paint component
 		osdComponent = new JButton();
 		osdComponent.setForeground(Color.GREEN);
