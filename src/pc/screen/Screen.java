@@ -231,8 +231,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private Graphics2D canvasGraphics() {
 		if (canvas == null) return null;
 		Graphics2D canvasGraphics = canvas.canvasGraphics();
+		canvasGraphics.setComposite(AlphaComposite.Src);
+		// Adjusts the Render Quality if needed
 		if (canvasGraphics != null) 
-			// Adjusts the Render Quality
 			canvasGraphics.setRenderingHint(
 				RenderingHints.KEY_RENDERING, 
 				qualityRendering ? RenderingHints.VALUE_RENDER_QUALITY : RenderingHints.VALUE_RENDER_DEFAULT
@@ -317,10 +318,10 @@ public class Screen implements ClockDriven, VideoMonitor {
 		synchronized (refreshMonitor) {
 			Graphics2D canvasGraphics = canvasGraphics();
 			if (canvasGraphics == null) return;
-			canvasGraphics.setColor(Color.BLACK);
 			int w = canvas.canvasEffectiveSize().width;
 			int h = canvas.canvasEffectiveSize().height;
-			canvasGraphics.fillRect(0, 0, w, h);
+			canvasGraphics.setBackground(Color.BLACK);
+			canvasGraphics.clearRect(0, 0, w, h);
 			canvasGraphics.drawImage(
 				logoIcon, 
 				(w - logoIcon.getWidth(null)) / 2, 
@@ -334,6 +335,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		
 	private void paintOSD(Graphics2D canvasGraphics) {
 		if (--osdFramesLeft < 0) return;
+		canvasGraphics.setComposite(AlphaComposite.SrcOver);
 		osdComponent.setText(osdMessage);
 		Dimension s = osdComponent.getPreferredSize();
 		SwingUtilities.paintComponent(
@@ -382,6 +384,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 						0, 0, intermWidth, intermHeight,
 						null);
 				}
+				paintOSD(intermGraphics);
 				intermGraphics.dispose();
 				// Then transfer to Canvas
 				canvasGraphics.drawImage(
@@ -389,17 +392,18 @@ public class Screen implements ClockDriven, VideoMonitor {
 					0, 0, intermWidth, intermHeight,
 					0, 0, intermWidth, intermHeight,
 					null);
-				paintOSD(canvasGraphics);
 			} else {
 				// Renders directly to Canvas
 				renderFrame(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight);
 				// If CRT mode 2, alpha-superimpose the prepared scanlines image
-				if (crtMode == 2)
+				if (crtMode == 2) {
+					canvasGraphics.setComposite(AlphaComposite.SrcOver);
 					canvasGraphics.drawImage(
 						scanlinesTextureImage,
 						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
 						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
 						null);
+				}
 				paintOSD(canvasGraphics);
 			}
 			canvasFinish(canvasGraphics);
@@ -409,6 +413,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void renderFrame(Graphics2D graphics, int canvasWidth, int canvasHeight) {
 		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
 		if (crtMode > 0 && crtMode != 3) {
+			// Ensures buffer is clear before alpha blending
+			graphics.setBackground(Color.BLACK);
+			graphics.clearRect(0, 0, canvasWidth, canvasHeight);
 			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, CRT_RETENTION_ALPHA));
 			// Draw old frame
 			graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
@@ -417,10 +424,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 		frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, frontBuffer);
 		// Draw new frame
 		graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
-		// If needed return composite to normal
-		if (crtMode > 0 && crtMode != 3) graphics.setComposite(AlphaComposite.SrcOver);
 	}
-	
+
 	private void setDisplayDefaultSize() {
 		setDisplaySize(DEFAULT_WIDTH, DEFAULT_HEIGHT_PCT);
 		setDisplayOrigin(DEFAULT_ORIGIN_X, DEFAULT_ORIGIN_Y_PCT);
