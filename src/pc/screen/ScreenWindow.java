@@ -153,7 +153,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		// Show info about the granted BufferStrategy
 		BufferCapabilities grantedCaps = bufferStrategy.getCapabilities();
 		System.out.println("Backbuffer accelerated: " + grantedCaps.getBackBufferCapabilities().isAccelerated());
-		System.out.println("PageFlipping active: " + grantedCaps.isPageFlipping());
+		System.out.println("PageFlipping active: " + grantedCaps.isPageFlipping() + ", " + grantedCaps.getFlipContents());
 		if (extBufCapClass != null && grantedCaps.getClass().equals(extBufCapClass))
 			try {
 				System.out.println("VSynch active: " + extBufCapClass.getMethod("getVSync",(Class<?>[])null).invoke(grantedCaps));

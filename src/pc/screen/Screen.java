@@ -362,19 +362,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 			if (crtMode >= 3 || (MULTI_BUFFERING < 2 && (osdFramesLeft >= 0 || crtMode > 0))) {
 				int intermWidth = Math.min(canvasEffectiveWidth, 2048);
 				int intermHeight = Math.min(canvasEffectiveHeight, 1280);
-				// Ensures the intermediate image is clean
 				Graphics2D intermGraphics = intermFrameImage.createGraphics();
-				intermGraphics.setBackground(Color.BLACK);
-				intermGraphics.clearRect(0, 0, intermWidth, intermHeight);
 				// Renders to intermediate image
-				renderFrame(intermGraphics, intermWidth, intermHeight);
+				renderFrame(intermGraphics, intermWidth, intermHeight, true);
 				// If CRT mode 2, alpha-superimpose the prepared scanlines image
 				if (crtMode == 2)
-					intermGraphics.drawImage(
-						scanlinesTextureImage,
-						0, 0, intermWidth, intermHeight,
-						0, 0, intermWidth, intermHeight,
-						null);
+					renderScanlines(intermGraphics, intermWidth, intermHeight);
 				// If CRT mode 3 or 4, sets the CRTTriadComposite and rewrite
 				if (crtMode >= 3) {
 					intermGraphics.setComposite(crtTriadComposite);
@@ -394,28 +387,23 @@ public class Screen implements ClockDriven, VideoMonitor {
 					null);
 			} else {
 				// Renders directly to Canvas
-				renderFrame(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight);
+				renderFrame(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight, crtMode > 0);
 				// If CRT mode 2, alpha-superimpose the prepared scanlines image
-				if (crtMode == 2) {
-					canvasGraphics.setComposite(AlphaComposite.SrcOver);
-					canvasGraphics.drawImage(
-						scanlinesTextureImage,
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
-						0, 0, canvasEffectiveWidth, canvasEffectiveHeight,
-						null);
-				}
+				if (crtMode == 2)
+					renderScanlines(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight);
 				paintOSD(canvasGraphics);
 			}
 			canvasFinish(canvasGraphics);
 		}
 	}
 
-	private void renderFrame(Graphics2D graphics, int canvasWidth, int canvasHeight) {
-		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
-		if (crtMode > 0 && crtMode != 3) {
-			// Ensures buffer is clear before alpha blending
+	private void renderFrame(Graphics2D graphics, int canvasWidth, int canvasHeight, boolean clear) {
+		if (clear) {
 			graphics.setBackground(Color.BLACK);
 			graphics.clearRect(0, 0, canvasWidth, canvasHeight);
+		}
+		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
+		if (crtMode > 0 && crtMode != 3) {
 			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, CRT_RETENTION_ALPHA));
 			// Draw old frame
 			graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
@@ -424,6 +412,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 		frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, frontBuffer);
 		// Draw new frame
 		graphics.drawImage(frameImage, 0, 0, canvasWidth, canvasHeight, 0, 0, displayWidth, displayHeight, null);
+	}
+
+	private void renderScanlines(Graphics2D graphics, int canvasWidth, int canvasHeight) {
+		graphics.setComposite(AlphaComposite.SrcOver);
+		graphics.drawImage( scanlinesTextureImage, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight, null);
 	}
 
 	private void setDisplayDefaultSize() {
@@ -486,7 +479,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 		synchronized (refreshMonitor) {
 			crtMode++;
 			if (crtMode > 4) crtMode = 0;
-			canvasSetRenderingMode();
 			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode);
 		}
 	}
