@@ -2,14 +2,18 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
+Version 1.05
+============
+- Non page-flipping bug introduced in 1.04 fixed
+- Emulator now remembers the last folder used to load ROMs
+
+
+Previous Versions:
 
 Version 1.04
 ============
 - New CRT Emulation Modes. Alt + R to toggle 
 - StarCastle (AtariAge) working ok
-
-
-Previous Versions:
 
 Version 1.03
 ============

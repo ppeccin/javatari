@@ -1,0 +1,14 @@
+<jnlp spec="1.0+">
+    <information>
+        <title>javatari</title>
+        <vendor>Paulo Augusto Peccin</vendor>
+    </information>
+	<security>
+	    <all-permissions />
+	</security>
+	<resources>
+        <jar href="deploy/javatari.jar" main="true" />
+    </resources>
+    <application-desc name = "javatari" />
+</jnlp>
+
