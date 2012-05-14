@@ -33,8 +33,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
-import pc.AWTConsoleControls;
-import pc.FileCartridgeReader;
+import pc.controls.AWTConsoleControls;
+import pc.file.FileCartridgeReader;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import atari.cartridge.Cartridge;

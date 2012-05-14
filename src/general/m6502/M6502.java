@@ -239,8 +239,8 @@ public final class M6502 implements ClockDriven {
 		", X: " + String.format("%02x", X) +
 		", Y: " + String.format("%02x", Y) +
 		", SP: " + String.format("%02x", SP) +
-		", PC: " + String.format("%04x", (int)PC) + "\n" +
-		"Flags: " + String.format("%08d", Integer.parseInt(Integer.toBinaryString(PS() & 0xff)));
+		", PC: " + String.format("%04x", (int)PC) +
+		",  Flags: " + String.format("%08d", Integer.parseInt(Integer.toBinaryString(PS() & 0xff)));
 		return str;
 	}
 

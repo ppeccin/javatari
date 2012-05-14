@@ -2,11 +2,17 @@
 
 package utils;
 
+import java.security.AccessControlException;
+
 public class Terminator {
 
 	public static void terminate() {
 		System.out.println("<<<<<<<<<<<<  EXIT   >>>>>>>>>>>>>");
-		System.exit(0);
+		try {
+			System.exit(0);
+		} catch(AccessControlException ex) {
+			// Ignore
+		}
 	}
 	
 }

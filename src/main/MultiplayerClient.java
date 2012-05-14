@@ -8,8 +8,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
-import pc.Speaker;
 import pc.screen.Screen;
+import pc.speaker.Speaker;
 import atari.network.ClientConsole;
 import atari.network.socket.SocketRemoteReceiver;
 

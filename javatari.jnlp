@@ -3,12 +3,14 @@
         <title>javatari</title>
         <vendor>Paulo Augusto Peccin</vendor>
     </information>
-	<security>
+	<_security>
 	    <all-permissions />
-	</security>
+	</_security>
 	<resources>
         <jar href="deploy/javatari.jar" main="true" />
     </resources>
-    <application-desc name = "javatari" />
+    <application-desc 
+    	name = "javatari" 
+    	_main-class = "pc.file.FileServiceCartridgeReader" />
 </jnlp>
 

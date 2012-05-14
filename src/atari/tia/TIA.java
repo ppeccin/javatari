@@ -798,7 +798,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x14:	RESBL  = i; hitRESBL(); return;
 			case 0x15:	AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return;
 			case 0x16:	AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return;
-			case 0x17:	AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
+			case 0x17:	
+				
+				System.out.printf("%2x   %s\n", i, cpu.printMemory(0x90, 16));
+				
+				AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
 			case 0x18:	AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
 			case 0x19:	AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )
 			case 0x1A:	AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )

@@ -3,10 +3,10 @@
 package main;
 
 import parameters.Parameters;
-import pc.FileCartridgeReader;
-import pc.FileSaveStateMedia;
-import pc.Speaker;
+import pc.file.FileCartridgeReader;
+import pc.file.FileSaveStateMedia;
 import pc.screen.Screen;
+import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
 

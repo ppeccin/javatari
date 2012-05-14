@@ -1,6 +1,8 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package atari.cartridge;
+package atari.cartridge.bankswitching;
+
+import atari.cartridge.Cartridge;
 
 /**
  * Implements the generic bank switching method, with or without SuperChip (extra RAM). 

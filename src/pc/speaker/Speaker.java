@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc;
+package pc.speaker;
 
 import general.av.audio.AudioMonitor;
 import general.av.audio.AudioSignal;

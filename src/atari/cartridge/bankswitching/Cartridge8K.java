@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package atari.cartridge;
+package atari.cartridge.bankswitching;
 
 /**
  * Implements the 8K "F8" and "F8SC" bank switching method

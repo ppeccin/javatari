@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc;
+package pc.file;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
