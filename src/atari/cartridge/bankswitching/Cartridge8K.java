@@ -12,6 +12,8 @@ public final class Cartridge8K extends CartridgeBanked {
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 		setContent(content);
+		// Start at bank 1	TODO Check
+		bankAddressOffset = 4096;
 	}
 
 	@Override
@@ -24,7 +26,6 @@ public final class Cartridge8K extends CartridgeBanked {
 				break;
 			case 0x0ff9:	// bank 1 selection
 				bankAddressOffset = 4096;
-				break;
 		}
 		return add;
 	}

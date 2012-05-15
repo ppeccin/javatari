@@ -16,11 +16,6 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	}
 
 	@Override
-	public int unsignedByte(int address) {  
-		return readByte(address) & 0xff;
-	}
-	
-	@Override
 	public void writeByte(int address, byte b) {	
 		// Writing to ROMs is possible, but nothing is changed
 	}

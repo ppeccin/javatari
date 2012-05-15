@@ -118,8 +118,8 @@ public final class M6502 implements ClockDriven {
 			if (!RDY) return;						// CPU is halted
 		if (--cyclesToExecute >= 0) return;			// CPU is still "executing" remaining instruction cycles
 		if (trace) showTrace();
-		instructionToExecute = instructions[memory.unsignedByte(PC++)];		// Reads the instruction to be executed
-		cyclesToExecute = instructionToExecute.fetch() - 1;					// One cycle was just executed already!
+		instructionToExecute = instructions[toUnsignedByte(memory.readByte(PC++))];		// Reads the instruction to be executed
+		cyclesToExecute = instructionToExecute.fetch() - 1;				// One cycle was just executed already!
 	}
 
 	public void powerOn() {	// Initializes the CPU as if it were just powered on
@@ -146,7 +146,7 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public char fetchZeroPageAddress() {
-		return (char) (memory.unsignedByte(PC++));
+		return (char) toUnsignedByte((memory.readByte(PC++)));
 	}
 
 	public char fetchZeroPageXAddress() {
@@ -191,12 +191,12 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public char memoryReadWord(int address) {
-		return (char) (memory.unsignedByte(address) + (memory.unsignedByte(address + 1) << 8));		// Address + 1 may wrap, LSB first
+		return (char) (toUnsignedByte(memory.readByte(address)) + (toUnsignedByte(memory.readByte(address + 1)) << 8));		// Address + 1 may wrap, LSB first
 	}
 
 	public char memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
 		if ((address & 0xff) == 0xff)		
-			return (char) (memory.unsignedByte(address) + (memory.unsignedByte(address & 0xff00) << 8));		// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
+			return (char) (toUnsignedByte(memory.readByte(address)) + (toUnsignedByte(memory.readByte(address & 0xff00)) << 8));	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
 		else
 			return memoryReadWord(address);
 	}
@@ -591,7 +591,7 @@ public final class M6502 implements ClockDriven {
 	public static int toUunsignedByte(byte b) {	// ** NOTE does not return a real byte for signed operations
 		return b & 0xff;
 	}
-	public static int toUnsignedByte(int i) {		// ** NOTE does not return a real byte for signed operations
+	public static int toUnsignedByte(int i) {	// ** NOTE does not return a real byte for signed operations
 		return toUunsignedByte((byte)i);
 	}
 

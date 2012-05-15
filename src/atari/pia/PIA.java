@@ -82,11 +82,6 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	@Override
-	public int unsignedByte(int address) {
-		return readByte(address) & 0xff;
-	}
-
-	@Override
 	public void writeByte(int address, byte b) {
 		int i = b & 0xff;
 		switch(address & WRITE_ADDRESS_MASK) {

@@ -30,7 +30,7 @@ public class Parameters {
 		TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(p.getProperty("TIA_AUDIO_MAX_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_AMPLITUDE)));  
 		TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = Float.valueOf(p.getProperty("TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE)));
 		TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE= Float.valueOf(p.getProperty("TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE)));
-		
+
 		SCREEN_DEFAULT_FPS = Double.valueOf(p.getProperty("SCREEN_DEFAULT_FPS", String.valueOf(SCREEN_DEFAULT_FPS)));
 		SCREEN_DEFAULT_ORIGIN_X = Integer.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_X", String.valueOf(SCREEN_DEFAULT_ORIGIN_X)));
 		SCREEN_DEFAULT_ORIGIN_Y_PCT = Double.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_Y_PCT", String.valueOf(SCREEN_DEFAULT_ORIGIN_Y_PCT)));
@@ -61,6 +61,8 @@ public class Parameters {
 		SPEAKER_ADDED_THREAD_PRIORITY = Integer.valueOf(p.getProperty("SPEAKER_ADDED_THREAD_PRIORITY", String.valueOf(SPEAKER_ADDED_THREAD_PRIORITY)));
 
 		CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(p.getProperty("CONSOLE_FAST_SPEED_FACTOR", String.valueOf(CONSOLE_FAST_SPEED_FACTOR)));
+
+		BUS_DATA_RETENTION = Boolean.valueOf(p.getProperty("BUS_DATA_RETENTION", String.valueOf(BUS_DATA_RETENTION)));
 
 		SERVER_SERVICE_NAME = String.valueOf(p.getProperty("SERVER_SERVICE_NAME", String.valueOf(SERVER_SERVICE_NAME)));
 		SERVER_SERVICE_PORT = Integer.valueOf(p.getProperty("SERVER_SERVICE_PORT", String.valueOf(SERVER_SERVICE_PORT)));
@@ -112,6 +114,8 @@ public class Parameters {
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static int		CONSOLE_FAST_SPEED_FACTOR = 8;
+
+	public static boolean 	BUS_DATA_RETENTION = true;
 
 	public static String	SERVER_SERVICE_NAME = "AtariP1Server";
 	public static int 		SERVER_SERVICE_PORT = 9998;

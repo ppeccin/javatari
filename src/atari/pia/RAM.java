@@ -18,14 +18,12 @@ public final class RAM implements BUS16Bits {
 	public void powerOff() {
 	}
 
+	@Override
 	public byte readByte(int address) {		
 		return bytes[(address & ADDRESS_MASK)];	
 	}
 
-	public int unsignedByte(int address) {  
-		return bytes[(address & ADDRESS_MASK)] & 0xff;
-	}
-	
+	@Override
 	public void writeByte(int address, byte b) {	
 		bytes[(address & ADDRESS_MASK)] = b;		
 	}
@@ -33,7 +31,7 @@ public final class RAM implements BUS16Bits {
 	public void dump() {
 		System.out.println("RAM DUMP:");
 		for(int i = 0; i < bytes.length; i++)
-			System.out.printf("%02x ", unsignedByte(i));
+			System.out.printf("%02x ", bytes[i]);
 		System.out.println();
 	}
 	

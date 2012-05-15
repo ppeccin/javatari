@@ -20,7 +20,7 @@ public class uSBX extends UndocumentedInstruction {
 	public void execute() {
 		byte b = (byte) (cpu.A & cpu.X);
 		int uB = M6502.toUunsignedByte(b);
-		int uVal = cpu.memory.unsignedByte(ea); 
+		int uVal = M6502.toUnsignedByte(cpu.memory.readByte(ea)); 
 		byte newX = (byte)(uB - uVal);
 		cpu.X = newX;
 		

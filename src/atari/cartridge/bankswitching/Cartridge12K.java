@@ -27,7 +27,6 @@ public final class Cartridge12K extends CartridgeBanked {
 				break;
 			case 0x0ffa:	// bank 2 selection
 				bankAddressOffset = 8192;
-				break;
 		}
 		return add;
 	}

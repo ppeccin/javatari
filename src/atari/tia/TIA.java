@@ -136,7 +136,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void setPixelValue() {
 		// Updates the current PlayFiled pixel to draw only each 4 pixels, or at the first calculated pixel after stopped using cached line
-		if (clock >= 68 && (clock == lastObservableChangeClock || clock % 4 == 0))
+		if (clock % 4 == 0 || clock == lastObservableChangeClock)
 			playfieldUpdateCurrentPixel();
 		// No need to calculate all possibilities in vBlank. TODO No collisions will be detected during vBlank
 		if (vBlankOn) {
@@ -767,11 +767,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}	
 
 	@Override
-	public int unsignedByte(int address) {
-		return readByte(address) & 0xff;
-	}	
-
-	@Override
 	public void writeByte(int address, byte b) {
 		int i = b & 0xff;
 		switch(address & WRITE_ADDRESS_MASK) {
@@ -798,11 +793,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case 0x14:	RESBL  = i; hitRESBL(); return;
 			case 0x15:	AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return;
 			case 0x16:	AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return;
-			case 0x17:	
-				
-				System.out.printf("%2x   %s\n", i, cpu.printMemory(0x90, 16));
-				
-				AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
+			case 0x17:	AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
 			case 0x18:	AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
 			case 0x19:	AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )
 			case 0x1A:	AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )
@@ -1337,10 +1328,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private static final int PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT = 50;  // Supports a maximum of player GR changes before any is drawn
 	
-	public static final boolean SYNC_WITH_AUDIO_MONITOR = Parameters.TIA_SYNC_WITH_AUDIO_MONITOR;
-	public static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
+	private static final boolean SYNC_WITH_AUDIO_MONITOR = Parameters.TIA_SYNC_WITH_AUDIO_MONITOR;
+	private static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
 	
-	public static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
+	private static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
 
 	public static final double DEFAUL_CLOCK_NTSC = Parameters.TIA_DEFAULT_CLOCK_NTSC;		
 	public static final double DEFAUL_CLOCK_PAL = Parameters.TIA_DEFAULT_CLOCK_PAL;		

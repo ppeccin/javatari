@@ -41,7 +41,7 @@ public class CPx extends Instruction {
 
 	@Override
 	public void execute() {
-		int uVal = cpu.memory.unsignedByte(ea); 
+		int uVal = M6502.toUnsignedByte(cpu.memory.readByte(ea)); 
 		int uR;
 		switch (reg) {
 			case rA:
