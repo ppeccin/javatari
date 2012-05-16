@@ -2,7 +2,6 @@
 
 package parameters;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -16,8 +15,8 @@ public class Parameters {
 			p.clear();
 			p.load(is);
 			is.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		
 		TIA_FORCED_CLOCK = Double.valueOf(p.getProperty("TIA_FORCED_CLOCK", String.valueOf(TIA_FORCED_CLOCK)));

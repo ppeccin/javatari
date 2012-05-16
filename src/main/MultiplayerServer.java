@@ -3,12 +3,13 @@
 package main;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
-import pc.file.FileCartridgeReader;
+import pc.file.CartridgeLoader;
 import pc.file.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
@@ -23,7 +24,7 @@ public class MultiplayerServer {
 		Parameters.load();
 		
 		// Load cartridge passed, if any
-		final Cartridge cart = (args.length > 0) ? FileCartridgeReader.readFile(args[0]) : null;
+		final Cartridge cart = (args.length > 0) ? CartridgeLoader.load(new URL(args[0])) : null;
 
 		// Use Socket implementation
 		final SocketRemoteTransmitter remoteTransmitter = new SocketRemoteTransmitter();

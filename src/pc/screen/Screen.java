@@ -34,7 +34,7 @@ import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
 import pc.controls.AWTConsoleControls;
-import pc.file.FileCartridgeReader;
+import pc.file.FileCartridgeChooser;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import atari.cartridge.Cartridge;
@@ -464,7 +464,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private void loadCartridge() {
 		if (fullScreen) fullScreen(false);
-		Cartridge cart = FileCartridgeReader.chooseFile();
+		Cartridge cart = FileCartridgeChooser.chooseFile();
 		if (cart != null) cartridgeSocket.insert(cart);
 	};
 

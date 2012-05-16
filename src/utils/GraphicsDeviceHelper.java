@@ -8,6 +8,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.io.IOException;
@@ -26,6 +27,10 @@ public class GraphicsDeviceHelper {
 
 	public static BufferedImage loadAsCompatibleImage(String fileName) throws IOException {
 		return asCompatibleImage(loadImage(fileName));
+	}
+	
+	public static BufferedImage loadAsCompatibleTranslucentImage(String fileName) throws IOException {
+		return asCompatibleImage(loadImage(fileName), Transparency.TRANSLUCENT);
 	}
 	
 	public static BufferedImage asCompatibleImage(Image img) {

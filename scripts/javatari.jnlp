@@ -1,0 +1,19 @@
+<jnlp spec="1.0+"
+	codebase="http://localhost/javatari">
+    <information>
+        <title>javatari</title>
+        <vendor>Paulo Augusto Peccin</vendor>
+        <homepage href="http://javatari.org" />
+		<icon kind="splash" href="http://localhost/javatari/javatari-splash.png" />
+    </information>
+	<_security>
+	    <all-permissions />
+	</_security>
+	<resources>
+        <jar href="javatari.jar" main="true" />
+    </resources>
+    <application-desc name="javatari">
+    	<argument>http://localhost/javatari/helloworld.bin</argument>
+   	</application-desc>
+</jnlp>
+

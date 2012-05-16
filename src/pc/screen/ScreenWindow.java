@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -24,6 +25,7 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 import parameters.Parameters;
 import utils.GraphicsDeviceHelper;
@@ -45,7 +47,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		getContentPane().setBackground(Color.BLACK);
 		getContentPane().setIgnoreRepaint(true);
 		setLayout(null);
-		setIconImage(favicon);
+		setIconImages(Arrays.asList(new Image[] { icon64, icon32, favicon }));
 		canvas = new Canvas();
 		canvas.setIgnoreRepaint(true);
 		canvas.setFocusTraversalKeysEnabled(false);
@@ -257,6 +259,8 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 			bottomBar = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/BottomBar.png");
 			logoBar = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/LogoBar.png");
 			favicon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Favicon.png");
+			icon64 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("pc/screen/images/LogoIcon64.png");
+			icon32 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("pc/screen/images/LogoIcon32.png");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -292,7 +296,8 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private Canvas canvas;
 	private BufferStrategy bufferStrategy;
 
-	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top, bottomBar, bottomLeftBar, bottomRightBar, logoBar, favicon;
+	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
+		bottomBar, bottomLeftBar, bottomRightBar, logoBar, favicon, icon64, icon32;
 
 	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
 	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
