@@ -1,8 +1,10 @@
-<jnlp spec="1.0+">
+<jnlp spec="1.0+"
+	codebase="http://javatari.org/files">
     <information>
         <title>javatari</title>
         <vendor>Paulo Augusto Peccin</vendor>
         <homepage href="http://javatari.org" />
+		<icon kind="splash" href="http://javatari.org/files/javatari-splash.png" />
     </information>
 	<_security>
 	    <all-permissions />
@@ -11,8 +13,7 @@
         <jar href="javatari.jar" main="true" />
     </resources>
     <application-desc name="javatari">
-    	<argument>http://javatari.org/files/HelloObjectve.bin</argument>
-		<argument>file:///C:/cartridges/HERO.bin</argument>
+    	<argument>http://javatari.org/files/helloworld.bin</argument>
    	</application-desc>
 </jnlp>
 
