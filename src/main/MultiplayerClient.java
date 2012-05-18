@@ -24,15 +24,18 @@ public class MultiplayerClient {
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
 		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		screen.p1ControlsMode(true);
 		final Speaker speaker = new Speaker(console.audioOutput());
 		
+		// Automatically adjust interface for Multiplayer Client operation
+		screen.p1ControlsMode(true);
+		screen.cartridgeChangeEnabled(false);
+
 		// Turn AV monitors on
 		screen.powerOn();                
 	 	speaker.powerOn();
 
  		// Try connection
- 		boolean success = remoteReceiver.askUserForConnection(args.length > 0 ? args[0] : null);
+ 		boolean success = remoteReceiver.askUserForConnection(Parameters.mainArg);
  		if (!success) System.exit(1);
  		
 	}

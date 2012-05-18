@@ -123,6 +123,10 @@ public class Screen implements ClockDriven, VideoMonitor {
 		toolkitControls.p1ControlsMode(state);
 	}
 
+	public void cartridgeChangeEnabled(boolean state) {
+		cartridgeChangeEnabled = state;
+	}
+
 	private boolean newFrame() {
 		if (debug > 0) window.setTitle(BASE_TITLE + " - " + line + " lines");
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
@@ -150,11 +154,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 		signalOn = state;
 		if (signalOn)
 			adjustToVideoSignal();
-		else {
-			// Paints the Logo if the signal is off
-			canvas.canvasClear();
-			paintLogo();
-		}
+		else 
+			adjustToVideoSignalOff();
 		return signalOn;
 	}
 
@@ -314,7 +315,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 		}}
 	}
 
-	private void paintLogo() {
+	private void adjustToVideoSignalOff() {
+		VSYNCDetectionCount = VSYNC_DETECTION;
+		line = 0;
+		canvas.canvasClear();
+		paintLogo();
+	}
+
+private void paintLogo() {
 		synchronized (refreshMonitor) {
 			Graphics2D canvasGraphics = canvasGraphics();
 			if (canvasGraphics == null) return;
@@ -462,15 +470,15 @@ public class Screen implements ClockDriven, VideoMonitor {
 		setDisplayScale(scaleY * DEFAULT_SCALE_ASPECT_X, scaleY);
 	}
 
-	private void loadCartridge() {
+	private void loadCartridge(boolean autoPower) {
 		// Shortcut to prevent chooser from opening
-		if (Parameters.CONSOLE_CARTRIDGE_CHANGE_DISABLED) {
+		if (!cartridgeChangeEnabled) {
 			showOSD("Cartridge change is disabled");
 			return;
 		}
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileCartridgeChooser.chooseFile();
-		if (cart != null) cartridgeSocket.insert(cart, true);
+		if (cart != null) cartridgeSocket.insert(cart, autoPower);
 	};
 
 	private void fullScreen(boolean state) {
@@ -493,7 +501,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (!state) return;
 		switch(control) {
 			case LOAD_CARTRIDGE:
-				loadCartridge(); break;
+				loadCartridge(true); break;
+			case LOAD_CARTRIDGE_NO_AUTO_POWER:
+				loadCartridge(false); break;
 			case FULL_SCREEN:
 				fullScreen(!fullScreen); break;
 			case QUALITY:
@@ -561,12 +571,13 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	public Clock clock;
 	public final ConsoleControlsSocket consoleControlsSocket;
+
+	private AWTConsoleControls toolkitControls;
+	private boolean cartridgeChangeEnabled = !Parameters.SCREEN_CARTRIDGE_CHANGE_DISABLED;
 	
 	private final VideoSignal videoSignal;
 	private final CartridgeSocket cartridgeSocket;
 	private final double fps;
-	
-	private AWTConsoleControls toolkitControls;
 	
 	private VideoStandard signalStandard;
 	private int signalWidth;
@@ -648,7 +659,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
 	public static final float SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 
-	
 	public static final long serialVersionUID = 0L;
 
 	public static enum Control {
@@ -660,7 +670,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		SCALE_X_MINUS, SCALE_Y_MINUS, 
 		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
-		EXIT, LOAD_CARTRIDGE,
+		EXIT, LOAD_CARTRIDGE, LOAD_CARTRIDGE_NO_AUTO_POWER,
 		FULL_SCREEN, QUALITY, CRT_MODES,
 		HELP, DEBUG
 	}

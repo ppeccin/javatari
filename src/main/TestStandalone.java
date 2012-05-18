@@ -3,7 +3,6 @@
 package main;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import parameters.Parameters;
 import pc.cartridge.CartridgeLoader;
@@ -20,11 +19,8 @@ public class TestStandalone {
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
 		
-		// Load cartridge
-		final Cartridge cart = CartridgeLoader.load(new URL("file:///C:/cartridges/hero.bin"));
-
-		// Create the Console with the available Cartridge
-		final Console console = cart != null ? new Console(cart) : new Console();
+		// Create the Console
+		final Console console = new Console();
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
 		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
@@ -35,8 +31,9 @@ public class TestStandalone {
 	 	screen.powerOn();                
 	 	speaker.powerOn();
 
-	 	// If a Cartridge is inserted, turn the console on!
-	 	if (cart != null) console.powerOn();
+	 	// Insert test Cartridge
+		final Cartridge cart = CartridgeLoader.load("file:///C:/cartridges/hero.bin");
+	 	if (cart != null) console.cartridgeSocket().insert(cart, true);
 
 	 	// Keep logging info about clocks speeds achieved 
 	 	(new Thread() { @Override public void run() {

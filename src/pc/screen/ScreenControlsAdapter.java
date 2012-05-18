@@ -19,8 +19,9 @@ public class ScreenControlsAdapter implements KeyListener {
 	private void init(Component... components) {
 		for (int i = 0; i < components.length; i++)
 			components[i].addKeyListener(this);
-		keyCodeMap.put(KEY_EXIT,  Screen.Control.EXIT); 
-		keyCodeMap.put(KEY_CART,  Screen.Control.LOAD_CARTRIDGE); 
+		keyCodeMap.put(KEY_EXIT,          Screen.Control.EXIT);
+		keyCodeMap.put(KEY_CART,          Screen.Control.LOAD_CARTRIDGE);
+		keyCodeMap.put(KEY_CART_NO_POWER, Screen.Control.LOAD_CARTRIDGE_NO_AUTO_POWER);
 
 		keyAltCodeMap.put(KEY_HELP,        Screen.Control.HELP); 
 		keyAltCodeMap.put(KEY_FULL_SCR,    Screen.Control.FULL_SCREEN); 
@@ -104,12 +105,13 @@ public class ScreenControlsAdapter implements KeyListener {
 
 	public static final int KEY_SIZE_DEFAULT = KeyEvent.VK_BACK_SPACE;  
 	
-	public static final int KEY_EXIT        = KeyEvent.VK_ESCAPE;  
-	public static final int KEY_CART        = KeyEvent.VK_F5;  
-	public static final int KEY_FULL_SCR    = KeyEvent.VK_ENTER;  
-	public static final int KEY_QUALITY     = KeyEvent.VK_Q;  
-	public static final int KEY_CRT_MODES   = KeyEvent.VK_R;
-	public static final int KEY_VIDEO_STAND = KeyEvent.VK_V;    
+	public static final int KEY_EXIT          = KeyEvent.VK_ESCAPE;
+	public static final int KEY_CART          = KeyEvent.VK_F5;
+	public static final int KEY_CART_NO_POWER = KeyEvent.VK_F6;
+	public static final int KEY_FULL_SCR      = KeyEvent.VK_ENTER;
+	public static final int KEY_QUALITY       = KeyEvent.VK_Q;
+	public static final int KEY_CRT_MODES     = KeyEvent.VK_R;
+	public static final int KEY_VIDEO_STAND   = KeyEvent.VK_V;
 
 	public static final int KEY_DEBUG = KeyEvent.VK_D;  
 	public static final int KEY_HELP  = KeyEvent.VK_H;  

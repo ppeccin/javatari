@@ -10,9 +10,12 @@ import utils.Randomizer;
 
 public final class RAM implements BUS16Bits {
 
-	public void powerOn() {
-		// RAMs come totally random at power on!
+	public RAM() {
+		// RAMs come totally random at creation
 		Randomizer.instance.nextBytes(bytes);
+	}
+
+	public void powerOn() {
 	}
 
 	public void powerOff() {

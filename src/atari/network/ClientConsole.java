@@ -21,11 +21,6 @@ public class ClientConsole extends Console implements ClockDriven {
 		setupReceiver(receiver);
 	}
 
-	public ClientConsole(RemoteReceiver receiver, Cartridge cartridge) {
-		super(cartridge);
-		setupReceiver(receiver);
-	}
-
 	@Override
 	protected void mainClockCreate() {
 		// Ignore, the clock is controlled remotely 
@@ -89,9 +84,9 @@ public class ClientConsole extends Console implements ClockDriven {
 		return ((ClientConsoleControlsSocketAdapter) controlsSocket).getChangesToSend();
 	}
 	
-	private void receiveServerPower(boolean powerOn) {
-		if (powerOn) powerOn();
-		else powerOff();
+	private void receiveServerPower(boolean serverPowerOn) {
+		if (serverPowerOn && !powerOn) powerOn();
+		else if (!serverPowerOn && powerOn) powerOff();
 	}
 
 	private void receiveServerState(ConsoleState state) {

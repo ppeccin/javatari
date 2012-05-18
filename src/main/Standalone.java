@@ -3,9 +3,11 @@
 package main;
 
 import parameters.Parameters;
+import pc.cartridge.CartridgeLoader;
 import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
+import utils.Terminator;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
 
@@ -16,11 +18,8 @@ public class Standalone {
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
 		
-		// Get cartridge passed, if any
-		final Cartridge cart = Parameters.cartridge;
-
-		// Create the Console with the available Cartridge
-		final Console console = cart != null ? new Console(cart): new Console();
+		// Create the Console
+		final Console console = new Console();
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
 		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
@@ -31,8 +30,12 @@ public class Standalone {
 		screen.powerOn();                
 	 	speaker.powerOn();
 
-	 	// If a Cartridge is inserted, turn the console on!
-	 	if (cart != null) console.powerOn();
+	 	// If a Cartridge is provided, insert it
+		if (Parameters.mainArg != null) {
+			Cartridge cart = CartridgeLoader.load(Parameters.mainArg);
+			if (cart == null) Terminator.terminate();
+			console.cartridgeSocket().insert(cart, true);
+		}
 
 	}
 				

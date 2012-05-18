@@ -91,7 +91,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 			switch(keyCode) {
 				case KEY_LOCAL_P1_MODE:
 					p1ControlsMode = !p1ControlsMode; 
-					videoMonitor.showOSD((p1ControlsMode ? "P2" : "P1") + " controls priority");
+					videoMonitor.showOSD((p1ControlsMode ? "P2" : "P1") + " controls mode");
 					return true;
 				case KEY_LOCAL_PADDLE_MODE:
 					paddleMode(!paddleMode); return true;

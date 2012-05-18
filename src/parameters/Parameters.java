@@ -3,51 +3,37 @@
 package parameters;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Properties;
 
-import pc.cartridge.CartridgeLoader;
-
 import utils.Terminator;
-import atari.cartridge.Cartridge;
 
 public class Parameters {
 
 	// Load Properties file and also process command line options and parameters
 	public static void init(String[] args) {
 		loadProperties();
-		processArguments(args);
+		processOptions(args);
+		processMainArg(args);
 	}
 	
-	private static void processArguments(String[] args) {
-		for (String arg : args)
-			if (arg.startsWith("-"))
-				processOption(arg);
-		for (String arg : args)
-			if (!arg.startsWith("-"))
-				processCartridge(arg);
+	private static void processOptions(String[] args) {
+		for (String arg : args) {
+			if (!arg.startsWith("-")) continue;
+			if (arg.toUpperCase().equals("-DISABLECARTRIDGECHANGE")) {
+				SCREEN_CARTRIDGE_CHANGE_DISABLED = true;
+				continue;
+			}
+			System.out.println("Unknown option: " + arg);
+			Terminator.terminate();
+		}
 	}
 
-	private static void processCartridge(String url) {
-		if (cartridge != null) return;
-		try {
-			cartridge = CartridgeLoader.load(new URL(url));
-		} catch (MalformedURLException ex) {
-			System.out.println("Could not parse Cartridge URL: " + url);
-			System.out.println(ex);
-		}
-		if (cartridge == null) Terminator.terminate();
-	}
-
-	private static void processOption(String arg) {
-		String opt = arg.toUpperCase();
-		if (opt.equals("-DISABLECARTRIDGECHANGE")) {
-			CONSOLE_CARTRIDGE_CHANGE_DISABLED = true;
-			return;
-		}
-		System.out.println("Unknown option: " + arg);
-		Terminator.terminate();
+	private static void processMainArg(String[] args) {
+		for (String arg : args)
+			if (!arg.startsWith("-")) {
+				mainArg = arg;
+				return;
+			}
 	}
 
 	private static void loadProperties() {
@@ -98,6 +84,7 @@ public class Parameters {
 		SCREEN_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_FRAME_ACCELERATION", String.valueOf(SCREEN_FRAME_ACCELERATION)));
 		SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_INTERM_FRAME_ACCELERATION", String.valueOf(SCREEN_INTERM_FRAME_ACCELERATION)));
 		SCREEN_SCANLINES_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_SCANLINES_ACCELERATION", String.valueOf(SCREEN_SCANLINES_ACCELERATION)));
+		SCREEN_CARTRIDGE_CHANGE_DISABLED = Boolean.valueOf(p.getProperty("SCREEN_CARTRIDGE_CHANGE_DISABLED", String.valueOf(SCREEN_CARTRIDGE_CHANGE_DISABLED)));
 		
 		SPEAKER_DEFAULT_FPS = Double.valueOf(p.getProperty("SPEAKER_DEFAULT_FPS", String.valueOf(SPEAKER_DEFAULT_FPS)));
 		SPEAKER_INPUT_BUFFER_SIZE = Integer.valueOf(p.getProperty("SPEAKER_INPUT_BUFFER_SIZE", String.valueOf(SPEAKER_INPUT_BUFFER_SIZE)));
@@ -107,7 +94,6 @@ public class Parameters {
 		SPEAKER_ADDED_THREAD_PRIORITY = Integer.valueOf(p.getProperty("SPEAKER_ADDED_THREAD_PRIORITY", String.valueOf(SPEAKER_ADDED_THREAD_PRIORITY)));
 
 		CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(p.getProperty("CONSOLE_FAST_SPEED_FACTOR", String.valueOf(CONSOLE_FAST_SPEED_FACTOR)));
-		CONSOLE_CARTRIDGE_CHANGE_DISABLED = Boolean.valueOf(p.getProperty("CONSOLE_CARTRIDGE_CHANGE_DISABLED", String.valueOf(CONSOLE_CARTRIDGE_CHANGE_DISABLED)));
 
 		BUS_DATA_RETENTION = Boolean.valueOf(p.getProperty("BUS_DATA_RETENTION", String.valueOf(BUS_DATA_RETENTION)));
 
@@ -120,7 +106,7 @@ public class Parameters {
 
 
 	// Cartridge URL to load passed as argument
-	public static Cartridge cartridge = null;
+	public static String mainArg = null;
 
 	
 	// DEFAULTS
@@ -157,6 +143,7 @@ public class Parameters {
 	public static float		SCREEN_FRAME_ACCELERATION = 0;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
+	public static boolean 	SCREEN_CARTRIDGE_CHANGE_DISABLED = false;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
@@ -166,7 +153,6 @@ public class Parameters {
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static int		CONSOLE_FAST_SPEED_FACTOR = 8;
-	public static boolean 	CONSOLE_CARTRIDGE_CHANGE_DISABLED = false;
 
 	public static boolean 	BUS_DATA_RETENTION = true;
 

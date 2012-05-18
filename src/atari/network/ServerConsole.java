@@ -22,11 +22,6 @@ public class ServerConsole extends Console implements ClockDriven {
 		setupTransmitter(transmitter);
 	}
 
-	public ServerConsole(RemoteTransmitter transmitter, Cartridge cartridge) {
-		super(cartridge);
-		setupTransmitter(transmitter);
-	}
-	
 	@Override
 	public void powerOff() {
 		// The server clock is always running
@@ -77,10 +72,7 @@ public class ServerConsole extends Console implements ClockDriven {
 
 	public synchronized void clientConnected() {
 		showOSD("Player 2 Client Connected");
-		ServerUpdate update = new ServerUpdate();
-		update.powerOn = powerOn;
-		update.consoleState = saveState();
-		remoteTransmitter.sendUpdate(update);
+		sendStateUpdate();
 	}
 
 	public void clientDisconnected() {
@@ -95,6 +87,7 @@ public class ServerConsole extends Console implements ClockDriven {
 	private void sendStateUpdate() {
 		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
 			ServerUpdate update = new ServerUpdate();
+			update.powerOn = powerOn;
 			update.consoleState = saveState();
 			remoteTransmitter.sendUpdate(update);
 		}

@@ -7,9 +7,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
+import pc.cartridge.CartridgeLoader;
 import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
+import utils.Terminator;
 import atari.cartridge.Cartridge;
 import atari.network.ServerConsole;
 import atari.network.socket.SocketRemoteTransmitter;
@@ -21,14 +23,11 @@ public class MultiplayerServer {
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
 		
-		// Get cartridge passed, if any
-		final Cartridge cart = Parameters.cartridge;
-
 		// Use Socket implementation
 		final SocketRemoteTransmitter remoteTransmitter = new SocketRemoteTransmitter();
 
-		// Create the Console with the available Cartridge
-		final ServerConsole console = cart != null ? new ServerConsole(remoteTransmitter, cart): new ServerConsole(remoteTransmitter);
+		// Create the Console
+		final ServerConsole console = new ServerConsole(remoteTransmitter);
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
 		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
@@ -39,8 +38,12 @@ public class MultiplayerServer {
 		screen.powerOn();                
 	 	speaker.powerOn();
  	
-	 	// If a Cartridge is inserted, turn the console on!
-	 	if (cart != null) console.powerOn();
+	 	// If a Cartridge is provided, insert it
+		if (Parameters.mainArg != null) {
+			Cartridge cart = CartridgeLoader.load(Parameters.mainArg);
+			if (cart == null) Terminator.terminate();
+			console.cartridgeSocket().insert(cart, true);
+		}
 	 	
 	 	// Listen for client connection
 		boolean success = remoteTransmitter.listen();
