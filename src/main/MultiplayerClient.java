@@ -2,9 +2,6 @@
 
 package main;
 
-import java.net.MalformedURLException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
@@ -15,9 +12,9 @@ import atari.network.socket.SocketRemoteReceiver;
 
 public class MultiplayerClient {
 
-	public static void main(String[] args) throws RemoteException, MalformedURLException, AlreadyBoundException, NotBoundException {
+	public static void main(String[] args) throws RemoteException {
 
-		Parameters.load();
+		Parameters.init(args);
 		
 		// Use Socket implementation
 		final SocketRemoteReceiver remoteReceiver = new SocketRemoteReceiver();

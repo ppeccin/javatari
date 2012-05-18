@@ -224,6 +224,7 @@ public class Console {
 	protected Clock mainClock;
 	
 	public static final int FAST_SPEED_FACTOR = Parameters.CONSOLE_FAST_SPEED_FACTOR;
+	public static final boolean CARTRIDGE_CHANGE_DISABLED = Parameters.CONSOLE_CARTRIDGE_CHANGE_DISABLED;
 
 	
 	protected class ConsoleControlsInputAdapter implements ConsoleControlsInput {
@@ -273,10 +274,15 @@ public class Console {
 	
 	protected class CartridgeSocketAdapter implements CartridgeSocket {
 		@Override
-		public void insert(Cartridge cartridge) {
+		public void insert(Cartridge cartridge, boolean autoPower) {
+			if (CARTRIDGE_CHANGE_DISABLED) {
+				showOSD("Cartridge change is disabled");
+				return;
+			}
+			if (autoPower && powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
 			cartridge(cartridge); 
-			if (!powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
-		}	
+			if (autoPower && !powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
+		}
 	}	
 	
 	protected class SaveStateSocketAdapter implements SaveStateSocket {
@@ -298,13 +304,13 @@ public class Console {
 			if (!powerOn || media == null) return;
 			ConsoleState state = media.load(slot);
 			if (state == null) {
-				showOSD("Sate " + slot + " load failed");
+				showOSD("State " + slot + " load failed");
 				return;
 			}
 			mainClockPause();
 			Console.this.loadState(state);
 			mainClockGo();
-			showOSD("Sate " + slot + " loaded");
+			showOSD("State " + slot + " loaded");
 		}
 		private SaveStateMedia media;
 	}	

@@ -851,7 +851,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		switch (control) {
 			case DEBUG:
 				debug(debugLevel + 1); return;
-			case DEBUG_NO_COLLISIONS:
+			case NO_COLLISIONS:
 				debugNoCollisions = !debugNoCollisions; return;
 			case PAUSE:
 				debugPause = !debugPause; debugPauseMoreFrames = 0; return;

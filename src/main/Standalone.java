@@ -2,12 +2,8 @@
 
 package main;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import parameters.Parameters;
-import pc.file.CartridgeLoader;
-import pc.file.FileSaveStateMedia;
+import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
@@ -15,12 +11,13 @@ import atari.console.Console;
 
 public class Standalone {
 
-	public static void main(String[] args) throws MalformedURLException {
+	public static void main(String[] args) {
 
-		Parameters.load();
+		// Load Parameters from properties file and process arguments
+		Parameters.init(args);
 		
-		// Load cartridge passed, if any
-		final Cartridge cart = (args.length > 0) ? CartridgeLoader.load(new URL(args[0])) : null;
+		// Get cartridge passed, if any
+		final Cartridge cart = Parameters.cartridge;
 
 		// Create the Console with the available Cartridge
 		final Console console = cart != null ? new Console(cart): new Console();

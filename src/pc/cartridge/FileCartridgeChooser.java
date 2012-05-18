@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.file;
+package pc.cartridge;
 
 
 import java.io.File;
@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 
 import atari.cartridge.Cartridge;
 

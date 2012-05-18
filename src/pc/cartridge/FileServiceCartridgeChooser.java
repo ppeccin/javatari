@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.file;
+package pc.cartridge;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +8,7 @@ import java.io.InputStream;
 import javax.jnlp.FileContents;
 import javax.jnlp.FileOpenService;
 import javax.jnlp.ServiceManager;
+
 
 import atari.cartridge.Cartridge;
 
@@ -36,6 +37,7 @@ public class FileServiceCartridgeChooser {
 			return CartridgeLoader.load(stream, fileName);
 		} catch (Exception ex) {
 			System.out.println("Unable to load Cartridge from: " + fileName);
+			System.out.println(ex);
 		} finally {
 			if (stream != null) try { 
 				stream.close(); 

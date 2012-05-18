@@ -135,11 +135,11 @@ public class ClientConsole extends Console implements ClockDriven {
 		private List<ControlChange> emptyChanges = new ArrayList<ControlChange>();
 	}
 	
+	// Cartridge insertion is controlled only by the Server
 	private class ClientConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {
 		@Override
-		public void insert(Cartridge cartridge) {
-			// Cartridge insertion is controlled by the server
-			showOSD("Only the Server can switch Cartridges");
+		public void insert(Cartridge cartridge, boolean autoPower) {
+			showOSD("Only the Server can change Cartridges");
 		}
 	}
 

@@ -33,8 +33,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
+import pc.cartridge.FileCartridgeChooser;
 import pc.controls.AWTConsoleControls;
-import pc.file.FileCartridgeChooser;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import atari.cartridge.Cartridge;
@@ -463,9 +463,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 	private void loadCartridge() {
+		// Shortcut to prevent chooser from opening
+		if (Parameters.CONSOLE_CARTRIDGE_CHANGE_DISABLED) {
+			showOSD("Cartridge change is disabled");
+			return;
+		}
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileCartridgeChooser.chooseFile();
-		if (cart != null) cartridgeSocket.insert(cart);
+		if (cart != null) cartridgeSocket.insert(cart, true);
 	};
 
 	private void fullScreen(boolean state) {

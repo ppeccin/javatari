@@ -3,20 +3,67 @@
 package parameters;
 
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
+
+import pc.cartridge.CartridgeLoader;
+
+import utils.Terminator;
+import atari.cartridge.Cartridge;
 
 public class Parameters {
 
-	public static void load() {
+	// Load Properties file and also process command line options and parameters
+	public static void init(String[] args) {
+		loadProperties();
+		processArguments(args);
+	}
+	
+	private static void processArguments(String[] args) {
+		for (String arg : args)
+			if (arg.startsWith("-"))
+				processOption(arg);
+		for (String arg : args)
+			if (!arg.startsWith("-"))
+				processCartridge(arg);
+	}
+
+	private static void processCartridge(String url) {
+		if (cartridge != null) return;
+		try {
+			cartridge = CartridgeLoader.load(new URL(url));
+		} catch (MalformedURLException ex) {
+			System.out.println("Could not parse Cartridge URL: " + url);
+			System.out.println(ex);
+		}
+		if (cartridge == null) Terminator.terminate();
+	}
+
+	private static void processOption(String arg) {
+		String opt = arg.toUpperCase();
+		if (opt.equals("-DISABLECARTRIDGECHANGE")) {
+			CONSOLE_CARTRIDGE_CHANGE_DISABLED = true;
+			return;
+		}
+		System.out.println("Unknown option: " + arg);
+		Terminator.terminate();
+	}
+
+	private static void loadProperties() {
 		InputStream is = Thread.currentThread().getContextClassLoader().
-				getResourceAsStream("parameters/Emulator.properties");
+				getResourceAsStream("parameters/javatari.properties");
 		Properties p = new Properties();
 		try {
-			p.clear();
-			p.load(is);
-			is.close();
+			try {
+				p.clear();
+				p.load(is);
+			} finally {
+				is.close();
+			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			System.out.println("parameters/javatari.properties not found, using defaults");
+			return;
 		}
 		
 		TIA_FORCED_CLOCK = Double.valueOf(p.getProperty("TIA_FORCED_CLOCK", String.valueOf(TIA_FORCED_CLOCK)));
@@ -60,6 +107,7 @@ public class Parameters {
 		SPEAKER_ADDED_THREAD_PRIORITY = Integer.valueOf(p.getProperty("SPEAKER_ADDED_THREAD_PRIORITY", String.valueOf(SPEAKER_ADDED_THREAD_PRIORITY)));
 
 		CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(p.getProperty("CONSOLE_FAST_SPEED_FACTOR", String.valueOf(CONSOLE_FAST_SPEED_FACTOR)));
+		CONSOLE_CARTRIDGE_CHANGE_DISABLED = Boolean.valueOf(p.getProperty("CONSOLE_CARTRIDGE_CHANGE_DISABLED", String.valueOf(CONSOLE_CARTRIDGE_CHANGE_DISABLED)));
 
 		BUS_DATA_RETENTION = Boolean.valueOf(p.getProperty("BUS_DATA_RETENTION", String.valueOf(BUS_DATA_RETENTION)));
 
@@ -67,9 +115,14 @@ public class Parameters {
 		SERVER_SERVICE_PORT = Integer.valueOf(p.getProperty("SERVER_SERVICE_PORT", String.valueOf(SERVER_SERVICE_PORT)));
 		SERVER_MAX_UPDATES_PENDING = Integer.valueOf(p.getProperty("SERVER_MAX_UPDATES_PENDING", String.valueOf(SERVER_MAX_UPDATES_PENDING)));
 		CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(p.getProperty("CLIENT_MAX_UPDATES_PENDING", String.valueOf(CLIENT_MAX_UPDATES_PENDING)));
+
 	}
 
 
+	// Cartridge URL to load passed as argument
+	public static Cartridge cartridge = null;
+
+	
 	// DEFAULTS
 
 	public static double	TIA_FORCED_CLOCK = 0;							//  0 = No Forced Clock
@@ -113,6 +166,7 @@ public class Parameters {
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static int		CONSOLE_FAST_SPEED_FACTOR = 8;
+	public static boolean 	CONSOLE_CARTRIDGE_CHANGE_DISABLED = false;
 
 	public static boolean 	BUS_DATA_RETENTION = true;
 
@@ -120,5 +174,6 @@ public class Parameters {
 	public static int 		SERVER_SERVICE_PORT = 9998;
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
+
 
 }

@@ -6,8 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import parameters.Parameters;
-import pc.file.CartridgeLoader;
-import pc.file.FileSaveStateMedia;
+import pc.cartridge.CartridgeLoader;
+import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
@@ -17,7 +17,8 @@ public class TestStandalone {
 
 	public static void main(String[] args) throws MalformedURLException {
 
-		Parameters.load();
+		// Load Parameters from properties file and process arguments
+		Parameters.init(args);
 		
 		// Load cartridge
 		final Cartridge cart = CartridgeLoader.load(new URL("file:///C:/cartridges/hero.bin"));

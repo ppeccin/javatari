@@ -28,11 +28,11 @@ public class GraphicsDeviceHelper {
 	public static BufferedImage loadAsCompatibleImage(String fileName) throws IOException {
 		return asCompatibleImage(loadImage(fileName));
 	}
-	
+
 	public static BufferedImage loadAsCompatibleTranslucentImage(String fileName) throws IOException {
 		return asCompatibleImage(loadImage(fileName), Transparency.TRANSLUCENT);
 	}
-	
+
 	public static BufferedImage asCompatibleImage(Image img) {
 		BufferedImage ret = defaultScreenDeviceConfiguration().createCompatibleImage(img.getWidth(null), img.getHeight(null));
 		Graphics2D gc = ret.createGraphics();

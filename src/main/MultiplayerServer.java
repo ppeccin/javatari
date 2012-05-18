@@ -2,15 +2,12 @@
 
 package main;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
-import pc.file.CartridgeLoader;
-import pc.file.FileSaveStateMedia;
+import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
@@ -19,12 +16,13 @@ import atari.network.socket.SocketRemoteTransmitter;
 
 public class MultiplayerServer {
 
-	public static void main(String[] args) throws RemoteException, MalformedURLException, AlreadyBoundException, NotBoundException {
+	public static void main(String[] args) throws RemoteException, AlreadyBoundException, NotBoundException {
 
-		Parameters.load();
+		// Load Parameters from properties file and process arguments
+		Parameters.init(args);
 		
-		// Load cartridge passed, if any
-		final Cartridge cart = (args.length > 0) ? CartridgeLoader.load(new URL(args[0])) : null;
+		// Get cartridge passed, if any
+		final Cartridge cart = Parameters.cartridge;
 
 		// Use Socket implementation
 		final SocketRemoteTransmitter remoteTransmitter = new SocketRemoteTransmitter();

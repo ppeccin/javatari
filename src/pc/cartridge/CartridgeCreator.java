@@ -1,4 +1,4 @@
-package pc.file;
+package pc.cartridge;
 
 import general.av.video.VideoStandard;
 import atari.cartridge.Cartridge;

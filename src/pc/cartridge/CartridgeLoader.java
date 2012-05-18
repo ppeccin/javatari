@@ -1,12 +1,13 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.file;
+package pc.cartridge;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+
 
 import atari.cartridge.Cartridge;
 
@@ -16,13 +17,13 @@ public class CartridgeLoader {
 		InputStream stream = null;
 		try {
 			URLConnection conn = url.openConnection();
-			conn.setConnectTimeout(3000);
+			conn.setConnectTimeout(5000);
 			stream = conn.getInputStream();
 			System.out.println("Loading Cartridge from: " + url);
 			return load(stream, url.toString());
 		} catch (Exception ex) {
 			System.out.println("Unable to load Cartridge from: " + url);
-			System.out.println(ex.getMessage());
+			System.out.println(ex);
 		} finally {
 			if (stream != null) try { 
 				stream.close(); 
