@@ -2,6 +2,8 @@
 
 package atari.cartridge.bankswitching;
 
+import java.util.Arrays;
+
 import atari.cartridge.Cartridge;
 
 /**
@@ -10,8 +12,9 @@ import atari.cartridge.Cartridge;
  */
 public abstract class CartridgeBanked extends Cartridge {
 
-	protected CartridgeBanked(Boolean superChip, int extraRAMSize) {
+	protected CartridgeBanked(byte[] content, Boolean superChip, int extraRAMSize) {
 		super();
+		setContent(content);
 		this.extraRAMSize = extraRAMSize;
 		// SuperChip mode. null = automatic mode
 		if (superChip == null) { 
@@ -21,14 +24,14 @@ public abstract class CartridgeBanked extends Cartridge {
 			superChipMode = superChip;
 			superChipAutoDetect = false;
 		}
-		extraRAM = (superChip == null || superChip) ? new byte[this.extraRAMSize] : null;
+		extraRAM = (superChip == null || superChip) ? Arrays.copyOf(bytes, extraRAMSize) : null;
 	}
 
 	@Override
 	public byte readByte(int address) {		
 		// Masking address will perform bank-switching as needed
 		int addr = maskAddress(address);
-		// Check for Extra RAM reads
+		// Check for SuperChip Extra RAM reads
 		if (superChipMode && (addr >= extraRAMSize) && (addr < extraRAMSize * 2))
 			return extraRAM[addr - extraRAMSize];
 		else
@@ -42,7 +45,10 @@ public abstract class CartridgeBanked extends Cartridge {
 		int addr = maskAddress(address);
 		// Check for Extra RAM writes and then turn superChip mode on
 		if (addr < extraRAMSize && (superChipMode || superChipAutoDetect)) {
-			if (!superChipMode) superChipMode = true;
+			if (!superChipMode) {
+				System.out.println(">>>> SuperChip ON");
+				superChipMode = true;
+			}
 			extraRAM[addr] = b;
 		}
 	}

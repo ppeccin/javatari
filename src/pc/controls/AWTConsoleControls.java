@@ -237,6 +237,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 		keyCodeMap.put(KEY_RESET,        Control.RESET); 
 		keyCodeMap.put(KEY_FAST_SPEED,   Control.FAST_SPEED); 
 		
+		keyAltCodeMap.put(KEY_POWER,          Control.POWER_FRY);
 		keyAltCodeMap.put(KEY_PAUSE,          Control.PAUSE);
 		keyAltCodeMap.put(KEY_FRAME,          Control.FRAME);
 		keyAltCodeMap.put(KEY_TRACE,          Control.TRACE);
@@ -339,7 +340,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	private static final int KEY_STATE_10       = KeyEvent.VK_0;
 	private static final int KEY_STATE_11       = KeyEvent.VK_MINUS;
 	private static final int KEY_STATE_12       = KeyEvent.VK_EQUALS;
-	
+
 	private static final int KEY_LOCAL_P1_MODE     = KeyEvent.VK_J;
 	private static final int KEY_LOCAL_PADDLE_MODE = KeyEvent.VK_L;
 	

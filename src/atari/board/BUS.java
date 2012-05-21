@@ -20,8 +20,10 @@ public final class BUS implements BUS16Bits {
 	@Override
 	public byte readByte(int address) {
 		// CART selected?
-		if ((address & CART_MASK) == CART_SEL)
-			return data = cartridge.readByte(address);
+		if ((address & CART_MASK) == CART_SEL) {
+			if (cartridge != null) data = cartridge.readByte(address);	// Cartridge might be disconnected
+			return data; 
+		}
 		// RAM selected?
 		if ((address & RAM_MASK) == RAM_SEL)
 			return data = ram.readByte(address);
@@ -31,11 +33,9 @@ public final class BUS implements BUS16Bits {
 		// TIA selected...
 		// Only bit 7 and 6 are connected to TIA read registers.
 		if (DATA_RETENTION)
-			// Use the retained data for bits 5-0
-			return data = (byte)(data & 0x3f | tia.readByte(address));
+			return data = (byte)(data & 0x3f | tia.readByte(address));  // Use the retained data for bits 5-0
 		else
-			// As if all bits were provided by TIA
-			return data = tia.readByte(address);
+			return data = tia.readByte(address);	// As if all bits were provided by TIA
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public final class BUS implements BUS16Bits {
 			pia.writeByte(address, b); return;
 		}
 		// CART selected...
-		cartridge.writeByte(address, b);
+		if (cartridge != null) cartridge.writeByte(address, b);
 	}
 
 	public void cartridge(Cartridge cartridge) {

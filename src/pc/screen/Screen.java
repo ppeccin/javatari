@@ -471,15 +471,25 @@ private void paintLogo() {
 	}
 
 	private void loadCartridge(boolean autoPower) {
-		// Shortcut to prevent chooser from opening
-		if (!cartridgeChangeEnabled) {
-			showOSD("Cartridge change is disabled");
-			return;
-		}
+		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileCartridgeChooser.chooseFile();
 		if (cart != null) cartridgeSocket.insert(cart, autoPower);
 	};
+
+	private void loadCartridgeEmpty() {
+		if (cartridgeChangeDisabledWarning()) return;
+		cartridgeSocket.insert(null, false);
+	};
+
+	private boolean cartridgeChangeDisabledWarning() {
+		if (!cartridgeChangeEnabled) {
+			showOSD("Cartridge change is disabled");
+			return true;
+		}
+		return false;
+	}
+
 
 	private void fullScreen(boolean state) {
 		synchronized (refreshMonitor) {
@@ -504,6 +514,8 @@ private void paintLogo() {
 				loadCartridge(true); break;
 			case LOAD_CARTRIDGE_NO_AUTO_POWER:
 				loadCartridge(false); break;
+			case LOAD_CARTRIDGE_EMPTY:
+				loadCartridgeEmpty(); break;
 			case FULL_SCREEN:
 				fullScreen(!fullScreen); break;
 			case QUALITY:
@@ -670,7 +682,7 @@ private void paintLogo() {
 		SCALE_X_MINUS, SCALE_Y_MINUS, 
 		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
-		EXIT, LOAD_CARTRIDGE, LOAD_CARTRIDGE_NO_AUTO_POWER,
+		EXIT, LOAD_CARTRIDGE, LOAD_CARTRIDGE_NO_AUTO_POWER, LOAD_CARTRIDGE_EMPTY,
 		FULL_SCREEN, QUALITY, CRT_MODES,
 		HELP, DEBUG
 	}

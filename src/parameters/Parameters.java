@@ -63,6 +63,10 @@ public class Parameters {
 		TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = Float.valueOf(p.getProperty("TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE)));
 		TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE= Float.valueOf(p.getProperty("TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE)));
 
+		RAM_FRY_ZERO_BITS = Integer.valueOf(p.getProperty("RAM_FRY_ZERO_BITS", String.valueOf(RAM_FRY_ZERO_BITS)));
+		RAM_FRY_ONE_BITS = Integer.valueOf(p.getProperty("RAM_FRY_ONE_BITS", String.valueOf(RAM_FRY_ONE_BITS)));
+		RAM_FRY_VARIANCE = Float.valueOf(p.getProperty("RAM_FRY_VARIANCE", String.valueOf(RAM_FRY_VARIANCE)));
+
 		SCREEN_DEFAULT_FPS = Double.valueOf(p.getProperty("SCREEN_DEFAULT_FPS", String.valueOf(SCREEN_DEFAULT_FPS)));
 		SCREEN_DEFAULT_ORIGIN_X = Integer.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_X", String.valueOf(SCREEN_DEFAULT_ORIGIN_X)));
 		SCREEN_DEFAULT_ORIGIN_Y_PCT = Double.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_Y_PCT", String.valueOf(SCREEN_DEFAULT_ORIGIN_Y_PCT)));
@@ -121,6 +125,10 @@ public class Parameters {
 	public static float 	TIA_AUDIO_MAX_AMPLITUDE = 0.5f;
 	public static float 	TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = 0.5f;
 	public static float 	TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE = 0.9f;
+
+	public static int 		RAM_FRY_ZERO_BITS = 100;						// Quantity of bits to change
+	public static int 		RAM_FRY_ONE_BITS = 25;
+	public static float 	RAM_FRY_VARIANCE = 0.3f;
 
 	public static double	SCREEN_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int 		SCREEN_DEFAULT_ORIGIN_X = 10;

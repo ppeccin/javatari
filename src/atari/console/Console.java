@@ -116,9 +116,11 @@ public class Console {
 
 	protected void videoStandardAutoDetectionStart() {
 		if (!videoStandardAuto || videoStandardAutoDetectionInProgress) return;
-		// If the Cartridge has specified a VideoStandard, use it
-		if (bus.cartridge.suggestedVideoStandard() != null) {
-			videoStandard(bus.cartridge.suggestedVideoStandard());
+		// If the Cartridge has suggested a VideoStandard, use it
+		VideoStandard suggestedStandard = bus.cartridge != null
+				? bus.cartridge.suggestedVideoStandard() : VideoStandard.NTSC;
+		if (suggestedStandard != null) {
+			videoStandard(suggestedStandard);
 			return;
 		}
 		// Otherwise use the VideoStandard detected by the monitor
@@ -201,6 +203,10 @@ public class Console {
 		);
 	}
 
+	protected void powerFry() {
+		ram.powerFry();
+	}
+
 	public boolean powerOn = false;
 
 	protected BUS bus;
@@ -254,6 +260,9 @@ public class Console {
 					if (videoStandardAuto) videoStandardForced(VideoStandard.NTSC);
 					else if (videoStandard() == VideoStandard.NTSC) videoStandardForced(VideoStandard.PAL); 
 						else videoStandardAuto();
+					break;
+				case POWER_FRY:
+					powerFry();
 			}
 		}
 		@Override

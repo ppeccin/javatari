@@ -8,10 +8,9 @@ package atari.cartridge.bankswitching;
 public final class Cartridge16K extends CartridgeBanked {
 
 	public Cartridge16K(byte[] content, Boolean superChip) {
-		super(superChip, 128);
+		super(content, superChip, 128);
 		if (content.length != SIZE)
 			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
-		setContent(content);
 	}
 
 	@Override
