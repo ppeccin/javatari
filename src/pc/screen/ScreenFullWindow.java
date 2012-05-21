@@ -99,19 +99,14 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 
 	@Override
 	public Graphics2D canvasGraphics() {
-		try {
-			Graphics2D canvasGraphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : getGraphics());
-			// Clears the background when needed, but just for a few frames
-			if (clearBackgoundFrames-- > 0) {
-				canvasGraphics.setColor(Color.BLACK);
-				canvasGraphics.clearRect(0, 0, getWidth(), getHeight());
-			}
-			canvasGraphics.translate(canvasOriginX, canvasOriginY);
-			return canvasGraphics;
-		} catch(IllegalStateException e) {
-			e.printStackTrace();
-			return null;
+		Graphics2D canvasGraphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : getGraphics());
+		// Clears the background when needed, but just for a few frames
+		if (clearBackgoundFrames-- > 0) {
+			canvasGraphics.setColor(Color.BLACK);
+			canvasGraphics.clearRect(0, 0, getWidth(), getHeight());
 		}
+		canvasGraphics.translate(canvasOriginX, canvasOriginY);
+		return canvasGraphics;
 	}
 
 	@Override

@@ -194,24 +194,26 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	}
 
 	private void paddlesUpdatePosition() {
-		if (paddle0MovingLeft) {
+		if (paddle0MovingRight) {
+			if (!paddle0MovingLeft) {
+				paddle0Position -= paddle0Speed;
+				if (paddle0Position < 0) paddle0Position = 0;
+				consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+			}
+		} else if (paddle0MovingLeft) {
 			paddle0Position += paddle0Speed;
 			if (paddle0Position > 380) paddle0Position = 380;
 			consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
 		}
-		if (paddle0MovingRight) {
-			paddle0Position -= paddle0Speed;
-			if (paddle0Position < 0) paddle0Position = 0;
-			consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
-		}
-		if (paddle1MovingLeft) {
+		if (paddle1MovingRight) {
+			if (!paddle1MovingLeft) {
+				paddle1Position -= paddle1Speed;
+				if (paddle1Position < 0) paddle1Position = 0;
+				consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+			}
+		} else if (paddle1MovingLeft) {
 			paddle1Position += paddle1Speed;
 			if (paddle1Position > 380) paddle1Position = 380;
-			consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
-		}
-		if (paddle1MovingRight) {
-			paddle1Position -= paddle1Speed;
-			if (paddle1Position < 0) paddle1Position = 0;
 			consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
 		}
 	}
@@ -324,7 +326,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	private static final int KEY_TRACE          = KeyEvent.VK_T;
 	private static final int KEY_FAST_SPEED     = KeyEvent.VK_TAB;
 	private static final int KEY_DEBUG          = KeyEvent.VK_D;
-	private static final int KEY_NO_COLLISIONS   = KeyEvent.VK_C;
+	private static final int KEY_NO_COLLISIONS  = KeyEvent.VK_C;
 	private static final int KEY_VIDEO_STANDARD = KeyEvent.VK_V;
 	
 	private static final int KEY_STATE_0        = KeyEvent.VK_QUOTE;

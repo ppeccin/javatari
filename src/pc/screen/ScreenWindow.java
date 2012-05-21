@@ -164,13 +164,8 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 
 	@Override
 	public Graphics2D canvasGraphics() {
-		try {
-			Graphics2D graphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : canvas.getGraphics());
-			return graphics;
-		} catch(IllegalStateException e) {
-			e.printStackTrace();
-			return null;
-		}
+		Graphics2D graphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : canvas.getGraphics());
+		return graphics;
 	}
 
 	@Override
@@ -261,8 +256,8 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 			favicon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Favicon.png");
 			icon64 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("pc/screen/images/LogoIcon64.png");
 			icon32 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("pc/screen/images/LogoIcon32.png");
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException ex) {
+			System.out.println("Screen Window: unable to load images\n" + ex);
 		}
 	}
 	

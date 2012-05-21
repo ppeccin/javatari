@@ -64,11 +64,18 @@ public class ServerConsole extends Console implements ClockDriven {
 		if (powerOn) tia.clockPulse();
 		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
 			ServerUpdate update = new ServerUpdate();
-			if (!controlChanges.isEmpty()) update.controlChanges = controlChanges;
+			update.controlChanges = controlChanges;
 			update.isClockPulse = powerOn;
 			remoteTransmitter.sendUpdate(update);
 		}
 	}
+
+	@Override
+	protected synchronized void powerFry() {
+		super.powerFry();
+		sendStateUpdate();
+	}
+
 
 	public synchronized void clientConnected() {
 		showOSD("Player 2 Client Connected");
@@ -81,7 +88,10 @@ public class ServerConsole extends Console implements ClockDriven {
 
 	public void receiveClientControlChanges(List<ControlChange> clientControlChages) {
 		for (ControlChange change : clientControlChages)
-			controlsSocket.controlStateChanged(change.control, change.state);
+			if (change instanceof ControlChangeForPaddle)
+				controlsSocket.controlStateChanged(change.control, ((ControlChangeForPaddle)change).position);
+			else
+				controlsSocket.controlStateChanged(change.control, change.state);
 	}
 
 	private void sendStateUpdate() {
@@ -105,8 +115,8 @@ public class ServerConsole extends Console implements ClockDriven {
 	private class ServerConsoleControlsSocketAdapter extends ConsoleControlsSocket {
 		@Override
 		public void controlStateChanged(Control control, boolean state) {
-			// Send the speed control directly
-			if (control == Control.FAST_SPEED || control.isStateControl()) {
+			// Send some controls directly and locally only
+			if (control == Control.FAST_SPEED || control == Control.POWER_FRY || control.isStateControl()) {
 				super.controlStateChanged(control, state);
 				return;
 			}
@@ -114,11 +124,17 @@ public class ServerConsole extends Console implements ClockDriven {
 				queuedChanges.add(new ControlChange(control, state));
 			}
 		}
+		@Override
+		public void controlStateChanged(Control control, int position) {
+			synchronized (queuedChanges) {
+				queuedChanges.add(new ControlChangeForPaddle(control, position));
+			}
+		}
 		private List<ControlChange> commitAndGetChangesToSend() {
 			List<ControlChange> changesToSend;
 			synchronized (queuedChanges) {
 				if (queuedChanges.isEmpty())
-					changesToSend = emptyChanges;
+					return null;
 				else {
 					changesToSend = new ArrayList<ControlChange>(queuedChanges);
 					queuedChanges.clear();
@@ -126,11 +142,13 @@ public class ServerConsole extends Console implements ClockDriven {
 			}
 			// Effectively process the control changes 
 			for (ControlChange change : changesToSend)
-				super.controlStateChanged(change.control, change.state);
+				if (change instanceof ControlChangeForPaddle)
+					super.controlStateChanged(change.control, ((ControlChangeForPaddle)change).position);
+				else
+					super.controlStateChanged(change.control, change.state);
 			return changesToSend;
 		}
 		private List<ControlChange> queuedChanges = new ArrayList<ControlChange>();
-		private List<ControlChange> emptyChanges = new ArrayList<ControlChange>();
 	}
 
 	private class ServerConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {}

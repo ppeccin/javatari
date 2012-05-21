@@ -8,7 +8,9 @@ import atari.controls.ConsoleControls.Control;
 
 public class ControlChange implements Serializable {
 
-	// TODO Bug dos paddles em multiplayer
+	protected ControlChange() {
+		super();
+	}
 	
 	public ControlChange(Control control, boolean state) {
 		this.control = control;

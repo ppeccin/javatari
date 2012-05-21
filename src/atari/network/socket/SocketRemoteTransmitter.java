@@ -56,9 +56,8 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 			ServerSocket serverSocket = new ServerSocket(SERVICE_PORT);
 			connectReceiver(serverSocket.accept());
 			serverSocket.close();
-		} catch(Exception e) {
- 			e.printStackTrace();
- 			JOptionPane.showMessageDialog(null, "Unnable to open socket!", "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
+		} catch(Exception ex) {
+ 			JOptionPane.showMessageDialog(null, "Server start failed: unable to open socket\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
  			return false;
  		}
 		return true;
@@ -127,7 +126,7 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 						socketOutputStream.flush();
 						@SuppressWarnings("unchecked")
 						List<ControlChange> clientControlChanges = (List<ControlChange>) inputStream.readObject();
-						console.receiveClientControlChanges(clientControlChanges);
+						if (clientControlChanges != null) console.receiveClientControlChanges(clientControlChanges);
 					}
 				}
 			} catch (IOException e) {

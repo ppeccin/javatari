@@ -18,7 +18,7 @@ public class ConsoleState implements Serializable {
 		this.piaState = pia;
 		this.ramState = ram;
 		this.cpuState = cpu;
-		this.cartridge = cartridge.clone();
+		this.cartridge = cartridge != null ? cartridge.clone() : null;
 		this.videoStandard = videoStandard;
 	}
 

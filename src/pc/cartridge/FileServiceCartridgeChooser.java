@@ -21,7 +21,7 @@ public class FileServiceCartridgeChooser {
 			FileContents fileCon = fos.openFileDialog("C:/cartridges", new String[] {"bin", "rom", "a26"});
 			return read(fileCon);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			System.out.println("File Service Cartridge Chooser: unable to open dialog\n" + ex);
 			return null;
 		}
 	}
@@ -36,8 +36,7 @@ public class FileServiceCartridgeChooser {
 			stream.close();
 			return CartridgeLoader.load(stream, fileName);
 		} catch (Exception ex) {
-			System.out.println("Unable to load Cartridge from: " + fileName);
-			System.out.println(ex);
+			System.out.println("Unable to load Cartridge from: " + fileName + "\n" + ex);
 		} finally {
 			if (stream != null) try { 
 				stream.close(); 

@@ -109,25 +109,33 @@ public class ClientConsole extends Console implements ClockDriven {
 				queuedChanges.add(new ControlChange(control, state));
 			}
 		}
+		@Override
+		public void controlStateChanged(Control control, int position) {
+			synchronized (queuedChanges) {
+				queuedChanges.add(new ControlChangeForPaddle(control, position));
+			}
+		}
 		public List<ControlChange> getChangesToSend() {
 			List<ControlChange> changesToSend;
 			synchronized (queuedChanges) {
 				if (queuedChanges.isEmpty())
-					changesToSend = emptyChanges;
+					return null;
 				else {
 					changesToSend = new ArrayList<ControlChange>(queuedChanges);
 					queuedChanges.clear();
+					return changesToSend;
 				}
 			}
-			return changesToSend;
 		}
 		public void serverControlChanges(List<ControlChange> changes) {
 			// Effectively accepts the control changes, received from the server 
 			for (ControlChange change : changes)
-				super.controlStateChanged(change.control, change.state);
+				if (change instanceof ControlChangeForPaddle)
+					super.controlStateChanged(change.control, ((ControlChangeForPaddle)change).position);
+				else
+					super.controlStateChanged(change.control, change.state);
 		}
 		private List<ControlChange> queuedChanges = new ArrayList<ControlChange>();
-		private List<ControlChange> emptyChanges = new ArrayList<ControlChange>();
 	}
 	
 	// Cartridge insertion is controlled only by the Server

@@ -207,6 +207,7 @@ public class Console {
 		ram.powerFry();
 	}
 
+
 	public boolean powerOn = false;
 
 	protected BUS bus;

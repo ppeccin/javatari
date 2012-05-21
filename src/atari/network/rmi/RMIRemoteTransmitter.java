@@ -60,9 +60,8 @@ public class RMIRemoteTransmitter extends UnicastRemoteObject implements RMIRemo
 		try {
 			Registry reg = LocateRegistry.createRegistry(SERVICE_PORT);
 			reg.bind(SERVICE_NAME, this);
-		} catch(Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Unnable to start server!", "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
+		} catch(Exception ex) {
+			JOptionPane.showMessageDialog(null, "Unnable to start server!\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -109,10 +108,10 @@ public class RMIRemoteTransmitter extends UnicastRemoteObject implements RMIRemo
 				try {
 					if (receiver != null) { 
 						List<ControlChange> clientControlChages = receiver.receiveServerUpdate(update);
-						console.receiveClientControlChanges(clientControlChages);
+						if (clientControlChages != null) console.receiveClientControlChanges(clientControlChages);
 					}
-				} catch (RemoteException e) {
-					e.printStackTrace();
+				} catch (RemoteException ex) {
+					System.out.println("RMIRemoteTransmitter: unable to send update\n" + ex);
 					disconnectReceiver();
 				}
 			}

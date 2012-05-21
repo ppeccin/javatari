@@ -112,8 +112,8 @@ public class ConsolePanel extends SlickFrame implements ConsoleControls, Console
 			resetDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/ResetDown.png");
 			p0DiffDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/P0DiffDown.png");
 			p1DiffDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/P1DiffDown.png");
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException ex) {
+			System.out.println("Console Panel: unable to load images\n" + ex);
 		}
 	}
 

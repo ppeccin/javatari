@@ -73,9 +73,8 @@ public class SocketRemoteReceiver implements RemoteReceiver {
 	 		try {
 	 			connect(server);
 	 			connected = true; 
-	 		} catch(Exception e) {
-	 			e.printStackTrace();
-	 			JOptionPane.showMessageDialog(null, "Unnable to connect to: " + server, "Atari Player 2 Client", JOptionPane.ERROR_MESSAGE);
+	 		} catch(Exception ex) {
+	 			JOptionPane.showMessageDialog(null, "Unnable to connect to: " + server + "\n" + ex, "Atari Player 2 Client", JOptionPane.ERROR_MESSAGE);
 	 			server = null;
 	 		}
 	 	}

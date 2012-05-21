@@ -18,16 +18,16 @@ public class CartridgeCreator {
 		String cartName = name.toUpperCase();
 		Cartridge cart = null; 
 		// Special case for Sliced "E0" format as indicated in name
-		if (cartName.indexOf("[SLICED]") >= 0 || cartName.indexOf("[E0]") >= 0) {
+		if (cartName.indexOf("(SLICED)") >= 0 || cartName.indexOf("(E0)") >= 0) {
 			if (content.length == Cartridge8KSliced.SIZE) 
 				cart = new Cartridge8KSliced(content);
 			else 
-				throw new UnsupportedOperationException("Cartridge [SLICED, E0] size not supported: " + content.length);
+				throw new UnsupportedOperationException("Cartridge (SLICED, E0) size not supported: " + content.length);
 		} else {
 			// Force SuperChip mode ON or OFF as indicated in name, otherwise leave it in auto mode (null)
 			Boolean sc = null;
-			if (cartName.indexOf("[SC]") >= 0) sc = true;
-			else if (cartName.indexOf("[NOSC]") >= 0) sc = false;
+			if (cartName.indexOf("(SC)") >= 0) sc = true;
+			else if (cartName.indexOf("(NOSC)") >= 0) sc = false;
 			switch (content.length) {
 				case CartridgeDisconnected.SIZE:
 					cart = new CartridgeDisconnected(); break;
@@ -49,8 +49,8 @@ public class CartridgeCreator {
 			}
 		}
 		// Use VideoStandard specified on the name. Default is null (auto)
-		if (cartName.indexOf("[PAL]") >= 0) cart.suggestedVideoStandard(VideoStandard.PAL);
-		else if (cartName.indexOf("[NTSC]") >= 0) cart.suggestedVideoStandard(VideoStandard.NTSC);
+		if (cartName.indexOf("(PAL)") >= 0) cart.suggestedVideoStandard(VideoStandard.PAL);
+		else if (cartName.indexOf("(NTSC)") >= 0) cart.suggestedVideoStandard(VideoStandard.NTSC);
 		return cart;
 	}
 
