@@ -1,6 +1,7 @@
-<jnlp spec="6.0+"
+<jnlp spec="1.0+"
 	codebase="http://javatari.org/files"
-	href="http://javatari.org/files/javatari.jnlp" >
+	href="http://javatari.org/files/javatari.jnlp" 
+	version="1.07.01" >
 	<information>
 		<title>javatari</title>
 		<vendor>Paulo Augusto Peccin</vendor>
@@ -10,7 +11,7 @@
 		<icon kind="splash" href="http://javatari.org/files/javatari-splash.png" />
 	</information>
 	<update check="always" policy="always" />
-	<security>
+ 	<security>
 		<all-permissions />
 	</security>
 	<resources>
