@@ -1,4 +1,5 @@
 Controls
+(In addition to the UI buttons)
 
 P1 Controls:   Arrow Keys / Space: Fire
 P2 Controls:   F,T,G,H / A: Fire
@@ -13,6 +14,10 @@ Alt + C:       Toggle Collisions
 Alt + V:       Toggle NTSC/PAL
 Alt + P:       Toggle Pause
 Alt + F:       Next Frame (during Pause)
+
+F6:            Load Cartridge with no automatic power off/on
+F7:            Remove Cartridge
+ALT + F1:      Fry Console (quickly power off/on)
 
 Ctr + 1-0      Save State
 Alt + 1-0      Load State

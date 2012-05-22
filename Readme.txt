@@ -2,13 +2,22 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
+Version 1.07
+============
+- New Cartridge load options
+  - F5 now loads with automatic power on/off
+  - F6 loads with no automatic power on/off
+  - F7 removes the Cartridge
+- Fry Console (quickly power off/on): Alt-F1
+- Multiplayer Paddles mode bugfix
+
+
+Previous Versions:
+
 Version 1.06
 ============
 - Better homebrew ROMs support
 - Data BUS retention for zero-page load error
-
-
-Previous Versions:
 
 Version 1.05
 ============
