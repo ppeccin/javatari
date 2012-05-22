@@ -9,9 +9,9 @@
 		<icon kind="shortcut" href="http://javatari.org/files/javatari-icon.png" />
 		<icon kind="splash" href="http://javatari.org/files/javatari-splash.png" />
 	</information>
-	<_security>
+	<security>
 		<all-permissions />
-	</_security>
+	</security>
 	<resources>
 		<j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
 		<jar href="javatari.jar" main="true" />
