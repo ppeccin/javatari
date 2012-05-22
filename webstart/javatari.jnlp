@@ -1,0 +1,20 @@
+<jnlp spec="1.0+"
+	codebase="http://javatari/files"
+	href="http://javatari/files/javatari.jnlp" >
+	<information>
+		<title>javatari</title>
+		<vendor>Paulo Augusto Peccin</vendor>
+		<homepage href="http://javatari.org" />
+		<icon href="http://javatari/files/javatari-icon.png" />
+		<icon kind="shortcut" href="http://javatari/files/javatari-icon.png" />
+		<icon kind="splash" href="http://javatari/files/javatari-splash.png" />
+	</information>
+	<_security>
+		<all-permissions />
+	</_security>
+	<resources>
+		<j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+		<jar href="javatari.jar" main="true" />
+	</resources>
+	<application-desc name="javatari" />
+</jnlp>
