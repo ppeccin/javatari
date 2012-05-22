@@ -1,7 +1,7 @@
 <jnlp spec="1.0+"
 	codebase="http://javatari.org/files"
 	href="http://javatari.org/files/javatari.jnlp" 
-	version="1.07.01" >
+	version="1.07" >
 	<information>
 		<title>javatari</title>
 		<vendor>Paulo Augusto Peccin</vendor>
@@ -16,7 +16,7 @@
 	</security>
 	<resources>
 		<j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-		<jar href="javatari.jar" main="true" />
+		<jar href="javatari107.jar" main="true" />
 	</resources>
 	<application-desc name="javatari" />
 </jnlp>
