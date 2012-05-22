@@ -1,114 +1,104 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="javatari : A multiplayer Atari 2600 emulator written in pure Java with no external libs." />
+	<head>
+		<meta charset='utf-8' />
+		<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+		<meta name="description" content="javatari : A multiplayer Atari 2600 emulator written in pure Java with no external libs." />
+		<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">   
+		<title>javatari</title>
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-31008590-1']);
+			_gaq.push(['_setDomainName', 'javatari.org']);
+			_gaq.push(['_setAllowLinker', true]);
+			_gaq.push(['_trackPageview']);
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	</head>
+	
+	<body>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">   
+		<div id="fb-root"></div>
+		<script>
+			(function(d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) return;
+				js = d.createElement(s); js.id = id;
+				js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'facebook-jssdk'));
+		</script>
 
-    <title>javatari</title>
+		<!-- HEADER -->
+		<div id="header_wrap" class="outer">
+        	<div class="inner">
+				<a id="forkme_banner" href="https://github.com/ppeccin/javatari">Source Code on GitHub</a>
+				<img src="images/logo.png" alt="" 
+					style="
+						position: relative;
+						display: inline-block; 
+						float: left; 
+						width: 178px;
+						height: 148px;
+						border: none;
+						box-shadow: none;
+						margin: 0px 15px 0px 0px; 
+						padding: 0px;
+					"
+				/>
+				<h1 id="project_title">javatari</h1>
+				<h2 id="project_tagline">A multiplayer Atari 2600 emulator written in pure Java with no external libs.</h2>
+				<div id="downloads">
+					<a class="zip_download_link" href="https://github.com/ppeccin/javatari/zipball/master">Download this project as a .zip file</a>
+					<a class="tar_download_link" href="https://github.com/ppeccin/javatari/tarball/master">Download this project as a tar.gz file</a>
+				</div >
+			</div >
+		</div>
 
-<script type="text/javascript">
+		<!-- MAIN CONTENT -->
+		<div id="main_content_wrap" class="outer">
+			<div id="main_content" class="inner">
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-31008590-1']);
-  _gaq.push(['_setDomainName', 'javatari.org']);
-  _gaq.push(['_setAllowLinker', true]);
-  _gaq.push(['_trackPageview']);
+				<a href="./files/javatari.jnlp">
+					<img src="images/javatari-shot1.png" alt="" 
+						style="
+							position: relative;
+							display: block; 
+							width: 622px;
+							height: 563px;
+							border: none;
+							box-shadow: none;
+							margin: 0 auto 20px auto; 
+							padding: 0px;
+						"
+					/>
+				</a>
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
-
-  </head>
-
-  <body>
-
-<div id="fb-root"></div>
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) return;
-  js = d.createElement(s); js.id = id;
-  js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <div class="inner">
-          <a id="forkme_banner" href="https://github.com/ppeccin/javatari">Source Code on GitHub</a>
-
-		<img src="images/logo.png" alt="" 
-			style="
-				position: relative;
-				display: inline-block; 
-				float: left; 
-				width: 178px;
-				height: 148px;
-				border: none;
-				box-shadow: none;
-				margin: 0px 15px 0px 0px; 
-				padding: 0px;
-			"
-		/>
-
-          <h1 id="project_title">javatari</h1>
-          <h2 id="project_tagline">A multiplayer Atari 2600 emulator written in pure Java with no external libs.</h2>
-
-          <div id="downloads">
-            <a class="zip_download_link" href="https://github.com/ppeccin/javatari/zipball/master">Download this project as a .zip file</a>
-            <a class="tar_download_link" href="https://github.com/ppeccin/javatari/tarball/master">Download this project as a tar.gz file</a>
-          </div >
-        </div >
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <div id="main_content" class="inner">
-
-	<a href="./files/javatari.jar">
-		<img src="images/javatari-shot1.png" alt="" 
-			style="
-				position: relative;
-				display: block; 
-				width: 622px;
-				height: 563px;
-				border: none;
-				box-shadow: none;
-				margin: 0 auto 20px auto; 
-				padding: 0px;
-			"
-		/>
-	</a>
-     
-	<h3><a href="./files/javatari.jar">Download the executable JAR version 1.06 here</a></h3>
-
-<p>Just open it! Needs <b><a href="http://java.com">Java 6</a></b> or greater and Atari <b><a href="http://www.google.com/search?q=atari+2600+roms">ROMs</a></b>.</p>
-<p>Visit the <b><a href="https://github.com/ppeccin/javatari">project homepage</a></b> for changelog and release notes.</p>
-
-<p>To start the emulator in Multiplayer modes:<p>
-<pre><code>$ java -cp javatari.jar main.MultiplayerServer
+				<h3><a href="./files/javatari.jar">Download the executable JAR version 1.06 here</a></h3>
+				<p>Just open it! Needs <b><a href="http://java.com">Java 6</a></b> or greater and Atari <b><a href="http://www.google.com/search?q=atari+2600+roms">ROMs</a></b>.</p>
+				<p>Visit the <b><a href="https://github.com/ppeccin/javatari">project homepage</a></b> for changelog and release notes.</p>
+				<p>To start the emulator in Multiplayer modes:<p>
+				<pre><code>
+$ java -cp javatari.jar main.MultiplayerServer
 or
 $ java -cp javatari.jar main.MultiplayerClient
-</code></pre>
-<br/>
-<h3>Features</h3>
-
-<ul>
-<li>Unique Client-Server multiplayer mode. Runs great in low-latency networks such as LANs.</li>
-<li>Cheat and turn off Collisions. Finally discover the ending of River Raid!</li>
-<li>Complete Save State/Load State functions.</li>
-<li>Scanlines and TV screen emulation modes.</li>
-<li>Real Atari console user interface.</li>
-</ul><h3>Controls</h3>
-
-<p>
+				</code></pre>
+				<br/>
+				<h3>Features</h3>
+				<ul>
+					<li>Unique Client-Server multiplayer mode. Runs great in low-latency networks such as LANs.</li>
+					<li>Cheat and turn off Collisions. Finally discover the ending of River Raid!</li>
+					<li>Complete Save State/Load State functions.</li>
+					<li>Scanlines and TV screen emulation modes.</li>
+					<li>Real Atari console user interface.</li>
+				</ul>
+				<h3>Controls</h3>
+				<p>
 P1 Controls:  Arrow Keys / Space: Fire</br>
 P2 Controls:  F,T,G,H / A: Fire</br>
 Alt + J:      Swap P1&lt;&gt;P2 Controls</br>
@@ -130,28 +120,25 @@ Shft + Arrows: Screen Size</br>
 Backspace:     Default Screen Size</br>
 </br>
 TAB:           Fast Speed</br>
-</p>
-   </div >
- </div>
+				</p>
+			</div >
+		</div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <div id="footer" class="inner">
+	    <!-- FOOTER  -->
+		<div id="footer_wrap" class="outer">
+			<div id="footer" class="inner">
+				<div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="650" data-show-faces="false" data-colorscheme="dark"></div>
+				<div>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://javatari.org" data-text="Multiplayer Atari 2600 Emulator written in Java using no libs: " data-count="none">Tweet</a>
+					<a href="https://twitter.com/ppeccin" class="twitter-follow-button" data-show-count="false">Follow @ppeccin</a>
+					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>	
+				</div>
+				<p>Discuss at <a href="http://groups.google.com/group/javatari">http://groups.google.com/group/javatari</a></p>
+				<p class="copyright">javatari created by <a href="https://github.com/ppeccin">Paulo Augusto Peccin</a></p>
+				<p>Java, Atari, Atari Video Computer System, Activision, River Raid and Pitfall are trademarks of their respective owners.</p>
+			</div >
+		</div>
 
-	<div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="650" data-show-faces="false" data-colorscheme="dark"></div>
-	<div>
-		<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://javatari.org" data-text="Multiplayer Atari 2600 Emulator written in Java using no libs: " data-count="none">Tweet</a>
-		<a href="https://twitter.com/ppeccin" class="twitter-follow-button" data-show-count="false">Follow @ppeccin</a>
-		<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>	
-	</div>
-        <p>Discuss at <a href="http://groups.google.com/group/javatari">http://groups.google.com/group/javatari</a></p>
-        <p class="copyright">javatari created by <a href="https://github.com/ppeccin">Paulo Augusto Peccin</a></p>
-<!--        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>    -->
-	   <p>Java, Atari, Atari Video Computer System, Activision, River Raid and Pitfall are trademarks of their respective owners.</p>
-     
-	 </div >
-    </div>
-
-  </body>
+	</body>
 
 </html>
