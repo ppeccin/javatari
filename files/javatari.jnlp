@@ -1,4 +1,4 @@
-<jnlp spec="1.0+"
+<jnlp spec="6.0+"
 	codebase="http://javatari.org/files"
 	href="http://javatari.org/files/javatari.jnlp" >
 	<information>
@@ -9,6 +9,7 @@
 		<icon kind="shortcut" href="http://javatari.org/files/javatari-icon.png" />
 		<icon kind="splash" href="http://javatari.org/files/javatari-splash.png" />
 	</information>
+	<update check="always" policy="always" />
 	<security>
 		<all-permissions />
 	</security>
