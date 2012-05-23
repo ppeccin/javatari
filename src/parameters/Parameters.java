@@ -3,7 +3,9 @@
 package parameters;
 
 import java.io.InputStream;
+import java.security.AccessControlException;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import utils.Terminator;
 
@@ -16,6 +18,28 @@ public class Parameters {
 		processMainArg(args);
 	}
 	
+	public static String readPreference(String name) {
+		if (getUserPreferences() == null) return null;
+		return getUserPreferences().get(name, "");
+	}
+
+	public static boolean storePreference(String name, String value) {
+		if (getUserPreferences() == null) return false;
+		getUserPreferences().put(name, value);
+		return true;
+	}
+
+	public static Preferences getUserPreferences() {
+		if (!userPreferencesAsked)
+			try{
+				userPreferencesAsked = true;
+				userPreferences = Preferences.userRoot().node("javatari");
+			} catch(AccessControlException ex) {
+				// Ignore
+			}
+		return userPreferences;
+	}
+
 	private static void processOptions(String[] args) {
 		for (String arg : args) {
 			if (!arg.startsWith("-")) continue;
@@ -169,5 +193,7 @@ public class Parameters {
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
 
+	private static Preferences userPreferences;
+	private static boolean userPreferencesAsked = false;
 
 }

@@ -2,8 +2,6 @@
 
 package main;
 
-import java.net.MalformedURLException;
-
 import parameters.Parameters;
 import pc.cartridge.CartridgeLoader;
 import pc.savestate.FileSaveStateMedia;
@@ -14,7 +12,7 @@ import atari.console.Console;
 
 public class TestStandalone {
 
-	public static void main(String[] args) throws MalformedURLException {
+	public static void main(String[] args) {
 
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);

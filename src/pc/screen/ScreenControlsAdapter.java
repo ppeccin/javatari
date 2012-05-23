@@ -19,16 +19,18 @@ public class ScreenControlsAdapter implements KeyListener {
 	private void init(Component... components) {
 		for (int i = 0; i < components.length; i++)
 			components[i].addKeyListener(this);
-		keyCodeMap.put(KEY_EXIT,          Screen.Control.EXIT);
-		keyCodeMap.put(KEY_CART,          Screen.Control.LOAD_CARTRIDGE);
-		keyCodeMap.put(KEY_CART_NO_POWER, Screen.Control.LOAD_CARTRIDGE_NO_AUTO_POWER);
-		keyCodeMap.put(KEY_CART_EMPTY,    Screen.Control.LOAD_CARTRIDGE_EMPTY);
+		keyCodeMap.put(KEY_EXIT,       Screen.Control.EXIT);
+		keyCodeMap.put(KEY_CART_FILE,  Screen.Control.LOAD_CARTRIDGE_FILE);
+		keyCodeMap.put(KEY_CART_URL,   Screen.Control.LOAD_CARTRIDGE_URL);
+		keyCodeMap.put(KEY_CART_EMPTY, Screen.Control.LOAD_CARTRIDGE_EMPTY);
 
-		keyAltCodeMap.put(KEY_HELP,        Screen.Control.HELP); 
-		keyAltCodeMap.put(KEY_FULL_SCR,    Screen.Control.FULL_SCREEN); 
-		keyAltCodeMap.put(KEY_QUALITY,     Screen.Control.QUALITY); 
-		keyAltCodeMap.put(KEY_DEBUG,       Screen.Control.DEBUG); 
-		keyAltCodeMap.put(KEY_CRT_MODES,   Screen.Control.CRT_MODES);
+		keyAltCodeMap.put(KEY_HELP,      Screen.Control.HELP);
+		keyAltCodeMap.put(KEY_FULL_SCR,  Screen.Control.FULL_SCREEN);
+		keyAltCodeMap.put(KEY_QUALITY,   Screen.Control.QUALITY);
+		keyAltCodeMap.put(KEY_DEBUG,     Screen.Control.DEBUG);
+		keyAltCodeMap.put(KEY_CRT_MODES, Screen.Control.CRT_MODES);
+		keyAltCodeMap.put(KEY_CART_FILE, Screen.Control.LOAD_CARTRIDGE_FILE_NO_AUTO_POWER);
+		keyAltCodeMap.put(KEY_CART_URL,  Screen.Control.LOAD_CARTRIDGE_URL_NO_AUTO_POWER);
 
 		keyShiftCodeMap.put(KEY_UP,    Screen.Control.SIZE_MINUS); 
 		keyShiftCodeMap.put(KEY_DOWN,  Screen.Control.SIZE_PLUS); 
@@ -107,8 +109,8 @@ public class ScreenControlsAdapter implements KeyListener {
 	public static final int KEY_SIZE_DEFAULT = KeyEvent.VK_BACK_SPACE;  
 	
 	public static final int KEY_EXIT          = KeyEvent.VK_ESCAPE;
-	public static final int KEY_CART          = KeyEvent.VK_F5;
-	public static final int KEY_CART_NO_POWER = KeyEvent.VK_F6;
+	public static final int KEY_CART_FILE     = KeyEvent.VK_F5;
+	public static final int KEY_CART_URL      = KeyEvent.VK_F6;
 	public static final int KEY_CART_EMPTY    = KeyEvent.VK_F7;
 	public static final int KEY_FULL_SCR      = KeyEvent.VK_ENTER;
 	public static final int KEY_QUALITY       = KeyEvent.VK_Q;

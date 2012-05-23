@@ -34,6 +34,7 @@ import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
 import pc.cartridge.FileCartridgeChooser;
+import pc.cartridge.URLCartridgeChooser;
 import pc.controls.AWTConsoleControls;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
@@ -470,10 +471,17 @@ private void paintLogo() {
 		setDisplayScale(scaleY * DEFAULT_SCALE_ASPECT_X, scaleY);
 	}
 
-	private void loadCartridge(boolean autoPower) {
+	private void loadCartridgeFromFile(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileCartridgeChooser.chooseFile();
+		if (cart != null) cartridgeSocket.insert(cart, autoPower);
+	};
+
+	private void loadCartridgeFromURL(boolean autoPower) {
+		if (cartridgeChangeDisabledWarning()) return;
+		if (fullScreen) fullScreen(false);
+		Cartridge cart = URLCartridgeChooser.chooseURL();
 		if (cart != null) cartridgeSocket.insert(cart, autoPower);
 	};
 
@@ -510,10 +518,14 @@ private void paintLogo() {
 		// Toggles
 		if (!state) return;
 		switch(control) {
-			case LOAD_CARTRIDGE:
-				loadCartridge(true); break;
-			case LOAD_CARTRIDGE_NO_AUTO_POWER:
-				loadCartridge(false); break;
+		case LOAD_CARTRIDGE_FILE:
+				loadCartridgeFromFile(true); break;
+			case LOAD_CARTRIDGE_FILE_NO_AUTO_POWER:
+				loadCartridgeFromFile(false); break;
+			case LOAD_CARTRIDGE_URL:
+				loadCartridgeFromURL(true); break;
+			case LOAD_CARTRIDGE_URL_NO_AUTO_POWER:
+				loadCartridgeFromURL(false); break;
 			case LOAD_CARTRIDGE_EMPTY:
 				loadCartridgeEmpty(); break;
 			case FULL_SCREEN:
@@ -682,9 +694,12 @@ private void paintLogo() {
 		SCALE_X_MINUS, SCALE_Y_MINUS, 
 		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
-		EXIT, LOAD_CARTRIDGE, LOAD_CARTRIDGE_NO_AUTO_POWER, LOAD_CARTRIDGE_EMPTY,
+		LOAD_CARTRIDGE_FILE, LOAD_CARTRIDGE_FILE_NO_AUTO_POWER,
+		LOAD_CARTRIDGE_URL, LOAD_CARTRIDGE_URL_NO_AUTO_POWER,
+		LOAD_CARTRIDGE_EMPTY,
 		FULL_SCREEN, QUALITY, CRT_MODES,
-		HELP, DEBUG
+		HELP, DEBUG,
+		EXIT
 	}
 
 }

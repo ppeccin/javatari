@@ -205,7 +205,7 @@ public class ConsolePanel extends SlickFrame implements ConsoleControls, Console
 		addHotspot(
 			new Rectangle(150, 52 - 137, 170, 45), 
 			new Runnable() { @Override public void run() { 
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE, true);
+				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_FILE, true);
 				updateVisibleControlsState(); 
 			}});
 	}
