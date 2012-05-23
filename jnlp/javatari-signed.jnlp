@@ -1,5 +1,5 @@
 <jnlp spec="6.0+"
-	codebase="http://javatari.org/jnlp/"
+	codebase="http://javatari.com/jnlp/"
 	href="javatari-signed.jnlp" >
 	<information>
 		<title>javatari signed</title>
