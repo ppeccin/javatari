@@ -35,7 +35,7 @@ import atari.controls.ConsoleControlsInput;
 import atari.controls.ConsoleControlsRedefinitionListener;
 import atari.controls.ConsoleControlsSocket;
 
-public class 	 extends SlickFrame implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
+public class ConsolePanel extends SlickFrame implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
 	public ConsolePanel(JFrame masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
 		super(false);
