@@ -8,9 +8,10 @@ import utils.Randomizer;
 /**
  * Implements no cartridge connected
  */
+// TODO Remover?
 public final class CartridgeDisconnected extends Cartridge {
 
-	public CartridgeDisconnected() {
+	private CartridgeDisconnected() {
 		super();
 	}
 

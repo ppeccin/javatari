@@ -13,7 +13,6 @@ import java.util.Map;
 import parameters.Parameters;
 import atari.board.BUS;
 import atari.cartridge.Cartridge;
-import atari.cartridge.CartridgeDisconnected;
 import atari.cartridge.CartridgeSocket;
 import atari.console.savestate.ConsoleState;
 import atari.console.savestate.SaveStateMedia;
@@ -33,7 +32,7 @@ public class Console {
 		socketsCreate();
 		mainClockCreate();
 		videoStandardAuto();
-		cartridge(new CartridgeDisconnected());
+		// cartridge(new CartridgeDisconnected());		TODO Verificar
 	}
 
 	public VideoSignal videoOutput() {
@@ -58,6 +57,7 @@ public class Console {
 	
 	public void powerOn() {
 		if (powerOn) powerOff();
+		bus.powerOn();
 		ram.powerOn();
 		cpu.powerOn();
 		pia.powerOn();
@@ -74,6 +74,7 @@ public class Console {
 		pia.powerOff();
 		cpu.powerOff();
 		ram.powerOff();
+		bus.powerOff();
 		powerOn = false;
 		controlsSocket.controlsStatesRedefined();
 	}

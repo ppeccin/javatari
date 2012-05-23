@@ -3,7 +3,6 @@ package pc.cartridge;
 import general.av.video.VideoStandard;
 import atari.cartridge.Cartridge;
 import atari.cartridge.Cartridge4K;
-import atari.cartridge.CartridgeDisconnected;
 import atari.cartridge.bankswitching.Cartridge12K;
 import atari.cartridge.bankswitching.Cartridge16K;
 import atari.cartridge.bankswitching.Cartridge28K;
@@ -29,8 +28,8 @@ public class CartridgeCreator {
 			if (cartName.indexOf("(SC)") >= 0) sc = true;
 			else if (cartName.indexOf("(NOSC)") >= 0) sc = false;
 			switch (content.length) {
-				case CartridgeDisconnected.SIZE:
-					cart = new CartridgeDisconnected(); break;
+				case 0:
+					return null;
 				case Cartridge4K.HALF_SIZE:
 				case Cartridge4K.SIZE:
 					cart = new Cartridge4K(content); break;

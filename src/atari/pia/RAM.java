@@ -12,7 +12,7 @@ import utils.Randomizer;
 public final class RAM implements BUS16Bits {
 
 	public RAM() {
-		// RAMs come totally random at creation
+		// RAM come totally random at creation
 		Randomizer.instance.nextBytes(bytes);
 	}
 

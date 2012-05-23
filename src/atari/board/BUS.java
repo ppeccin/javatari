@@ -3,6 +3,7 @@
 package atari.board;
 
 import parameters.Parameters;
+import utils.Randomizer;
 import general.board.BUS16Bits;
 import atari.cartridge.Cartridge;
 import atari.pia.PIA;
@@ -15,6 +16,14 @@ public final class BUS implements BUS16Bits {
 		this.ram = ram;
 		this.tia = tia;
 		this.pia = pia;
+	}
+
+	public void powerOn() {
+		// Data in the bus come random at creation if no Cartridge is inserted
+		if (cartridge == null) data = (byte)Randomizer.instance.nextInt(256);
+	}
+
+	public void powerOff() {
 	}
 
 	@Override
