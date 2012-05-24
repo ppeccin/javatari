@@ -18,7 +18,8 @@ public class FileServiceCartridgeChooser {
 		try {
 			// BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService"); 
 			FileOpenService fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService"); 
-			FileContents fileCon = fos.openFileDialog("C:/cartridges", new String[] {"bin", "rom", "a26"});
+			FileContents fileCon = fos.openFileDialog(null, new String[] {"bin", "rom", "a26"});
+			if (fileCon == null) return null;
 			return read(fileCon);
 		} catch (Exception ex) {
 			System.out.println("File Service Cartridge Chooser: unable to open dialog\n" + ex);
@@ -33,16 +34,11 @@ public class FileServiceCartridgeChooser {
 			fileName = fileCont.getName();
 			stream = fileCont.getInputStream();
 			System.out.println("Loading Cartridge from: " + fileName);
-			stream.close();
 			return CartridgeLoader.load(stream, fileName);
-		} catch (Exception ex) {
+		} catch (IOException ex) {
 			System.out.println("Could not load Cartridge from: " + fileName + "\n" + ex);
-		} finally {
-			if (stream != null) try { 
-				stream.close(); 
-			} catch (IOException e) {}
+			return null;
 		}
-		return null;
 	}
 
 }

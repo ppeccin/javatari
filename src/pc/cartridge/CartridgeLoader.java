@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessControlException;
 import java.util.Arrays;
 
 import javax.swing.JOptionPane;
@@ -21,8 +22,8 @@ public class CartridgeLoader {
 			return load(new URL(url));
 		} catch (MalformedURLException ex) {
 			errorMessage(ex, url);
-			return null;
 		}
+		return null;
 	}
 
 	public static Cartridge load(File file) {
@@ -30,41 +31,48 @@ public class CartridgeLoader {
 			return load(file.toURI().toURL());
 		} catch (MalformedURLException ex) {
 			errorMessage(ex, file.getPath());
-			return null;
 		}
+		return null;
 	}
 
 	public static Cartridge load(URL url) {
 		InputStream stream = null;
 		try {
+			System.out.println("Loading Cartridge from: " + url);
 			URLConnection conn = url.openConnection();
 			conn.setConnectTimeout(5000);
 			stream = conn.getInputStream();
-			System.out.println("Loading Cartridge from: " + url);
 			return load(stream, url.toString());
+		} catch (AccessControlException ex) {
+			errorMessage(ex, url.toString());
 		} catch (IOException ex) {
 			errorMessage(ex, url.toString());
-			return null;
 		}
+		return null;
 	}
 
 	public static Cartridge load(InputStream stream, String name) {
 		try{
 			byte[] buffer = new byte[MAX_ROM_SIZE];
-			int read = stream.read(buffer);
-			byte[] content = (read > 0) ? Arrays.copyOf(buffer, read) : new byte[0];
+			int totalRead = 0;
+			int read;
+			do {
+				read = stream.read(buffer, totalRead, MAX_ROM_SIZE - totalRead);
+				if (read == -1) break;
+				totalRead += read;
+			} while(totalRead < MAX_ROM_SIZE);
+			byte[] content = (totalRead > 0) ? Arrays.copyOf(buffer, totalRead) : new byte[0];
 			return CartridgeCreator.create(content, name);
 		} catch (IOException ex) {
 			errorMessage(ex, name);
-			return null;
 		} catch (UnsupportedROMFormatException ex) {
 			errorMessage(ex, name);
-			return null;
 		} finally {
 			if (stream != null) try { 
 				stream.close(); 
 			} catch (IOException e) {}
 		}
+		return null;
 	}
 
 	private static void errorMessage(Exception ex, String name) {

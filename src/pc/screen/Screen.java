@@ -114,7 +114,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	public void powerOn(){
 		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			fullScreen(false);
+			fullScreen(FULLSCREEN);
 			paintLogo();
 			clock.go();
 		}});
@@ -190,9 +190,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvasCenter();
 	}
 
-	private void openFullWindow() {
+	private boolean openFullWindow() {
 		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (!dev.isFullScreenSupported()) return;
+		if (!dev.isFullScreenSupported()) return false;
 		window.setVisible(false);
 		fullWindow.setVisible(true);
 		dev.setFullScreenWindow(fullWindow);
@@ -203,6 +203,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
 		canvasUpdateSize();
 		canvasCenter();
+		return true;
 	}
 
 	private void canvasUpdateSize() {
@@ -323,7 +324,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		paintLogo();
 	}
 
-private void paintLogo() {
+	private void paintLogo() {
 		synchronized (refreshMonitor) {
 			Graphics2D canvasGraphics = canvasGraphics();
 			if (canvasGraphics == null) return;
@@ -498,11 +499,11 @@ private void paintLogo() {
 		return false;
 	}
 
-
 	private void fullScreen(boolean state) {
 		synchronized (refreshMonitor) {
-			if (state) openFullWindow();
-			else openWindow();
+			if (state)
+				if (openFullWindow()) return;
+			openWindow();
 		}
 	}
 
@@ -670,6 +671,7 @@ private void paintLogo() {
 	public static final float DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
 	public static final float DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
 	public static final float DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
+	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 	public static final int OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
 
 	public static final boolean QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;

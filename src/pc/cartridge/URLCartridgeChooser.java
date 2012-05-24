@@ -2,30 +2,27 @@
 
 package pc.cartridge;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-
 import javax.swing.JOptionPane;
 
+import parameters.Parameters;
 import atari.cartridge.Cartridge;
 
 public class URLCartridgeChooser {
 
 	public static Cartridge chooseURL() {
-		String str = "";
-		try {
-			Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-			str = (String)clip.getData(DataFlavor.stringFlavor);
-		} catch (Exception ex) {
-			// Ignore
-		}
+		if (lastURLChosen == null) lastURLChosen = Parameters.readPreference(LAST_URL_CHOSEN_PREF);
 		String opt = (String)JOptionPane.showInputDialog(
 			"Load Cartridge from URL:                                                  ", 
-			str
+			lastURLChosen
 		);
 		if (opt == null || opt.trim().isEmpty()) return null;
+		lastURLChosen = opt.trim();
+		Parameters.storePreference(LAST_URL_CHOSEN_PREF, lastURLChosen);
 		return CartridgeLoader.load(opt);
 	}
+
+	private static String lastURLChosen;
+
+	private static final String LAST_URL_CHOSEN_PREF = "lastROMURLChosen";
 
 }

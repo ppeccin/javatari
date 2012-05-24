@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import utils.Terminator;
 
@@ -13,7 +15,7 @@ public class Parameters {
 
 	// Load Properties file and also process command line options and parameters
 	public static void init(String[] args) {
-		loadProperties();
+		loadPropertiesFile();
 		processOptions(args);
 		processMainArg(args);
 	}
@@ -43,13 +45,34 @@ public class Parameters {
 	private static void processOptions(String[] args) {
 		for (String arg : args) {
 			if (!arg.startsWith("-")) continue;
-			if (arg.toUpperCase().equals("-DISABLECARTRIDGECHANGE")) {
-				SCREEN_CARTRIDGE_CHANGE_DISABLED = true;
-				continue;
-			}
-			System.out.println("Unknown option: " + arg);
-			Terminator.terminate();
+			processOption(arg);
 		}
+	}
+
+	private static void processOption(String opt) {
+		// Disable Cartridge Change
+		if (opt.toUpperCase().equals("-DISABLECARTRIDGECHANGE")) {
+			SCREEN_CARTRIDGE_CHANGE_DISABLED = true;
+			return;
+		}
+		// CRT Mode
+		if (opt.length() == 9 && opt.toUpperCase().startsWith("-CRTMODE")) {
+			Pattern p = Pattern.compile("[0-4]");
+			Matcher m = p.matcher(opt);
+			if (!m.find()) {
+				System.out.println("Invalid option: " + opt + ". Only -crtmode0 to -crtmode4 are valid");
+				Terminator.terminate();
+			}
+			SCREEN_CRT_MODE = Integer.parseInt(m.group());
+			return;
+		}
+		// Full Screen
+		if (opt.toUpperCase().equals("-FULLSCREEN")) {
+			SCREEN_FULLSCREEN = true;
+			return;
+		}
+		System.out.println("Unknown option: " + opt);
+		Terminator.terminate();
 	}
 
 	private static void processMainArg(String[] args) {
@@ -60,7 +83,7 @@ public class Parameters {
 			}
 	}
 
-	private static void loadProperties() {
+	private static void loadPropertiesFile() {
 		InputStream is = Thread.currentThread().getContextClassLoader().
 				getResourceAsStream("parameters/javatari.properties");
 		Properties p = new Properties();
@@ -99,6 +122,7 @@ public class Parameters {
 		SCREEN_DEFAULT_SCALE_X = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_X", String.valueOf(SCREEN_DEFAULT_SCALE_X)));
 		SCREEN_DEFAULT_SCALE_Y = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_Y", String.valueOf(SCREEN_DEFAULT_SCALE_Y)));
 		SCREEN_DEFAULT_SCALE_ASPECT_X = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_ASPECT_X", String.valueOf(SCREEN_DEFAULT_SCALE_ASPECT_X)));
+		SCREEN_FULLSCREEN = Boolean.valueOf(p.getProperty("SCREEN_FULLSCREEN", String.valueOf(SCREEN_FULLSCREEN)));
 		SCREEN_BORDER_SIZE = Integer.valueOf(p.getProperty("SCREEN_BORDER_SIZE", String.valueOf(SCREEN_BORDER_SIZE)));
 		SCREEN_OSD_FRAMES = Integer.valueOf(p.getProperty("SCREEN_OSD_FRAMES", String.valueOf(SCREEN_OSD_FRAMES)));
 		SCREEN_VSYNC_TOLERANCE = Integer.valueOf(p.getProperty("SCREEN_VSYNC_TOLERANCE", String.valueOf(SCREEN_VSYNC_TOLERANCE)));
@@ -162,7 +186,8 @@ public class Parameters {
 	public static float 	SCREEN_DEFAULT_SCALE_X = 4;
 	public static float 	SCREEN_DEFAULT_SCALE_Y = 2;
 	public static float 	SCREEN_DEFAULT_SCALE_ASPECT_X = 2;				// X = 2 * Y
-	public static int 		SCREEN_BORDER_SIZE = 6;
+	public static boolean 	SCREEN_FULLSCREEN = false;
+	public static int 		SCREEN_BORDER_SIZE = 3;
 	public static int 		SCREEN_OSD_FRAMES = 160;
 	public static int 		SCREEN_VSYNC_TOLERANCE = 10;
 	public static boolean 	SCREEN_QUALITY_RENDERING = false;
