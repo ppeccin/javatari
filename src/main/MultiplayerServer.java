@@ -7,7 +7,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
-import pc.cartridge.CartridgeLoader;
+import pc.cartridge.ROMLoader;
 import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
@@ -40,7 +40,7 @@ public class MultiplayerServer {
  	
 	 	// If a Cartridge is provided, insert it
 		if (Parameters.mainArg != null) {
-			Cartridge cart = CartridgeLoader.load(Parameters.mainArg);
+			Cartridge cart = ROMLoader.load(Parameters.mainArg);
 			if (cart == null) Terminator.terminate();
 			console.cartridgeSocket().insert(cart, true);
 		}

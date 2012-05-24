@@ -12,7 +12,7 @@ import atari.cartridge.bankswitching.Cartridge8KSliced;
 
 public class CartridgeCreator {
 
-	// TODO Find a better way to identify the type of Bankswitching and the VideoStandard of Cartridges
+	// TODO Find a better way to identify the type of bank switching and the VideoStandard of Cartridges
 	static Cartridge create(byte[] content, String name) throws UnsupportedROMFormatException {
 		String cartName = name.toUpperCase();
 		Cartridge cart = null; 
@@ -21,7 +21,7 @@ public class CartridgeCreator {
 			if (content.length == Cartridge8KSliced.SIZE) 
 				cart = new Cartridge8KSliced(content);
 			else 
-				throw new UnsupportedROMFormatException("Cartridge (SLICED, E0) size not supported: " + content.length);
+				throw new UnsupportedROMFormatException("ROM (SLICED, E0) size not supported: " + content.length);
 		} else {
 			// Force SuperChip mode ON or OFF as indicated in name, otherwise leave it in auto mode (null)
 			Boolean sc = null;
@@ -44,7 +44,7 @@ public class CartridgeCreator {
 				case Cartridge32K.SIZE:
 					cart = new Cartridge32K(content, sc); break;
 				default:
-					throw new UnsupportedROMFormatException("Cartridge size not supported: " + content.length);
+					throw new UnsupportedROMFormatException("ROM size not supported: " + content.length);
 			}
 		}
 		// Use VideoStandard specified on the name. Default is null (auto)

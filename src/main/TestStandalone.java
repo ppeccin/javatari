@@ -3,7 +3,7 @@
 package main;
 
 import parameters.Parameters;
-import pc.cartridge.CartridgeLoader;
+import pc.cartridge.ROMLoader;
 import pc.savestate.FileSaveStateMedia;
 import pc.screen.Screen;
 import pc.speaker.Speaker;
@@ -30,7 +30,7 @@ public class TestStandalone {
 	 	speaker.powerOn();
 
 	 	// Insert test Cartridge
-		final Cartridge cart = CartridgeLoader.load("file:///C:/cartridges/hero.bin");
+		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/hero.bin");
 	 	if (cart != null) console.cartridgeSocket().insert(cart, true);
 
 	 	// Keep logging info about clocks speeds achieved 

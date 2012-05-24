@@ -33,8 +33,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
-import pc.cartridge.FileCartridgeChooser;
-import pc.cartridge.URLCartridgeChooser;
+import pc.cartridge.FileROMChooser;
+import pc.cartridge.URLROMChooser;
 import pc.controls.AWTConsoleControls;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
@@ -475,14 +475,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void loadCartridgeFromFile(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
-		Cartridge cart = FileCartridgeChooser.chooseFile();
+		Cartridge cart = FileROMChooser.chooseFile();
 		if (cart != null) cartridgeSocket.insert(cart, autoPower);
 	};
 
 	private void loadCartridgeFromURL(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
-		Cartridge cart = URLCartridgeChooser.chooseURL();
+		Cartridge cart = URLROMChooser.chooseURL();
 		if (cart != null) cartridgeSocket.insert(cart, autoPower);
 	};
 

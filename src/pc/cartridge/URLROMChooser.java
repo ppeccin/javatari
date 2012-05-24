@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import parameters.Parameters;
 import atari.cartridge.Cartridge;
 
-public class URLCartridgeChooser {
+public class URLROMChooser {
 
 	public static Cartridge chooseURL() {
 		if (lastURLChosen == null) lastURLChosen = Parameters.readPreference(LAST_URL_CHOSEN_PREF);
@@ -18,7 +18,7 @@ public class URLCartridgeChooser {
 		if (opt == null || opt.trim().isEmpty()) return null;
 		lastURLChosen = opt.trim();
 		Parameters.storePreference(LAST_URL_CHOSEN_PREF, lastURLChosen);
-		return CartridgeLoader.load(opt);
+		return ROMLoader.load(opt);
 	}
 
 	private static String lastURLChosen;

@@ -11,7 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import parameters.Parameters;
 import atari.cartridge.Cartridge;
 
-public class FileCartridgeChooser {
+public class FileROMChooser {
 
 	public static Cartridge chooseFile() {
 		if (lastFileChosen == null) {
@@ -19,18 +19,20 @@ public class FileCartridgeChooser {
 			if (path != null) lastFileChosen = new File(path);
 		}
 		try {
-			if (chooser == null) chooser = new JFileChooser();
-			chooser.setFileFilter(new FileNameExtensionFilter("ROM files", "bin", "rom", "a26"));
+			if (chooser == null) {
+				chooser = new JFileChooser();
+				chooser.setFileFilter(new FileNameExtensionFilter(ROMLoader.VALID_FILES_DESC, ROMLoader.VALID_FILE_EXTENSIONS));
+			}
 			chooser.setSelectedFile(lastFileChosen);
 			int res = chooser.showOpenDialog(null);
 			if (res != 0) return null;
 		} catch (AccessControlException ex) {
-			// Automatically tries FileService chooser if access is denied
-			return FileServiceCartridgeChooser.chooseFile();
+			// Automatically tries FileServiceChooser if access is denied
+			return FileServiceROMChooser.chooseFile();
 		}
 		lastFileChosen = chooser.getSelectedFile();
 		Parameters.storePreference(LAST_FILE_CHOSEN_PREF, lastFileChosen.toString());
-		return CartridgeLoader.load(lastFileChosen);
+		return ROMLoader.load(lastFileChosen);
 	}
 	
 	private static JFileChooser chooser;

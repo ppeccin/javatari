@@ -32,7 +32,6 @@ public class Console {
 		socketsCreate();
 		mainClockCreate();
 		videoStandardAuto();
-		// cartridge(new CartridgeDisconnected());		TODO Verificar
 	}
 
 	public VideoSignal videoOutput() {

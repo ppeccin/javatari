@@ -12,13 +12,12 @@ import javax.jnlp.ServiceManager;
 
 import atari.cartridge.Cartridge;
 
-public class FileServiceCartridgeChooser {
+public class FileServiceROMChooser {
 
 	public static Cartridge chooseFile() {
 		try {
-			// BasicService bs = (BasicService)ServiceManager.lookup("javax.jnlp.BasicService"); 
 			FileOpenService fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService"); 
-			FileContents fileCon = fos.openFileDialog(null, new String[] {"bin", "rom", "a26"});
+			FileContents fileCon = fos.openFileDialog(null, ROMLoader.VALID_FILE_EXTENSIONS);
 			if (fileCon == null) return null;
 			return read(fileCon);
 		} catch (Exception ex) {
@@ -34,7 +33,7 @@ public class FileServiceCartridgeChooser {
 			fileName = fileCont.getName();
 			stream = fileCont.getInputStream();
 			System.out.println("Loading Cartridge from: " + fileName);
-			return CartridgeLoader.load(stream, fileName);
+			return ROMLoader.load(stream, fileName);
 		} catch (IOException ex) {
 			System.out.println("Could not load Cartridge from: " + fileName + "\n" + ex);
 			return null;
