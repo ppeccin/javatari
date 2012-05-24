@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import utils.Terminator;
@@ -15,9 +14,10 @@ public class Parameters {
 
 	// Load Properties file and also process command line options and parameters
 	public static void init(String[] args) {
+		parseMainArg(args);
 		loadPropertiesFile();
-		processOptions(args);
-		processMainArg(args);
+		parseOptions(args);
+		processProperties();
 	}
 	
 	public static String readPreference(String name) {
@@ -42,40 +42,7 @@ public class Parameters {
 		return userPreferences;
 	}
 
-	private static void processOptions(String[] args) {
-		for (String arg : args) {
-			if (!arg.startsWith("-")) continue;
-			processOption(arg);
-		}
-	}
-
-	private static void processOption(String opt) {
-		// Disable Cartridge Change
-		if (opt.toUpperCase().equals("-DISABLECARTRIDGECHANGE")) {
-			SCREEN_CARTRIDGE_CHANGE_DISABLED = true;
-			return;
-		}
-		// CRT Mode
-		if (opt.length() == 9 && opt.toUpperCase().startsWith("-CRTMODE")) {
-			Pattern p = Pattern.compile("[0-4]");
-			Matcher m = p.matcher(opt);
-			if (!m.find()) {
-				System.out.println("Invalid option: " + opt + ". Only -crtmode0 to -crtmode4 are valid");
-				Terminator.terminate();
-			}
-			SCREEN_CRT_MODE = Integer.parseInt(m.group());
-			return;
-		}
-		// Full Screen
-		if (opt.toUpperCase().equals("-FULLSCREEN")) {
-			SCREEN_FULLSCREEN = true;
-			return;
-		}
-		System.out.println("Unknown option: " + opt);
-		Terminator.terminate();
-	}
-
-	private static void processMainArg(String[] args) {
+	private static void parseMainArg(String[] args) {
 		for (String arg : args)
 			if (!arg.startsWith("-")) {
 				mainArg = arg;
@@ -83,78 +50,105 @@ public class Parameters {
 			}
 	}
 
+	private static void parseOptions(String[] args) {
+		for (String arg : args) {
+			if (!arg.startsWith("-")) continue;
+			String opt = arg.substring(1);
+			Pattern p = Pattern.compile("=");
+			String[] params = p.split(opt);
+			if (params == null || params.length != 2 || params[0].isEmpty() || params[1].isEmpty()) {
+				System.out.println("Invalid option format: " + arg);
+				Terminator.terminate();
+			}
+			props.put(params[0].toUpperCase(), params[1]);
+		}
+	}
+
 	private static void loadPropertiesFile() {
 		InputStream is = Thread.currentThread().getContextClassLoader().
 				getResourceAsStream("parameters/javatari.properties");
-		Properties p = new Properties();
 		try {
 			try {
-				p.clear();
-				p.load(is);
+				props.load(is);
 			} finally {
 				is.close();
 			}
 		} catch (Exception ex) {
 			System.out.println("parameters/javatari.properties not found, using defaults");
-			return;
 		}
-		
-		TIA_FORCED_CLOCK = Double.valueOf(p.getProperty("TIA_FORCED_CLOCK", String.valueOf(TIA_FORCED_CLOCK)));
-		TIA_DEFAULT_CLOCK_NTSC = Double.valueOf(p.getProperty("TIA_DEFAULT_CLOCK_NTSC", String.valueOf(TIA_DEFAULT_CLOCK_NTSC)));
-		TIA_DEFAULT_CLOCK_PAL = Double.valueOf(p.getProperty("TIA_DEFAULT_CLOCK_PAL", String.valueOf(TIA_DEFAULT_CLOCK_PAL)));
-		TIA_SYNC_WITH_AUDIO_MONITOR = Boolean.valueOf(p.getProperty("TIA_SYNC_WITH_AUDIO_MONITOR", String.valueOf(TIA_SYNC_WITH_AUDIO_MONITOR))); 
-		TIA_SYNC_WITH_VIDEO_MONITOR = Boolean.valueOf(p.getProperty("TIA_SYNC_WITH_VIDEO_MONITOR", String.valueOf(TIA_SYNC_WITH_VIDEO_MONITOR))); 
-		
-		TIA_AUDIO_SAMPLE_RATE = Integer.valueOf(p.getProperty("TIA_AUDIO_SAMPLE_RATE", String.valueOf(TIA_AUDIO_SAMPLE_RATE)));			
-		TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(p.getProperty("TIA_AUDIO_MAX_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_AMPLITUDE)));  
-		TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = Float.valueOf(p.getProperty("TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE)));
-		TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE= Float.valueOf(p.getProperty("TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE", String.valueOf(TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE)));
-
-		RAM_FRY_ZERO_BITS = Integer.valueOf(p.getProperty("RAM_FRY_ZERO_BITS", String.valueOf(RAM_FRY_ZERO_BITS)));
-		RAM_FRY_ONE_BITS = Integer.valueOf(p.getProperty("RAM_FRY_ONE_BITS", String.valueOf(RAM_FRY_ONE_BITS)));
-		RAM_FRY_VARIANCE = Float.valueOf(p.getProperty("RAM_FRY_VARIANCE", String.valueOf(RAM_FRY_VARIANCE)));
-
-		SCREEN_DEFAULT_FPS = Double.valueOf(p.getProperty("SCREEN_DEFAULT_FPS", String.valueOf(SCREEN_DEFAULT_FPS)));
-		SCREEN_DEFAULT_ORIGIN_X = Integer.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_X", String.valueOf(SCREEN_DEFAULT_ORIGIN_X)));
-		SCREEN_DEFAULT_ORIGIN_Y_PCT = Double.valueOf(p.getProperty("SCREEN_DEFAULT_ORIGIN_Y_PCT", String.valueOf(SCREEN_DEFAULT_ORIGIN_Y_PCT)));
-		SCREEN_DEFAULT_WIDTH = Integer.valueOf(p.getProperty("SCREEN_DEFAULT_WIDTH", String.valueOf(SCREEN_DEFAULT_WIDTH)));
-		SCREEN_DEFAULT_HEIGHT_PCT = Double.valueOf(p.getProperty("SCREEN_DEFAULT_HEIGHT_PCT", String.valueOf(SCREEN_DEFAULT_HEIGHT_PCT)));
-		SCREEN_DEFAULT_SCALE_X = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_X", String.valueOf(SCREEN_DEFAULT_SCALE_X)));
-		SCREEN_DEFAULT_SCALE_Y = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_Y", String.valueOf(SCREEN_DEFAULT_SCALE_Y)));
-		SCREEN_DEFAULT_SCALE_ASPECT_X = Float.valueOf(p.getProperty("SCREEN_DEFAULT_SCALE_ASPECT_X", String.valueOf(SCREEN_DEFAULT_SCALE_ASPECT_X)));
-		SCREEN_FULLSCREEN = Boolean.valueOf(p.getProperty("SCREEN_FULLSCREEN", String.valueOf(SCREEN_FULLSCREEN)));
-		SCREEN_BORDER_SIZE = Integer.valueOf(p.getProperty("SCREEN_BORDER_SIZE", String.valueOf(SCREEN_BORDER_SIZE)));
-		SCREEN_OSD_FRAMES = Integer.valueOf(p.getProperty("SCREEN_OSD_FRAMES", String.valueOf(SCREEN_OSD_FRAMES)));
-		SCREEN_VSYNC_TOLERANCE = Integer.valueOf(p.getProperty("SCREEN_VSYNC_TOLERANCE", String.valueOf(SCREEN_VSYNC_TOLERANCE)));
-		SCREEN_QUALITY_RENDERING = Boolean.valueOf(p.getProperty("SCREEN_QUALITY_RENDERING", String.valueOf(SCREEN_QUALITY_RENDERING)));
-		SCREEN_CRT_MODE = Integer.valueOf(p.getProperty("SCREEN_CRT_MODE", String.valueOf(SCREEN_CRT_MODE)));
-		SCREEN_CRT_RETENTION_ALPHA = Float.valueOf(p.getProperty("SCREEN_CRT_RETENTION_ALPHA", String.valueOf(SCREEN_CRT_RETENTION_ALPHA)));
-		SCREEN_SCANLINES_STRENGTH = Float.valueOf(p.getProperty("SCREEN_SCANLINES_STRENGTH", String.valueOf(SCREEN_SCANLINES_STRENGTH)));
-		SCREEN_MULTI_BUFFERING = Integer.valueOf(p.getProperty("SCREEN_MULTI_BUFFERING", String.valueOf(SCREEN_MULTI_BUFFERING)));
-		SCREEN_PAGE_FLIPPING = Boolean.valueOf(p.getProperty("SCREEN_PAGE_FLIPPING", String.valueOf(SCREEN_PAGE_FLIPPING)));
-		SCREEN_BUFFER_VSYNC = Integer.valueOf(p.getProperty("SCREEN_BUFFER_VSYNC", String.valueOf(SCREEN_BUFFER_VSYNC)));
-		SCREEN_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_FRAME_ACCELERATION", String.valueOf(SCREEN_FRAME_ACCELERATION)));
-		SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_INTERM_FRAME_ACCELERATION", String.valueOf(SCREEN_INTERM_FRAME_ACCELERATION)));
-		SCREEN_SCANLINES_ACCELERATION = Float.valueOf(p.getProperty("SCREEN_SCANLINES_ACCELERATION", String.valueOf(SCREEN_SCANLINES_ACCELERATION)));
-		SCREEN_CARTRIDGE_CHANGE_DISABLED = Boolean.valueOf(p.getProperty("SCREEN_CARTRIDGE_CHANGE_DISABLED", String.valueOf(SCREEN_CARTRIDGE_CHANGE_DISABLED)));
-		
-		SPEAKER_DEFAULT_FPS = Double.valueOf(p.getProperty("SPEAKER_DEFAULT_FPS", String.valueOf(SPEAKER_DEFAULT_FPS)));
-		SPEAKER_INPUT_BUFFER_SIZE = Integer.valueOf(p.getProperty("SPEAKER_INPUT_BUFFER_SIZE", String.valueOf(SPEAKER_INPUT_BUFFER_SIZE)));
-		SPEAKER_OUTPUT_BUFFER_SIZE = Integer.valueOf(p.getProperty("SPEAKER_OUTPUT_BUFFER_SIZE", String.valueOf(SPEAKER_OUTPUT_BUFFER_SIZE)));
-		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = Integer.valueOf(p.getProperty("SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME", String.valueOf(SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME)));
-		SPEAKER_NO_DATA_SLEEP_TIME = Integer.valueOf(p.getProperty("SPEAKER_NO_DATA_SLEEP_TIME", String.valueOf(SPEAKER_NO_DATA_SLEEP_TIME)));
-		SPEAKER_ADDED_THREAD_PRIORITY = Integer.valueOf(p.getProperty("SPEAKER_ADDED_THREAD_PRIORITY", String.valueOf(SPEAKER_ADDED_THREAD_PRIORITY)));
-
-		CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(p.getProperty("CONSOLE_FAST_SPEED_FACTOR", String.valueOf(CONSOLE_FAST_SPEED_FACTOR)));
-
-		BUS_DATA_RETENTION = Boolean.valueOf(p.getProperty("BUS_DATA_RETENTION", String.valueOf(BUS_DATA_RETENTION)));
-
-		SERVER_SERVICE_NAME = String.valueOf(p.getProperty("SERVER_SERVICE_NAME", String.valueOf(SERVER_SERVICE_NAME)));
-		SERVER_SERVICE_PORT = Integer.valueOf(p.getProperty("SERVER_SERVICE_PORT", String.valueOf(SERVER_SERVICE_PORT)));
-		SERVER_MAX_UPDATES_PENDING = Integer.valueOf(p.getProperty("SERVER_MAX_UPDATES_PENDING", String.valueOf(SERVER_MAX_UPDATES_PENDING)));
-		CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(p.getProperty("CLIENT_MAX_UPDATES_PENDING", String.valueOf(CLIENT_MAX_UPDATES_PENDING)));
-
+		// Try to replace properties by ones set via command line -D
+		try {
+			props.putAll(System.getProperties());
+		} catch (AccessControlException ex) {
+			// Ignore
+		}
 	}
+
+	private static void processProperties() {
+		String val;
+		try {
+
+			val = props.getProperty("TIA_FORCED_CLOCK"); if (val != null) TIA_FORCED_CLOCK = Double.valueOf(val);
+			val = props.getProperty("TIA_DEFAULT_CLOCK_NTSC"); if (val != null) TIA_DEFAULT_CLOCK_NTSC = Double.valueOf(val);
+			val = props.getProperty("TIA_DEFAULT_CLOCK_PAL"); if (val != null) TIA_DEFAULT_CLOCK_PAL = Double.valueOf(val);
+			val = props.getProperty("TIA_SYNC_WITH_AUDIO_MONITOR"); if (val != null) TIA_SYNC_WITH_AUDIO_MONITOR = Boolean.valueOf(val);
+			val = props.getProperty("TIA_SYNC_WITH_VIDEO_MONITOR"); if (val != null) TIA_SYNC_WITH_VIDEO_MONITOR = Boolean.valueOf(val);
+
+			val = props.getProperty("TIA_AUDIO_SAMPLE_RATE"); if (val != null) TIA_AUDIO_SAMPLE_RATE = Integer.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_MAX_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = Float.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE = Float.valueOf(val);
+
+			val = props.getProperty("RAM_FRY_ZERO_BITS"); if (val != null) RAM_FRY_ZERO_BITS = Integer.valueOf(val);
+			val = props.getProperty("RAM_FRY_ONE_BITS"); if (val != null) RAM_FRY_ONE_BITS = Integer.valueOf(val);
+			val = props.getProperty("RAM_FRY_VARIANCE"); if (val != null) RAM_FRY_VARIANCE = Float.valueOf(val);
+
+			val = props.getProperty("SCREEN_DEFAULT_FPS"); if (val != null) SCREEN_DEFAULT_FPS = Double.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_ORIGIN_X"); if (val != null) SCREEN_DEFAULT_ORIGIN_X = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_ORIGIN_Y_PCT"); if (val != null) SCREEN_DEFAULT_ORIGIN_Y_PCT = Double.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_WIDTH"); if (val != null) SCREEN_DEFAULT_WIDTH = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_HEIGHT_PCT"); if (val != null) SCREEN_DEFAULT_HEIGHT_PCT = Double.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_SCALE_X"); if (val != null) SCREEN_DEFAULT_SCALE_X = Float.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_SCALE_Y"); if (val != null) SCREEN_DEFAULT_SCALE_Y = Float.valueOf(val);
+			val = props.getProperty("SCREEN_DEFAULT_SCALE_ASPECT_X"); if (val != null) SCREEN_DEFAULT_SCALE_ASPECT_X = Float.valueOf(val);
+			val = props.getProperty("SCREEN_BORDER_SIZE"); if (val != null) SCREEN_BORDER_SIZE = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_OSD_FRAMES"); if (val != null) SCREEN_OSD_FRAMES = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_VSYNC_TOLERANCE"); if (val != null) SCREEN_VSYNC_TOLERANCE = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_QUALITY_RENDERING"); if (val != null) SCREEN_QUALITY_RENDERING = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_CRT_MODE"); if (val != null) SCREEN_CRT_MODE = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_CRT_RETENTION_ALPHA"); if (val != null) SCREEN_CRT_RETENTION_ALPHA = Float.valueOf(val);
+			val = props.getProperty("SCREEN_SCANLINES_STRENGTH"); if (val != null) SCREEN_SCANLINES_STRENGTH = Float.valueOf(val);
+			val = props.getProperty("SCREEN_MULTI_BUFFERING"); if (val != null) SCREEN_MULTI_BUFFERING = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_PAGE_FLIPPING"); if (val != null) SCREEN_PAGE_FLIPPING = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_BUFFER_VSYNC"); if (val != null) SCREEN_BUFFER_VSYNC = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_FRAME_ACCELERATION"); if (val != null) SCREEN_FRAME_ACCELERATION = Float.valueOf(val);
+			val = props.getProperty("SCREEN_INTERM_FRAME_ACCELERATION"); if (val != null) SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(val);
+			val = props.getProperty("SCREEN_SCANLINES_ACCELERATION"); if (val != null) SCREEN_SCANLINES_ACCELERATION = Float.valueOf(val);
+			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_FULLSCREEN"); if (val != null) SCREEN_FULLSCREEN = Boolean.valueOf(val);
+
+			val = props.getProperty("SPEAKER_DEFAULT_FPS"); if (val != null) SPEAKER_DEFAULT_FPS = Double.valueOf(val);
+			val = props.getProperty("SPEAKER_INPUT_BUFFER_SIZE"); if (val != null) SPEAKER_INPUT_BUFFER_SIZE = Integer.valueOf(val);
+			val = props.getProperty("SPEAKER_OUTPUT_BUFFER_SIZE"); if (val != null) SPEAKER_OUTPUT_BUFFER_SIZE = Integer.valueOf(val);
+			val = props.getProperty("SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME"); if (val != null) SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = Integer.valueOf(val);
+			val = props.getProperty("SPEAKER_NO_DATA_SLEEP_TIME"); if (val != null) SPEAKER_NO_DATA_SLEEP_TIME = Integer.valueOf(val);
+			val = props.getProperty("SPEAKER_ADDED_THREAD_PRIORITY"); if (val != null) SPEAKER_ADDED_THREAD_PRIORITY = Integer.valueOf(val);
+
+			val = props.getProperty("CONSOLE_FAST_SPEED_FACTOR"); if (val != null) CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(val);
+
+			val = props.getProperty("BUS_DATA_RETENTION"); if (val != null) BUS_DATA_RETENTION = Boolean.valueOf(val);
+
+			val = props.getProperty("SERVER_SERVICE_NAME"); if (val != null) SERVER_SERVICE_NAME = String.valueOf(val);
+			val = props.getProperty("SERVER_SERVICE_PORT"); if (val != null) SERVER_SERVICE_PORT = Integer.valueOf(val);
+			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
+			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
+
+		} catch(Exception ex) {
+			System.out.println("Error processing properties:\n" + ex);
+			Terminator.terminate();
+		}
+	}
+
 
 
 	// Cartridge URL to load passed as argument
@@ -186,7 +180,6 @@ public class Parameters {
 	public static float 	SCREEN_DEFAULT_SCALE_X = 4;
 	public static float 	SCREEN_DEFAULT_SCALE_Y = 2;
 	public static float 	SCREEN_DEFAULT_SCALE_ASPECT_X = 2;				// X = 2 * Y
-	public static boolean 	SCREEN_FULLSCREEN = false;
 	public static int 		SCREEN_BORDER_SIZE = 3;
 	public static int 		SCREEN_OSD_FRAMES = 160;
 	public static int 		SCREEN_VSYNC_TOLERANCE = 10;
@@ -200,7 +193,8 @@ public class Parameters {
 	public static float		SCREEN_FRAME_ACCELERATION = 0;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
-	public static boolean 	SCREEN_CARTRIDGE_CHANGE_DISABLED = false;
+	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
+	public static boolean 	SCREEN_FULLSCREEN = false;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
@@ -217,6 +211,8 @@ public class Parameters {
 	public static int 		SERVER_SERVICE_PORT = 9998;
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
+
+	private static Properties props = new Properties();
 
 	private static Preferences userPreferences;
 	private static boolean userPreferencesAsked = false;

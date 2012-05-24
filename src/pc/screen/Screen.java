@@ -598,7 +598,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public final ConsoleControlsSocket consoleControlsSocket;
 
 	private AWTConsoleControls toolkitControls;
-	private boolean cartridgeChangeEnabled = !Parameters.SCREEN_CARTRIDGE_CHANGE_DISABLED;
+	private boolean cartridgeChangeEnabled = CARTRIDGE_CHANGE;
 	
 	private final VideoSignal videoSignal;
 	private final CartridgeSocket cartridgeSocket;
@@ -664,26 +664,26 @@ public class Screen implements ClockDriven, VideoMonitor {
 	
 	public static final double DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;
 
-	public static final int DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
-	public static final double DEFAULT_ORIGIN_Y_PCT = Parameters.SCREEN_DEFAULT_ORIGIN_Y_PCT;		// Percentage of height
-	public static final int DEFAULT_WIDTH = Parameters.SCREEN_DEFAULT_WIDTH;
-	public static final double DEFAULT_HEIGHT_PCT = Parameters.SCREEN_DEFAULT_HEIGHT_PCT;			// Percentage of height
-	public static final float DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
-	public static final float DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
-	public static final float DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
-	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
-	public static final int OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
-
-	public static final boolean QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
-	public static final int CRT_MODE = Parameters.SCREEN_CRT_MODE;
-	public static final float CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
-	public static final float SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
-	public static final int MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
-	public static final boolean PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
-	public static final int BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
-	public static final float FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
-	public static final float IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
-	public static final float SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
+	public static final int      DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
+	public static final double   DEFAULT_ORIGIN_Y_PCT = Parameters.SCREEN_DEFAULT_ORIGIN_Y_PCT;		// Percentage of height
+	public static final int      DEFAULT_WIDTH = Parameters.SCREEN_DEFAULT_WIDTH;
+	public static final double   DEFAULT_HEIGHT_PCT = Parameters.SCREEN_DEFAULT_HEIGHT_PCT;			// Percentage of height
+	public static final float    DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
+	public static final float    DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
+	public static final float    DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
+	public static final int      OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
+	public static final boolean  QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
+	public static final int      CRT_MODE = Parameters.SCREEN_CRT_MODE;
+	public static final float    CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
+	public static final float    SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
+	public static final int      MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
+	public static final boolean  PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
+	public static final int      BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
+	public static final float    FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
+	public static final float    IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
+	public static final float    SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
+	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
+	public static final boolean  FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 
 	public static final long serialVersionUID = 0L;
 

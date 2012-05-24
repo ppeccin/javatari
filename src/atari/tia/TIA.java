@@ -1334,7 +1334,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
 
 	public static final double DEFAUL_CLOCK_NTSC = Parameters.TIA_DEFAULT_CLOCK_NTSC;		
-	public static final double DEFAUL_CLOCK_PAL = Parameters.TIA_DEFAULT_CLOCK_PAL;		
+	public static final double DEFAUL_CLOCK_PAL =  Parameters.TIA_DEFAULT_CLOCK_PAL;		
 
 
 	// Delayed decodes

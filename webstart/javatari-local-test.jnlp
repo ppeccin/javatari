@@ -17,5 +17,7 @@
 		<j2se version="1.6+" />
 		<jar href="javatari-test.jar" main="true" />
 	</resources>
-	<application-desc />
+	<application-desc>
+		<argument>-screen_cartridge_change=false</argument>
+	</application-desc>
 </jnlp>
