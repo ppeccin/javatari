@@ -2,6 +2,21 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
+Version 1.08
+============
+- Another change in Cartridge loading functions
+  - F5 loads from a FILE
+  - F6 loads from any URL
+  - F7 removes the Cartridge
+  - ALT + F5/F6: loads the Cartridge with no auto power on/off
+- ZIP file support for ROMs
+- JNLP deploy for easy online launch
+- Any parameter from the properties file can now be overriden 
+via command line arguments (-param=value)
+
+
+Previous Versions:
+
 Version 1.07
 ============
 - New Cartridge load options
@@ -10,9 +25,6 @@ Version 1.07
   - F7 removes the Cartridge
 - Fry Console (quickly power off/on): Alt-F1
 - Multiplayer Paddles mode bugfix
-
-
-Previous Versions:
 
 Version 1.06
 ============
