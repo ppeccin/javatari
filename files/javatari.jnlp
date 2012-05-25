@@ -15,7 +15,7 @@
 	</security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari107-signed.jar" main="true" />
+		<jar href="javatari108-signed.jar" main="true" />
 	</resources>
 	<application-desc />
 </jnlp>
