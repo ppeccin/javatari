@@ -87,13 +87,13 @@ public class ROMLoader {
 	}
 
 	private static Cartridge tryCreation(InputStream stream, String name) throws IOException, UnsupportedROMFormatException {
-		byte[] buffer = new byte[MAX_ROM_SIZE];
+		byte[] buffer = new byte[MAX_STREAM_SIZE];
 		int totalRead = 0;
 		do {
-			int read = stream.read(buffer, totalRead, MAX_ROM_SIZE - totalRead);
+			int read = stream.read(buffer, totalRead, MAX_STREAM_SIZE - totalRead);
 			if (read == -1) break;	// End of Stream
 			totalRead += read;
-		} while(totalRead < MAX_ROM_SIZE);
+		} while(totalRead < MAX_STREAM_SIZE);
 		byte[] content = (totalRead > 0) ? Arrays.copyOf(buffer, totalRead) : new byte[0];
 		return CartridgeCreator.create(content, name);
 	}
@@ -113,9 +113,11 @@ public class ROMLoader {
 	private static void errorMessage(Exception ex, String name) {
 		System.out.println("Could not load Cartridge from: " + name);
 		System.out.println(ex);
+		String tName = name == null ? "" : name.trim();
+		if (tName.length() > 80) tName = tName.substring(0, 79);
 		JOptionPane.showMessageDialog(
 			null,
-			"Could not load Cartridge from:\n" + name,
+			"Could not load Cartridge from:\n" + tName,
 			"Error loading Cartridge",
 			JOptionPane.ERROR_MESSAGE
 		);
@@ -123,7 +125,7 @@ public class ROMLoader {
 
 
 	private static final int MAX_ROM_SIZE = 32768;
-	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 2048;
+	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1000;
 
 	public static final String   VALID_FILES_DESC = "ROM files (.bin .rom .a26 .zip)";
 	public static final String[] VALID_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip"};

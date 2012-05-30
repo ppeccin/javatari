@@ -128,6 +128,16 @@ public class Screen implements ClockDriven, VideoMonitor {
 		cartridgeChangeEnabled = state;
 	}
 
+	public boolean isCartridgeChangeEnabled() {
+		return cartridgeChangeEnabled;
+	}
+
+	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
+		cartridgeSocket.insert(cart, autoPower);
+		if (window.isVisible())
+			window.requestFocus();
+	};
+
 	private boolean newFrame() {
 		if (debug > 0) window.setTitle(BASE_TITLE + " - " + line + " lines");
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
@@ -476,23 +486,23 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileROMChooser.chooseFile();
-		if (cart != null) cartridgeSocket.insert(cart, autoPower);
-	};
+		if (cart != null) cartridgeInsert(cart, autoPower);
+	}
 
 	private void loadCartridgeFromURL(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		if (fullScreen) fullScreen(false);
 		Cartridge cart = URLROMChooser.chooseURL();
-		if (cart != null) cartridgeSocket.insert(cart, autoPower);
-	};
+		if (cart != null) cartridgeInsert(cart, autoPower);
+	}
 
 	private void loadCartridgeEmpty() {
 		if (cartridgeChangeDisabledWarning()) return;
 		cartridgeSocket.insert(null, false);
-	};
+	}
 
 	private boolean cartridgeChangeDisabledWarning() {
-		if (!cartridgeChangeEnabled) {
+		if (!isCartridgeChangeEnabled()) {
 			showOSD("Cartridge change is disabled");
 			return true;
 		}

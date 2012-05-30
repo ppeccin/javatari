@@ -16,8 +16,10 @@ import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -26,6 +28,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+
+import javax.swing.TransferHandler;
 
 import parameters.Parameters;
 import utils.GraphicsDeviceHelper;
@@ -36,7 +40,8 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public ScreenWindow(Screen screen) throws HeadlessException {
 		super();
 		this.screen = screen;
-		consolePanelWindow = new ConsolePanel(this, screen, screen.consoleControlsSocket);		
+		consolePanelWindow = new ConsolePanel(this, screen, screen.consoleControlsSocket);
+		initTransferHandler();
 	}
 
 	@Override
@@ -193,9 +198,27 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		return Screen.DEFAULT_SCALE_X;
 	}
 
-
 	public void canvasMinimumSize(Dimension minSize) {
 		minimunResize(windowDimensionForCanvasDimension(minSize));
+	}
+
+	private void initTransferHandler() {
+		getRootPane().setTransferHandler(new ROMDropTransferHandler(screen));
+		addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_V && e.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK)
+					TransferHandler.getPasteAction().actionPerformed(
+						new ActionEvent(getRootPane(), ActionEvent.ACTION_PERFORMED, null)
+					);
+			}
+		});
 	}
 
 	private Dimension windowDimensionForCanvasDimension(Dimension size) {
