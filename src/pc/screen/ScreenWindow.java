@@ -16,10 +16,9 @@ import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -34,6 +33,7 @@ import javax.swing.TransferHandler;
 import parameters.Parameters;
 import utils.GraphicsDeviceHelper;
 import utils.SlickFrame;
+import atari.cartridge.Cartridge;
 
 public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 
@@ -41,7 +41,6 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		super();
 		this.screen = screen;
 		consolePanelWindow = new ConsolePanel(this, screen, screen.consoleControlsSocket);
-		initTransferHandler();
 	}
 
 	@Override
@@ -61,6 +60,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 			public void componentResized(ComponentEvent e) {
 				positionCanvas();
 			}});		
+		getRootPane().setTransferHandler(new ROMDropTransferHandler());
 		super.init();
 	}
 
@@ -202,25 +202,6 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		minimunResize(windowDimensionForCanvasDimension(minSize));
 	}
 
-	private void initTransferHandler() {
-		getRootPane().setTransferHandler(new ROMDropTransferHandler(screen));
-		addKeyListener(new KeyListener() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-			}
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_V && e.getModifiersEx() == KeyEvent.CTRL_DOWN_MASK)
-					TransferHandler.getPasteAction().actionPerformed(
-						new ActionEvent(getRootPane(), ActionEvent.ACTION_PERFORMED, null)
-					);
-			}
-		});
-	}
-
 	private Dimension windowDimensionForCanvasDimension(Dimension size) {
 		return new Dimension(
 			size.width + totalCanvasHorizPadding,
@@ -326,5 +307,29 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
 	
 	public static final long serialVersionUID = 1L;
+
+
+	// To handle drag and drop of ROM files and links
+	class ROMDropTransferHandler extends TransferHandler {
+		@Override
+		public boolean canImport(TransferSupport support) {
+			if (!screen.isCartridgeChangeEnabled()) return false;
+			Transferable transf = support.getTransferable();
+			if (!ROMTransferHandlerUtil.canAccept(transf)) return false;
+			if (support.isDrop() && support.getUserDropAction() != LINK) support.setDropAction(COPY);
+			return true;
+		}
+		@Override
+		public boolean importData(TransferSupport support) {
+			if (!canImport(support)) return false;
+			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(support.getTransferable());
+			if (cart == null) return false;
+			// LINK Action means load Cartridge without auto power! :-)
+			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;
+			screen.cartridgeInsert(cart, autoPower);
+			return true;
+		}
+		private static final long serialVersionUID = 1L;
+	}
 
 }

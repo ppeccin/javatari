@@ -15,9 +15,9 @@
 	</_security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari-test.jar" main="true" />
+		<jar href="../deploy/javatari.jar" main="true" />
 	</resources>
 	<application-desc>
-		<argument>-screen_cartridge_change=false</argument>
+		<_argument>-screen_cartridge_change=false</_argument>
 	</application-desc>
 </jnlp>

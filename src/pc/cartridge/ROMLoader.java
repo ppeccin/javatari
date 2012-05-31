@@ -34,6 +34,8 @@ public class ROMLoader {
 			return load(file.toURI().toURL());
 		} catch (MalformedURLException ex) {
 			errorMessage(ex, file.getPath());
+		} catch (AccessControlException ex) {
+			errorMessage(ex, file.getPath());
 		}
 		return null;
 	}

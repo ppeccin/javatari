@@ -19,6 +19,9 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
@@ -501,6 +504,19 @@ public class Screen implements ClockDriven, VideoMonitor {
 		cartridgeSocket.insert(null, false);
 	}
 
+	private void loadCartridgePaste() {
+		if (cartridgeChangeDisabledWarning()) return;
+		try {
+			Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+			Transferable transf = clip.getContents("Ignored");
+			if (transf == null) return;
+			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(transf);
+			if (cart != null) cartridgeInsert(cart, true);
+		} catch (Exception ex) {
+			// Simply give up
+		}
+	}
+
 	private boolean cartridgeChangeDisabledWarning() {
 		if (!isCartridgeChangeEnabled()) {
 			showOSD("Cartridge change is disabled");
@@ -529,7 +545,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		// Toggles
 		if (!state) return;
 		switch(control) {
-		case LOAD_CARTRIDGE_FILE:
+			case LOAD_CARTRIDGE_FILE:
 				loadCartridgeFromFile(true); break;
 			case LOAD_CARTRIDGE_FILE_NO_AUTO_POWER:
 				loadCartridgeFromFile(false); break;
@@ -539,6 +555,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 				loadCartridgeFromURL(false); break;
 			case LOAD_CARTRIDGE_EMPTY:
 				loadCartridgeEmpty(); break;
+			case LOAD_CARTRIDGE_PASTE:
+				loadCartridgePaste(); break;
 			case FULL_SCREEN:
 				fullScreen(!fullScreen); break;
 			case QUALITY:
@@ -551,13 +569,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 				debug++;
 				if (debug > 4) debug = 0;
 				break;
-			case EXIT:
-				if (fullScreen) {
-					fullScreen(false);
-					break;
-				}
-				// Close program
-				Terminator.terminate();
 			case HELP:
 				window.consolePanelWindow.toggle();	break;
 			case ORIGIN_X_MINUS:
@@ -589,7 +600,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 			case SIZE_PLUS:
 				setDisplayScaleDefaultAspect(displayScaleY + 1); break;
 			case SIZE_DEFAULT:
-				setDisplayDefaultSize();
+				setDisplayDefaultSize(); break;
+			case EXIT:
+				if (fullScreen) {
+					fullScreen(false);
+					break;
+				}
+				// Close program
+				Terminator.terminate();
 		}
 	}
 
@@ -709,6 +727,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		LOAD_CARTRIDGE_FILE, LOAD_CARTRIDGE_FILE_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_URL, LOAD_CARTRIDGE_URL_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_EMPTY,
+		LOAD_CARTRIDGE_PASTE,
 		FULL_SCREEN, QUALITY, CRT_MODES,
 		HELP, DEBUG,
 		EXIT
