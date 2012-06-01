@@ -159,7 +159,7 @@ public class Parameters {
 
 	public static double	TIA_FORCED_CLOCK = 0;							//  0 = No Forced Clock
 	public static double	TIA_DEFAULT_CLOCK_NTSC = 60;
-	public static double	TIA_DEFAULT_CLOCK_PAL = 50.39;	
+	public static double	TIA_DEFAULT_CLOCK_PAL = 50.384615;
 	public static boolean 	TIA_SYNC_WITH_AUDIO_MONITOR = false;
 	public static boolean 	TIA_SYNC_WITH_VIDEO_MONITOR = false;
 

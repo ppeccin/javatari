@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 import parameters.Parameters;
@@ -39,9 +38,8 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 			if (ADDED_THREAD_PRIORITY != 0) clock.setPriority(Thread.NORM_PRIORITY + ADDED_THREAD_PRIORITY);
 			System.out.println("Sound Mixer Line: " + dataLine);
 			System.out.println("Sound Output buffer: " + dataLine.getBufferSize());
-			System.out.println("Sound Input buffer: " + inputBuffer.capacity());
-		} catch (LineUnavailableException e) {
-			System.out.println("Unable to acquire audio line"); 
+		} catch (Exception ex) {
+			System.out.println("Unable to acquire audio line:\n" + ex);
 			dataLine = null;
 		}
 	}

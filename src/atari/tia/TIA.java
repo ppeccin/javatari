@@ -44,6 +44,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public void videoStandard(VideoStandard standard) {
 		videoOutput.standard = standard;
+		audioOutput.videoStandard = standard;
 		palette = standard.equals(VideoStandard.NTSC) ? NTSCPalette.getPalette() : PALPalette.getPalette();
 	}
 	
@@ -119,7 +120,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			audioOutput.generateNextSamples(1);
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
-			audioOutput.sendGeneratedSamplesToMonitor();	// TODO Ensure right amount of samples / second 
+			audioOutput.sendSamplesFrameToMonitor();
 			// If needed, synch with audio output after each frame
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor.synchOutput();
 			// If needed, synch with video output

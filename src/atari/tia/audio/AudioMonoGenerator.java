@@ -9,9 +9,8 @@ import parameters.Parameters;
 public final class AudioMonoGenerator extends AudioGenerator {
 
 	@Override
-	public void generateNextSamples(int quant) {
+	protected void internalGenerateNextSamples(int quant) {
 		for (int i = 0; i < quant; i++) {
-			if (generatedSamples >= samples.length) return;
 			float mixedSample = channel0.nextSample() * MAX_MONO_CHANNEL_AMPLITUDE + channel1.nextSample() * MAX_MONO_CHANNEL_AMPLITUDE;
 			samples[generatedSamples++] = ((byte) (mixedSample * (MAX_AMPLITUDE * 127)));
 		}
