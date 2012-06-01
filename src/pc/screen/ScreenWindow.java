@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import parameters.Parameters;
@@ -73,6 +74,9 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
 			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
 			consolePanelWindow.setVisible(true);
+			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+				repaint();
+			}});
 		}
 	}
 	
@@ -289,6 +293,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		g.drawImage(bottomRightBar, w - maxHalfW, h - 30, w, h, 512 - maxHalfW, 0, 512, 30, null);
 		g.drawImage(bottomLeft, 0, halfH, 4, h - 30, 0, 600 - halfH, 4, 600, null);
 		g.drawImage(bottomRight, w - 4, halfH, w, h - 30, 0, 600 - halfH, 4, 600, null);
+		g.dispose();
 	}
 	
 	private Screen screen;
