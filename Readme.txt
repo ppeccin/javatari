@@ -2,7 +2,7 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
-Version 1.08
+Version 1.09
 ============
 - Drag&Drop and Copy&Paste of ROM files or URLs
    It is now very easy to try ROMs from websites,
