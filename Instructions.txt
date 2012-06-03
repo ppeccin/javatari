@@ -19,6 +19,7 @@ F5:            Load Cartridge from file
 F6:            Load Cartridge from URL
 F7:            Remove Cartridge
 ALT + F5/F6:   Load Cartridge without auto power on/off
+Also Drag&Drop and Copy&Paste of ROM files and URLs
 
 ALT + F1:      Fry Console (quickly power off/on)
 
@@ -31,10 +32,9 @@ Backspace:     Default Screen Size
 TAB:           Fast Speed
 
 
-To run the emulator in Standalone (single player) mode:
+To run the emulator in Standalone (single player) mode,
+simply double-click the executable javatari.jar file, or:
 $ java -jar javatari.jar
-
-Or simply double-click the executable javatari.jar file.
 
 To run the emulator in Multiplayer Server mode:
 $ java -cp javatari.jar main.MultiplayerServer

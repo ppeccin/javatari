@@ -4,6 +4,16 @@ Visit http://javatari.org
 
 Version 1.08
 ============
+- Drag&Drop and Copy&Paste of ROM files or URLs
+   It is now very easy to try ROMs from websites,
+   no need to download and save to disk to open. Just drag the URL
+- Fullscreen UI button
+ 
+
+Previous Versions:
+
+Version 1.08
+============
 - Another change in Cartridge loading functions
   - F5 loads from a FILE
   - F6 loads from any URL
@@ -13,9 +23,6 @@ Version 1.08
 - JNLP deploy for easy online launch
 - Any parameter from the properties file can now be overriden 
 via command line arguments (-param=value)
-
-
-Previous Versions:
 
 Version 1.07
 ============
