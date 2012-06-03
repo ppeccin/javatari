@@ -229,20 +229,25 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 				screen.controlStateChanged(Screen.Control.EXIT, true);
 			}});
 		addHotspot(
-			new Rectangle(-74, -20, 13, 15), 
+			new Rectangle(-74 -22, -20, 13, 15), 
 			new Runnable() { @Override public void run() { 
 				setState(ICONIFIED);
 			}});
 		addHotspot(
-			new Rectangle(-56, -21, 13, 16), 
+			new Rectangle(-56 - 22, -21, 13, 16), 
 			new Runnable() { @Override public void run() { 
 				screen.controlStateChanged(Screen.Control.SIZE_MINUS, true);
 			}});
 		addHotspot(
-			new Rectangle(-40, -24, 14, 19), 
-			new Runnable() { @Override public void run() { 
-				screen.controlStateChanged(Screen.Control.SIZE_PLUS, true);
-			}});
+				new Rectangle(-40 - 22, -24, 14, 19), 
+				new Runnable() { @Override public void run() { 
+					screen.controlStateChanged(Screen.Control.SIZE_PLUS, true);
+				}});
+		addHotspot(
+				new Rectangle(-42, -24, 17, 19), 
+				new Runnable() { @Override public void run() { 
+					screen.controlStateChanged(Screen.Control.FULL_SCREEN, true);
+				}});
 		addHotspot(
 			new Rectangle(CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
 			new Runnable() { @Override public void run() { 
