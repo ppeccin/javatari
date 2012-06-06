@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package utils;
+package utils.slickframe;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -18,13 +18,13 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
-public class SlickFrame extends JFrame {
+public class OldSlickFrame extends JFrame {
 
-	public SlickFrame() throws HeadlessException {
+	public OldSlickFrame() throws HeadlessException {
 		this(true);
 	}
 
-	public SlickFrame(boolean resizable) throws HeadlessException {
+	public OldSlickFrame(boolean resizable) throws HeadlessException {
 		super();
 		init();
 		this.resizable = resizable;

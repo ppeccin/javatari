@@ -33,7 +33,8 @@ import javax.swing.TransferHandler;
 
 import parameters.Parameters;
 import utils.GraphicsDeviceHelper;
-import utils.SlickFrame;
+import utils.slickframe.HotspotManager;
+import utils.slickframe.SlickFrame;
 import atari.cartridge.Cartridge;
 
 public class ScreenWindow extends SlickFrame implements DisplayCanvas {
@@ -41,13 +42,12 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public ScreenWindow(Screen screen) throws HeadlessException {
 		super();
 		this.screen = screen;
-		consolePanelWindow = new ConsolePanel(this, screen, screen.consoleControlsSocket);
+		consolePanelWindow = new FloatingConsolePanel(this, screen, screen.consoleControlsSocket);
 	}
 
 	@Override
 	protected void init() {
 		loadImages();
-		addHotspots();
 		setBackground(Color.BLACK);
 		getContentPane().setBackground(Color.BLACK);
 		getContentPane().setIgnoreRepaint(true);
@@ -63,6 +63,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 			}});		
 		getRootPane().setTransferHandler(new ROMDropTransferHandler());
 		super.init();
+		addHotspots();
 	}
 
 	@Override
@@ -85,17 +86,25 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		canvas.addKeyListener(l);
 		super.addKeyListener(l);
 	}
-
 	@Override
 	public synchronized void addMouseListener(MouseListener l) {
 		canvas.addMouseListener(l);
 		super.addMouseListener(l);
 	}
-
 	@Override
 	public synchronized void addMouseMotionListener(MouseMotionListener l) {
 		canvas.addMouseMotionListener(l);
 		super.addMouseMotionListener(l);
+	}
+	@Override
+	public synchronized void removeMouseListener(MouseListener l) {
+		canvas.removeMouseListener(l);
+		super.removeMouseListener(l);
+	}
+	@Override
+	public synchronized void removeMouseMotionListener(MouseMotionListener l) {
+		canvas.removeMouseMotionListener(l);
+		super.removeMouseMotionListener(l);
 	}
 
 	@Override
@@ -105,9 +114,9 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		if (getSize().equals(winDim)) return;
 		// Maintain the window center
 		int centerX = getX() + getWidth() / 2;
-		int centerY = getY() + (getHeight() + ConsolePanel.EXPANDED_HEIGHT) / 4;
+		int centerY = getY() + (getHeight() + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		int newX = centerX - winDim.width / 2;
-		int newY = centerY - (winDim.height + ConsolePanel.EXPANDED_HEIGHT) / 4;
+		int newY = centerY - (winDim.height + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		setBounds(newX, newY, winDim.width, winDim.height);
 		validate();
 		repaint();
@@ -117,7 +126,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public void canvasCenter() {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		int x = (tk.getScreenSize().width - getWidth()) / 2;
-		int y = (tk.getScreenSize().height - getHeight() - ConsolePanel.EXPANDED_HEIGHT) / 4;
+		int y = (tk.getScreenSize().height - getHeight() - FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		setLocation(x, y);
 	}
 
@@ -223,32 +232,33 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	}
 
 	private void addHotspots() {
-		addHotspot(
+		hotspots = new HotspotManager(this, detachMouseListener());
+		hotspots.addHotspot(
 			new Rectangle(8, -25, 19, 19), 
 			new Runnable() { @Override public void run() { 
 				screen.controlStateChanged(Screen.Control.EXIT, true);
 			}});
-		addHotspot(
+		hotspots.addHotspot(
 			new Rectangle(-74 -22, -20, 13, 15), 
 			new Runnable() { @Override public void run() { 
 				setState(ICONIFIED);
 			}});
-		addHotspot(
+		hotspots.addHotspot(
 			new Rectangle(-56 - 22, -21, 13, 16), 
 			new Runnable() { @Override public void run() { 
 				screen.controlStateChanged(Screen.Control.SIZE_MINUS, true);
 			}});
-		addHotspot(
+		hotspots.addHotspot(
 				new Rectangle(-40 - 22, -24, 14, 19), 
 				new Runnable() { @Override public void run() { 
 					screen.controlStateChanged(Screen.Control.SIZE_PLUS, true);
 				}});
-		addHotspot(
+		hotspots.addHotspot(
 				new Rectangle(-42, -24, 17, 19), 
 				new Runnable() { @Override public void run() { 
 					screen.controlStateChanged(Screen.Control.FULL_SCREEN, true);
 				}});
-		addHotspot(
+		hotspots.addHotspot(
 			new Rectangle(CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
 			new Runnable() { @Override public void run() { 
 				consolePanelWindow.toggle();
@@ -304,6 +314,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private Screen screen;
 	private Canvas canvas;
 	private BufferStrategy bufferStrategy;
+	private HotspotManager hotspots;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
 		bottomBar, bottomLeftBar, bottomRightBar, logoBar, favicon, icon64, icon32;
@@ -311,7 +322,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
 	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
 
-	public ConsolePanel consolePanelWindow;
+	public FloatingConsolePanel consolePanelWindow;
 
 	private static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
 	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
