@@ -1,8 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
-
-import general.av.video.VideoSignal;
+package pc.screen.old;
 
 import java.awt.BufferCapabilities;
 import java.awt.BufferCapabilities.FlipContents;
@@ -12,7 +10,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
@@ -22,8 +19,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -36,35 +31,22 @@ import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
-import parameters.Parameters;
-import pc.controls.AWTConsoleControls;
+import pc.screen.ROMTransferHandlerUtil;
+import pc.screen.DisplayCanvas;
+
 import utils.GraphicsDeviceHelper;
-import utils.Terminator;
 import utils.slickframe.HotspotManager;
 import utils.slickframe.SlickFrame;
 import atari.cartridge.Cartridge;
-import atari.cartridge.CartridgeSocket;
-import atari.controls.ConsoleControlsSocket;
 
-public class ScreenWindow extends SlickFrame implements DisplayCanvas {
+public class OldScreenWindow extends SlickFrame implements DisplayCanvas {
 
-	public ScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) throws HeadlessException {
+	public OldScreenWindow(OldScreen screen) throws HeadlessException {
 		super();
-		screen = new Screen(videoSignal, cartridgeSocket);
-		consolePanelWindow = new FloatingConsolePanel(this, screen, controlsSocket);
-		fullWindow = new ScreenFullWindow(this);
-		screen.setControlInputComponent(this);
-		consoleControls = new AWTConsoleControls(controlsSocket, screen, this);
-		setup();
+		this.screen = screen;
+		consolePanelWindow = new OldFloatingConsolePanel(this, screen, screen.consoleControlsSocket);
 	}
 
-	public void powerOn() {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			fullScreen(FULLSCREEN);
-			screen.powerOn();
-		}});
-	}
-	
 	@Override
 	protected void init() {
 		loadImages();
@@ -73,65 +55,60 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		getContentPane().setIgnoreRepaint(true);
 		setLayout(null);
 		setIconImages(Arrays.asList(new Image[] { icon64, icon32, favicon }));
-		setTitle(BASE_TITLE);
 		canvas = new Canvas();
 		canvas.setBackground(Color.BLACK);
 		canvas.setIgnoreRepaint(true);
 		canvas.setFocusTraversalKeysEnabled(false);
 		add(canvas);
+		addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent e) {
+				if (e.getComponent() == OldScreenWindow.this) positionCanvas();
+			}});		
+		getRootPane().setTransferHandler(new ROMDropTransferHandler());
 		super.init();
+		addHotspots();
 	}
-		
+
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (visible) {
 			// Considers this window actual insets, they may not be zero if its still decorated for some reason
 			Insets ins = getInsets();
-			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
-			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
+			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + OldScreen.BORDER_SIZE * 2;
+			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + OldScreen.BORDER_SIZE * 2;
 			consolePanelWindow.setVisible(true);
 			canvasSetRenderingMode();
 			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
 				repaint();
 			}});
-		} else
-			consolePanelWindow.setVisible(false);
+		}
 	}
 	
 	@Override
 	public synchronized void addKeyListener(KeyListener l) {
-		super.addKeyListener(l);
 		canvas.addKeyListener(l);
-		fullWindow.addKeyListener(l);
-		consolePanelWindow.addKeyListener(l);
-	}
-	@Override
-	public synchronized void removeKeyListener(KeyListener l) {
-		super.removeKeyListener(l);
-		canvas.removeKeyListener(l);
-		fullWindow.removeKeyListener(l);
-		consolePanelWindow.removeKeyListener(l);
+		super.addKeyListener(l);
 	}
 	@Override
 	public synchronized void addMouseListener(MouseListener l) {
-		super.addMouseListener(l);
 		canvas.addMouseListener(l);
+		super.addMouseListener(l);
 	}
 	@Override
 	public synchronized void addMouseMotionListener(MouseMotionListener l) {
-		super.addMouseMotionListener(l);
 		canvas.addMouseMotionListener(l);
+		super.addMouseMotionListener(l);
 	}
 	@Override
 	public synchronized void removeMouseListener(MouseListener l) {
-		super.removeMouseListener(l);
 		canvas.removeMouseListener(l);
+		super.removeMouseListener(l);
 	}
 	@Override
 	public synchronized void removeMouseMotionListener(MouseMotionListener l) {
-		super.removeMouseMotionListener(l);
 		canvas.removeMouseMotionListener(l);
+		super.removeMouseMotionListener(l);
 	}
 
 	@Override
@@ -141,9 +118,9 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		if (getSize().equals(winDim)) return;
 		// Maintain the window center
 		int centerX = getX() + getWidth() / 2;
-		int centerY = getY() + (getHeight() + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int centerY = getY() + (getHeight() + OldFloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		int newX = centerX - winDim.width / 2;
-		int newY = centerY - (winDim.height + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int newY = centerY - (winDim.height + OldFloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		setBounds(newX, newY, winDim.width, winDim.height);
 		// validate();
 		// repaint();
@@ -153,7 +130,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public void canvasCenter() {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		int x = (tk.getScreenSize().width - getWidth()) / 2;
-		int y = (tk.getScreenSize().height - getHeight() - FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int y = (tk.getScreenSize().height - getHeight() - OldFloatingConsolePanel.EXPANDED_HEIGHT) / 4;
 		setLocation(x, y);
 	}
 
@@ -172,6 +149,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public void canvasFinishFrame(Graphics2D graphics) {
 		graphics.dispose();
 		if (bufferStrategy != null) bufferStrategy.show();
+		// Toolkit.getDefaultToolkit().sync();		// Really needed?
 	}
 
 	@Override
@@ -189,7 +167,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	
 	@Override
 	public float canvasDefaultOpenningScaleX(int displayWidh, int displayHeight) {
-		return Screen.DEFAULT_SCALE_X;
+		return OldScreen.DEFAULT_SCALE_X;
 	}
 
 	@Override
@@ -199,55 +177,17 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	
 	@Override
 	public void canvasLeaveFullscreen() {
-		if (fullScreen) fullScreen(false);
-	}
-
-	private void setup() {
-		addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				if (e.getComponent() == ScreenWindow.this) positionCanvas();
-			}});		
-		getRootPane().setTransferHandler(new ROMDropTransferHandler());
-		addHotspots();
-		addKeyListener(new DesktopControlKeyListener());
-	}
-
-	private void fullScreen(boolean state) {
-		synchronized (screen.refreshMonitor) {
-			if (state)
-				if (openFullWindow()) return;
-			openWindow();
-		}
-	}
-
-	private void openWindow() {
-		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (dev.isFullScreenSupported()) dev.setFullScreenWindow(null);
-		fullWindow.setVisible(false);
-		setVisible(true);
-		fullScreen = false;
-		screen.setCanvas(this);
-	}
-
-	private boolean openFullWindow() {
-		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (!dev.isFullScreenSupported()) return false;
-		setVisible(false);
-		dev.setFullScreenWindow(fullWindow);	// will call setVisible(true)
-		fullScreen = true;
-		screen.setCanvas(fullWindow);
-		return true;
 	}
 
 	public void canvasSetRenderingMode() {
-		if (Screen.MULTI_BUFFERING <= 0) return;
+		if (OldScreen.MULTI_BUFFERING <= 0) return;
 		BufferCapabilities desiredCaps = new BufferCapabilities(
 			new ImageCapabilities(true), new ImageCapabilities(true),
-			Screen.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
+			OldScreen.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
 		);
 		// First try with vSync option
 		Class<?> extBufCapClass = null;
-		if (Screen.BUFFER_VSYNC != -1)
+		if (OldScreen.BUFFER_VSYNC != -1)
 			try {
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
 				extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
@@ -255,22 +195,22 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 				Constructor<?> extBufCapConstructor = extBufCapClass.getConstructor(
 					new Class[] { BufferCapabilities.class, vSyncTypeClass }
 				);
-	            Object vSyncType = vSyncTypeClass.getField(Screen.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
+	            Object vSyncType = vSyncTypeClass.getField(OldScreen.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
 	            BufferCapabilities extBuffCaps = (BufferCapabilities)extBufCapConstructor.newInstance(
 	            	new Object[] { desiredCaps, vSyncType }
 	            );
 	            // Try creating the BufferStrategy
-	            canvas.createBufferStrategy(Screen.MULTI_BUFFERING, extBuffCaps);
+	            canvas.createBufferStrategy(OldScreen.MULTI_BUFFERING, extBuffCaps);
 			} catch (Exception ex) {}
 		// Then try with remaining options (Flipping, etc)
 		if (canvas.getBufferStrategy() == null)
 			try {
-				canvas.createBufferStrategy(Screen.MULTI_BUFFERING, desiredCaps);
+				canvas.createBufferStrategy(OldScreen.MULTI_BUFFERING, desiredCaps);
 			} catch (Exception ex) {}
 		// Last, use the default
 		if (canvas.getBufferStrategy() == null) {
 			System.out.println("Could not create desired BufferStrategy. Switching to default...");
-			canvas.createBufferStrategy(Screen.MULTI_BUFFERING);
+			canvas.createBufferStrategy(OldScreen.MULTI_BUFFERING);
 		}
 		bufferStrategy = canvas.getBufferStrategy();
 		// Show info about the granted BufferStrategy
@@ -292,10 +232,11 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	
 	private void positionCanvas() {
 		canvas.setBounds(
-			SLICK_INSETS.left + BORDER_SIZE, SLICK_INSETS.top + BORDER_SIZE,
+			SLICK_INSETS.left + OldScreen.BORDER_SIZE, SLICK_INSETS.top + OldScreen.BORDER_SIZE,
 			getWidth() - totalCanvasHorizPadding, 
 			getHeight() - totalCanvasVertPadding
 		);
+		// validate();
 	}
 
 	private void addHotspots() {
@@ -303,7 +244,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		hotspots.addHotspot(
 			new Rectangle(8, -25, 19, 19), 
 			new Runnable() { @Override public void run() { 
-				exit();
+				screen.controlStateChanged(OldScreen.Control.EXIT, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(-74 -22, -20, 13, 15), 
@@ -313,18 +254,18 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		hotspots.addHotspot(
 			new Rectangle(-56 - 22, -21, 13, 16), 
 			new Runnable() { @Override public void run() { 
-				screen.controlStateChanged(Screen.Control.SIZE_MINUS, true);
+				screen.controlStateChanged(OldScreen.Control.SIZE_MINUS, true);
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-40 - 22, -24, 14, 19), 
-			new Runnable() { @Override public void run() { 
-				screen.controlStateChanged(Screen.Control.SIZE_PLUS, true);
-			}});
+				new Rectangle(-40 - 22, -24, 14, 19), 
+				new Runnable() { @Override public void run() { 
+					screen.controlStateChanged(OldScreen.Control.SIZE_PLUS, true);
+				}});
 		hotspots.addHotspot(
-			new Rectangle(-42, -24, 17, 19), 
-			new Runnable() { @Override public void run() { 
-				fullScreen(!fullScreen);
-			}});
+				new Rectangle(-42, -24, 17, 19), 
+				new Runnable() { @Override public void run() { 
+					screen.controlStateChanged(OldScreen.Control.FULL_SCREEN, true);
+				}});
 		hotspots.addHotspot(
 			new Rectangle(CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
 			new Runnable() { @Override public void run() { 
@@ -351,13 +292,9 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		}
 	}
 	
-	private void exit() {
-		// Close program
-		Terminator.terminate();
-	}
-	
 	@Override
 	public void paint(Graphics origGraphics) {
+		// super.paint(origGraphics);
 		Insets ins = getInsets();
 		int w = getWidth() - ins.left - ins.right; 
 		int h = getHeight() - ins.top - ins.bottom;
@@ -383,58 +320,24 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		g.dispose();
 	}
 	
-	public Screen screen;
-	public AWTConsoleControls consoleControls;
-	
+	private OldScreen screen;
 	private Canvas canvas;
-	
-	private ScreenFullWindow fullWindow;
-	private boolean fullScreen = false;
-		
 	private BufferStrategy bufferStrategy;
 	private HotspotManager hotspots;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
-		bottomBar, bottomLeftBar, bottomRightBar;
-	
-	public BufferedImage logoBar, favicon, icon64, icon32;	// Other windows use these
-	public static final String BASE_TITLE = "javatari";
-
-	public FloatingConsolePanel consolePanelWindow;
-	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
-	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
+		bottomBar, bottomLeftBar, bottomRightBar, logoBar, favicon, icon64, icon32;
 
 	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
 	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
 
-	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
+	public OldFloatingConsolePanel consolePanelWindow;
 
+	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
+	
 	public static final long serialVersionUID = 1L;
 
 
-	private class DesktopControlKeyListener extends KeyAdapter {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			int code = e.getKeyCode();
-			switch (e.getModifiersEx()) {
-			case 0:
-				if (code == KEY_EXIT) 
-					if (fullScreen) fullScreen(!fullScreen);
-					else exit();
-				return;
-			case KeyEvent.ALT_DOWN_MASK:
-				switch (code) {
-					case KEY_FULL_SCR: fullScreen(!fullScreen); return;
-					case KEY_HELP: if (!fullScreen)	consolePanelWindow.toggle(); return;
-				}
-			}
-		}
-		static final int KEY_EXIT     = KeyEvent.VK_ESCAPE;
-		static final int KEY_HELP     = KeyEvent.VK_H;
-		static final int KEY_FULL_SCR = KeyEvent.VK_ENTER;
-	}
-
-	
 	// To handle drag and drop of ROM files and links
 	class ROMDropTransferHandler extends TransferHandler {
 		@Override

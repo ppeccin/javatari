@@ -104,7 +104,7 @@ public class SlickFrame extends JFrame {
 	private Point clickPosition = null;
 	private Point startingLocation = null;
 	private Dimension startingSize = null;
-	private Dimension minimumSize = new Dimension(80,40);
+	private Dimension minimumSize = new Dimension(80, 40);
 	
 	public static final int CENTER_HOTSPOT = -10000;
 	private static final int RESIZE_CORNER_SIZE = 18;

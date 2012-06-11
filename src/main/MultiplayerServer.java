@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
 import pc.savestate.FileSaveStateMedia;
-import pc.screen.Screen;
+import pc.screen.ScreenWindow;
 import pc.speaker.Speaker;
 import utils.Terminator;
 import atari.cartridge.Cartridge;
@@ -30,7 +30,7 @@ public class MultiplayerServer {
 		final ServerConsole console = new ServerConsole(remoteTransmitter);
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final ScreenWindow screen = new ScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
 		final Speaker speaker = new Speaker(console.audioOutput());
 		new FileSaveStateMedia(console.saveStateSocket());
 		

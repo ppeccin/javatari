@@ -5,12 +5,12 @@ package main;
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
 import pc.savestate.FileSaveStateMedia;
-import pc.screen.ScreenWindow;
+import pc.screen.old.OldScreen;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
 
-public class TestStandalone {
+public class OldTestStandalone {
 
 	public static void main(String[] args) {
 
@@ -21,7 +21,7 @@ public class TestStandalone {
 		final Console console = new Console();
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final ScreenWindow screen = new ScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final OldScreen screen = new OldScreen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
 		final Speaker speaker = new Speaker(console.audioOutput());	
 		new FileSaveStateMedia(console.saveStateSocket());  
 		
@@ -36,7 +36,7 @@ public class TestStandalone {
 	 	// Keep logging info about clocks speeds achieved 
 	 	(new Thread() { @Override public void run() {
 		 	while(true) {
-				System.out.println(console.mainClock() + ", " + screen.screen.clock + ", " + speaker.clock);
+				System.out.println(console.mainClock() + ", " + screen.clock + ", " + speaker.clock);
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
 	 	}}).start();

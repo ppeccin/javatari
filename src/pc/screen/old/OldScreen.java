@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
+package pc.screen.old;
 
 import general.av.video.VideoMonitor;
 import general.av.video.VideoSignal;
@@ -16,6 +16,7 @@ import java.awt.CompositeContext;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -26,42 +27,34 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.Arrays;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import parameters.Parameters;
 import pc.cartridge.FileROMChooser;
 import pc.cartridge.URLROMChooser;
+import pc.controls.AWTConsoleControls;
+import pc.screen.ROMTransferHandlerUtil;
+import pc.screen.DisplayCanvas;
 import utils.GraphicsDeviceHelper;
+import utils.Terminator;
 import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
+import atari.controls.ConsoleControlsSocket;
 
-public class Screen implements ClockDriven, VideoMonitor {
+public class OldScreen implements ClockDriven, VideoMonitor {
 	
-	public Screen(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) {
+	public OldScreen(VideoSignal videoSignal, ConsoleControlsSocket controlsInput, CartridgeSocket cartridgeSocket) {
 		this.fps = DEFAULT_FPS;
 		this.videoSignal = videoSignal;
+		this.consoleControlsSocket = controlsInput;
 		this.cartridgeSocket = cartridgeSocket;
 		init();
-	}
-
-	public void setCanvas(DisplayCanvas canvas) {
-		this.canvas = canvas;
-		float scX = canvas.canvasDefaultOpenningScaleX(displayWidth, displayHeight);
-		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
-		canvasCenter();
-	}
-	
-	public void setControlInputComponent(Component component) {
-		screenControls.setInputComponent(component);
-	}
-	
-	public void powerOn() {
-		paintLogo();
-		clock.go();
 	}
 
 	@Override
@@ -124,6 +117,18 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
 	}
 
+	public void powerOn(){
+		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			fullScreen(FULLSCREEN);
+			paintLogo();
+			clock.go();
+		}});
+	}
+
+	public void p1ControlsMode(boolean state) {
+		contoleControls.p1ControlsMode(state);
+	}
+
 	public void cartridgeChangeEnabled(boolean state) {
 		cartridgeChangeEnabled = state;
 	}
@@ -134,11 +139,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
 		cartridgeSocket.insert(cart, autoPower);
-		// TODO Aqui mandava setar o foco. Tb precisa testar DnD ainda
+		if (window.isVisible())
+			window.requestFocus();
 	};
 
 	private boolean newFrame() {
-		// TODO Aqui mandava mostrar quantidade de linhas em caso de Debug
+		if (debug > 0) window.setTitle(BASE_TITLE + " - " + line + " lines");
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
 		// Copy only the contents needed (displayWidth x displayHight) to the frontBuffer
 		arrayCopyWithStride(
@@ -185,6 +191,33 @@ public class Screen implements ClockDriven, VideoMonitor {
 		videoStandardDetected = averageLPF < 290 ? VideoStandard.NTSC : VideoStandard.PAL;
 	}
 
+	private void openWindow() {
+		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
+		if (dev.isFullScreenSupported()) dev.setFullScreenWindow(null);
+		fullWindow.setVisible(false);
+		window.setVisible(true);
+		fullScreen = false;
+		canvas = window;
+		float scX = canvas.canvasDefaultOpenningScaleX(displayWidth, displayHeight);
+		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
+		canvasUpdateSize();
+		canvasCenter();
+	}
+
+	private boolean openFullWindow() {
+		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
+		if (!dev.isFullScreenSupported()) return false;
+		window.setVisible(false);
+		dev.setFullScreenWindow(fullWindow);	// will call setVisible(true)
+		fullScreen = true;
+		canvas = fullWindow;
+		float scX = canvas.canvasDefaultOpenningScaleX(displayWidth, displayHeight);
+		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
+		canvasUpdateSize();
+		canvasCenter();
+		return true;
+	}
+
 	private void canvasUpdateSize() {
 		if (canvas == null) return;
 		synchronized (refreshMonitor) {
@@ -214,23 +247,22 @@ public class Screen implements ClockDriven, VideoMonitor {
 		return canvasGraphics;
 	}
 
-	private void canvasFrameFinished(Graphics2D graphics) {
-		if (canvas == null) return;
+	private void canvasFinish(Graphics2D graphics) {
 		canvas.canvasFinishFrame(graphics);
 	}
 
-	private void init() {
-		screenControls = new ScreenControlsAdapter(this);
-		prepareImages();	 	
-		videoSignal.connectMonitor(this);
-		adjustToVideoSignal();
-		setDisplayDefaultSize();	
-		clock = new Clock(this, fps);
-		cleanBackBuffer();
-		newFrame();
-	}
-
-	private void prepareImages() {
+	private void buildGUI() {
+		// Create the window for Windowed display
+		window = new OldScreenWindow(this);
+		window.setTitle(BASE_TITLE);
+		try {
+			window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		} catch(AccessControlException ex) {
+			// Ignore. Cannot set DefaultCloseOperation if running from an Applet
+		}
+		// Create the window for FullScreen display
+		fullWindow = new OldScreenFullWindow();
+		fullWindow.setTitle(BASE_TITLE);
 		// Prepare the Logo image
 		try {
 			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Logo.png");
@@ -254,6 +286,18 @@ public class Screen implements ClockDriven, VideoMonitor {
 		// Prepare intermediate image for CRT modes or OSD rendering in SingleBuffer mode
 		intermFrameImage = new BufferedImage(2048, 1280, BufferedImage.TYPE_INT_RGB);
 		if (IMTERM_FRAME_ACCELERATION >= 0) intermFrameImage.setAccelerationPriority(IMTERM_FRAME_ACCELERATION);
+	}
+
+	private void init() {
+		buildGUI();	 	
+		videoSignal.connectMonitor(this);
+		adjustToVideoSignal();
+		setDisplayDefaultSize();	
+		clock = new Clock(this, fps);
+		contoleControls = new AWTConsoleControls(consoleControlsSocket, this, new Component[] {window, fullWindow});
+		new OldScreenControlsAdapter(this, new Component[] {window, fullWindow});
+		cleanBackBuffer();
+		newFrame();
 	}
 
 	private void adjustToVideoSignal() {
@@ -299,7 +343,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 				null
 			);
 			paintOSD(canvasGraphics);
-			canvasFrameFinished(canvasGraphics);
+			canvasFinish(canvasGraphics);
 		}
 	}
 		
@@ -364,7 +408,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 					renderScanlines(canvasGraphics, canvasEffectiveWidth, canvasEffectiveHeight);
 				paintOSD(canvasGraphics);
 			}
-			canvasFrameFinished(canvasGraphics);
+			canvasFinish(canvasGraphics);
 		}
 	}
 
@@ -393,11 +437,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void setDisplayDefaultSize() {
 		setDisplaySize(DEFAULT_WIDTH, DEFAULT_HEIGHT_PCT);
 		setDisplayOrigin(DEFAULT_ORIGIN_X, DEFAULT_ORIGIN_Y_PCT);
-		if (canvas != null) {
-			float scX = canvas.canvasDefaultOpenningScaleX(displayWidth, displayHeight);
-			setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
-		} else
-			setDisplayScale(DEFAULT_SCALE_X, DEFAULT_SCALE_Y);
+		setDisplayScale(DEFAULT_SCALE_X, DEFAULT_SCALE_Y);
 		canvasCenter();
 	}
 
@@ -439,14 +479,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private void loadCartridgeFromFile(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
-		canvas.canvasLeaveFullscreen();
+		if (fullScreen) fullScreen(false);
 		Cartridge cart = FileROMChooser.chooseFile();
 		if (cart != null) cartridgeInsert(cart, autoPower);
 	}
 
 	private void loadCartridgeFromURL(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
-		canvas.canvasLeaveFullscreen();
+		if (fullScreen) fullScreen(false);
 		Cartridge cart = URLROMChooser.chooseURL();
 		if (cart != null) cartridgeInsert(cart, autoPower);
 	}
@@ -477,6 +517,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 		return false;
 	}
 
+	private void fullScreen(boolean state) {
+		synchronized (refreshMonitor) {
+			if (state)
+				if (openFullWindow()) return;
+			openWindow();
+		}
+	}
+
 	private void crtModeToggle() {
 		synchronized (refreshMonitor) {
 			crtMode++;
@@ -501,6 +549,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 				loadCartridgeEmpty(); break;
 			case LOAD_CARTRIDGE_PASTE:
 				loadCartridgePaste(); break;
+			case FULL_SCREEN:
+				fullScreen(!fullScreen); break;
 			case QUALITY:
 				qualityRendering = !qualityRendering;
 				showOSD(qualityRendering ? "Filter ON" : "Filter OFF");
@@ -511,6 +561,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 				debug++;
 				if (debug > 4) debug = 0;
 				break;
+			case HELP:
+				window.consolePanelWindow.toggle();	break;
 			case ORIGIN_X_MINUS:
 				setDisplayOrigin(displayOriginX + 1, displayOriginYPct); break;
 			case ORIGIN_X_PLUS:		
@@ -541,6 +593,13 @@ public class Screen implements ClockDriven, VideoMonitor {
 				setDisplayScaleDefaultAspect(displayScaleY + 1); break;
 			case SIZE_DEFAULT:
 				setDisplayDefaultSize(); break;
+			case EXIT:
+				if (fullScreen) {
+					fullScreen(false);
+					break;
+				}
+				// Close program
+				Terminator.terminate();
 		}
 	}
 
@@ -556,12 +615,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 	
 
 	public Clock clock;
-	
-	public String newDataMonitor = "nextLineMonitor";		// Used only for synchronization
-	public String refreshMonitor = "refreshMonitor";		// Used only for synchronization
+	public final ConsoleControlsSocket consoleControlsSocket;
 
-	private ScreenControlsAdapter screenControls;
-
+	private AWTConsoleControls contoleControls;
 	private boolean cartridgeChangeEnabled = CARTRIDGE_CHANGE;
 	
 	private final VideoSignal videoSignal;
@@ -590,6 +646,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private float displayScaleY;
 	
 	private boolean signalOn = false;
+	private boolean fullScreen = false;
 	
 	private int osdFramesLeft = -1;
 	private String osdMessage; 
@@ -601,6 +658,9 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private int debug = 0;
 	
 	private int line = 0;
+	
+	private OldScreenWindow window;
+	private OldScreenFullWindow fullWindow;
 
 	private DisplayCanvas canvas;
 
@@ -614,6 +674,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 	
 	private int VSYNCDetectionCount = 0;
 
+	private String newDataMonitor = "nextLineMonitor";		// Used only for synchronization
+	private String refreshMonitor = "refreshMonitor";		// Used only for synchronization
+
+	private static final String BASE_TITLE = "javatari";
+
 	private static final int VSYNC_DETECTION = 2;
 	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
 	
@@ -626,6 +691,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float    DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
 	public static final float    DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
 	public static final float    DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
+	public static final int      BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
 	public static final int      OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
 	public static final boolean  QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
 	public static final int      CRT_MODE = Parameters.SCREEN_CRT_MODE;
@@ -638,29 +704,30 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float    IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
 	public static final float    SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
+	public static final boolean  FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 
 	public static final long serialVersionUID = 0L;
 
-
 	public static enum Control {
-		WIDTH_PLUS, HEIGHT_PLUS,
-		WIDTH_MINUS, HEIGHT_MINUS,
-		ORIGIN_X_PLUS, ORIGIN_Y_PLUS,
-		ORIGIN_X_MINUS, ORIGIN_Y_MINUS,
-		SCALE_X_PLUS, SCALE_Y_PLUS,
-		SCALE_X_MINUS, SCALE_Y_MINUS,
-		SIZE_PLUS, SIZE_MINUS,
+		WIDTH_PLUS, HEIGHT_PLUS, 
+		WIDTH_MINUS, HEIGHT_MINUS, 
+		ORIGIN_X_PLUS, ORIGIN_Y_PLUS, 
+		ORIGIN_X_MINUS, ORIGIN_Y_MINUS, 
+		SCALE_X_PLUS, SCALE_Y_PLUS, 
+		SCALE_X_MINUS, SCALE_Y_MINUS, 
+		SIZE_PLUS, SIZE_MINUS, 
 		SIZE_DEFAULT,
 		LOAD_CARTRIDGE_FILE, LOAD_CARTRIDGE_FILE_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_URL, LOAD_CARTRIDGE_URL_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_EMPTY,
 		LOAD_CARTRIDGE_PASTE,
-		QUALITY, CRT_MODES,
-		DEBUG,
+		FULL_SCREEN, QUALITY, CRT_MODES,
+		HELP, DEBUG,
+		EXIT
 	}
 
-	// Simulates a TV display at the sub pixel level (triads) 
-	class CRTTriadComposite implements Composite {
+	// Simulates the TV display at the sub pixel level (triads) 
+	private class CRTTriadComposite implements Composite {
 		private int[] data = new int[3000];
 		public CompositeContext context = new CompositeContext() {
 			@Override
@@ -688,9 +755,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 		public CompositeContext createContext(ColorModel srcColorModel,	ColorModel dstColorModel, RenderingHints hints) {
 			return context;
 		}
-
 	}
-
+	
 }
-
-

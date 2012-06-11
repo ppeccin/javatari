@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
+package pc.screen.old;
 
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -38,7 +38,7 @@ import atari.controls.ConsoleControlsSocket;
 
 public class OldConsolePanel extends SlickFrame implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
-	public OldConsolePanel(JFrame masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
+	public OldConsolePanel(JFrame masterWindow, OldScreen screen, ConsoleControlsSocket controlsSocket) {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
@@ -207,13 +207,13 @@ public class OldConsolePanel extends SlickFrame implements ConsoleControls, Cons
 		hotspots.addHotspot(
 			new Rectangle(160, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_FILE, true);
+				screen.controlStateChanged(pc.screen.old.OldScreen.Control.LOAD_CARTRIDGE_FILE, true);
 				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(150 + 85, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_URL, true);
+				screen.controlStateChanged(pc.screen.old.OldScreen.Control.LOAD_CARTRIDGE_URL, true);
 				updateVisibleControlsState();
 			}});
 	}
@@ -362,7 +362,7 @@ public class OldConsolePanel extends SlickFrame implements ConsoleControls, Cons
 	private BufferedImage p1DiffDownImage;
 	private BufferedImage paintBackBuffer;
 	
-	private final Screen screen;
+	private final OldScreen screen;
 	private final ConsoleControlsSocket consoleControlsSocket;
 	private Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();
 	

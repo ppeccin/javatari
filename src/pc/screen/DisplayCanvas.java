@@ -8,21 +8,25 @@ import java.awt.Graphics2D;
 
 public interface DisplayCanvas {
 	
-	public void canvasSize(Dimension size);
 	public void canvasCenter();
 	
-	public Dimension canvasEffectiveSize();
+	public void canvasSize(Dimension size);
+		
+	public void canvasMinimumSize(Dimension size);
 	
-	public void canvasSetRenderingMode();
-	
-	public Graphics2D canvasGraphics();
-	
-	public void canvasFinishGraphics(Graphics2D graphics);
+	public void canvasFinishFrame(Graphics2D graphics);
 
 	public void canvasClear();
 	
+	public Dimension canvasEffectiveSize();
+	
+	public Graphics2D canvasGraphics();
+		
 	public Container canvasContainer();
 	
-	public float getDefaultOpenningScaleX(int displayWidth, int displayHeight);
+	public float canvasDefaultOpenningScaleX(int displayWidth, int displayHeight);
 	
+	public void canvasLeaveFullscreen();
+
+		
 }

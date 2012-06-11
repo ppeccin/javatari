@@ -1,12 +1,10 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
+package pc.screen.old;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -20,8 +18,8 @@ import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -31,29 +29,27 @@ import utils.slickframe.MousePressAndMotionListener;
 import utils.slickframe.SlickFrame;
 import atari.controls.ConsoleControlsSocket;
 
-public class FloatingConsolePanel extends SlickFrame {
+public class OldFloatingConsolePanel extends SlickFrame {
 
-	public FloatingConsolePanel(ScreenWindow masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
+	public OldFloatingConsolePanel(JFrame masterWindow, OldScreen screen, ConsoleControlsSocket controlsSocket) {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
 		addHotspots(detachMouseListener());
-		consolePanel = new ConsolePanel(screen, controlsSocket, hotspots.detachMouseListener());
+		consolePanel = new OldNewConsolePanel(screen, controlsSocket, hotspots.detachMouseListener());
 		buildGUI();
 	}
 
 	private void buildGUI() {
 		loadImages();
-		setLayout(new BorderLayout());
-		setTitle(ScreenWindow.BASE_TITLE + " - Console Panel");
-		setIconImages(Arrays.asList(new Image[] { masterWindow.icon64, masterWindow.icon32, masterWindow.favicon }));
+		setTitle("Atari Controls");
+		add(consolePanel);
 		addGlassPane();
 		setSize(desiredSize());
 		setResizable(false);
-		add(consolePanel, BorderLayout.CENTER);
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		int x = (tk.getScreenSize().width - getWidth()) / 2;
-		int y = (tk.getScreenSize().height - getHeight()) / 2;
+		int y = (tk.getScreenSize().height - getHeight()) / 3;
 		setLocation(x, y);
 		addMasterWindowListeners();
 	}
@@ -102,7 +98,7 @@ public class FloatingConsolePanel extends SlickFrame {
 				setFocusable(false);
 				setFocusableWindowState(false);
 			}
-			FloatingConsolePanel.super.setVisible(state);
+			OldFloatingConsolePanel.super.setVisible(state);
 			if (state) {
 				setState(Frame.NORMAL);
 				setSize(desiredSize());
@@ -224,8 +220,8 @@ public class FloatingConsolePanel extends SlickFrame {
 	}
 	
 
-	private final ScreenWindow masterWindow;
-	private final ConsolePanel consolePanel;
+	private final JFrame masterWindow;
+	private final OldNewConsolePanel consolePanel;
 	
 	private boolean retracted = false;
 	private boolean docked = false;

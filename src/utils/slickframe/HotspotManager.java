@@ -61,13 +61,14 @@ public class HotspotManager {
 							return;
 						}
 					}
+					activeHotspot = null;
 				}
 				forwardListener.mousePressed(e);
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.getButton() == 1) {
-					if (activeHotspot != null) {	// TODO Modal opening breaks this?
+					if (activeHotspot != null) {
 						if (activeHotspot.deactivationAction != null)
 							activeHotspot.deactivationAction.run();
 						activeHotspot = null;

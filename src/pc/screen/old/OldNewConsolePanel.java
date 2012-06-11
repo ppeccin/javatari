@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
+package pc.screen.old;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -25,13 +25,13 @@ import atari.controls.ConsoleControlsInput;
 import atari.controls.ConsoleControlsRedefinitionListener;
 import atari.controls.ConsoleControlsSocket;
 
-public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
+public class OldNewConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
-	public ConsolePanel(Screen screen, ConsoleControlsSocket controlsSocket) {
+	public OldNewConsolePanel(OldScreen screen, ConsoleControlsSocket controlsSocket) {
 		this(screen, controlsSocket, null);
 	}
 	
-	public ConsolePanel(Screen screen, ConsoleControlsSocket controlsSocket, MousePressAndMotionListener forwardListener) {
+	public OldNewConsolePanel(OldScreen screen, ConsoleControlsSocket controlsSocket, MousePressAndMotionListener forwardListener) {
 		super();
 		this.screen = screen;
 		this.consoleControlsSocket = controlsSocket;
@@ -63,10 +63,8 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 
 	private void buildGUI() {
 		loadImages();
-		Dimension size = desiredSize();
-		setSize(size);
-		setPreferredSize(size);
-		setMaximumSize(size);
+		setSize(desiredSize());
+		setPreferredSize(desiredSize());
 	}
 
 	private void loadImages() {
@@ -90,7 +88,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 				setFocusable(false);
 			}
 			updateVisibleControlsState();
-			ConsolePanel.super.setVisible(state);
+			OldNewConsolePanel.super.setVisible(state);
 			if (state) {
 				setSize(desiredSize());
 			}
@@ -146,13 +144,13 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		hotspots.addHotspot(
 			new Rectangle(160, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_FILE, true);
+				screen.controlStateChanged(pc.screen.old.OldScreen.Control.LOAD_CARTRIDGE_FILE, true);
 				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(150 + 85, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_URL, true);
+				screen.controlStateChanged(pc.screen.old.OldScreen.Control.LOAD_CARTRIDGE_URL, true);
 				updateVisibleControlsState();
 			}});
 	}
@@ -198,7 +196,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 	private BufferedImage p0DiffDownImage;
 	private BufferedImage p1DiffDownImage;
 	
-	private final Screen screen;
+	private final OldScreen screen;
 	private final ConsoleControlsSocket consoleControlsSocket;
 	private Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();
 	

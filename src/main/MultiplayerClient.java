@@ -5,7 +5,7 @@ package main;
 import java.rmi.RemoteException;
 
 import parameters.Parameters;
-import pc.screen.Screen;
+import pc.screen.ScreenWindow;
 import pc.speaker.Speaker;
 import atari.network.ClientConsole;
 import atari.network.socket.SocketRemoteReceiver;
@@ -23,12 +23,12 @@ public class MultiplayerClient {
 		final ClientConsole console = new ClientConsole(remoteReceiver);
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final Screen screen = new Screen(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final ScreenWindow screen = new ScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
 		final Speaker speaker = new Speaker(console.audioOutput());
 		
 		// Automatically adjust interface for Multiplayer Client operation
-		screen.p1ControlsMode(true);
-		screen.cartridgeChangeEnabled(false);
+		screen.consoleControls.p1ControlsMode(true);
+		screen.screen.cartridgeChangeEnabled(false);
 
 		// Turn AV monitors on
 		screen.powerOn();                
