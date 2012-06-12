@@ -32,14 +32,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import pc.screen.ROMTransferHandlerUtil;
-import pc.screen.DisplayCanvas;
+import pc.screen.ScreenDisplay;
 
 import utils.GraphicsDeviceHelper;
 import utils.slickframe.HotspotManager;
 import utils.slickframe.SlickFrame;
 import atari.cartridge.Cartridge;
 
-public class OldScreenWindow extends SlickFrame implements DisplayCanvas {
+public class OldScreenWindow extends SlickFrame implements ScreenDisplay {
 
 	public OldScreenWindow(OldScreen screen) throws HeadlessException {
 		super();

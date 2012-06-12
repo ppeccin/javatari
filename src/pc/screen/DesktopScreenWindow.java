@@ -46,13 +46,13 @@ import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
-public class ScreenWindow extends SlickFrame implements DisplayCanvas {
+public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 
-	public ScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) throws HeadlessException {
+	public DesktopScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) throws HeadlessException {
 		super();
 		screen = new Screen(videoSignal, cartridgeSocket);
-		consolePanelWindow = new FloatingConsolePanel(this, screen, controlsSocket);
-		fullWindow = new ScreenFullWindow(this);
+		consolePanelWindow = new DesktopConsolePanel(this, screen, controlsSocket);
+		fullWindow = new DesktopScreenFullWindow(this);
 		screen.setControlInputComponent(this);
 		consoleControls = new AWTConsoleControls(controlsSocket, screen, this);
 		setup();
@@ -141,9 +141,9 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 		if (getSize().equals(winDim)) return;
 		// Maintain the window center
 		int centerX = getX() + getWidth() / 2;
-		int centerY = getY() + (getHeight() + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int centerY = getY() + (getHeight() + DesktopConsolePanel.EXPANDED_HEIGHT) / 4;
 		int newX = centerX - winDim.width / 2;
-		int newY = centerY - (winDim.height + FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int newY = centerY - (winDim.height + DesktopConsolePanel.EXPANDED_HEIGHT) / 4;
 		setBounds(newX, newY, winDim.width, winDim.height);
 		// validate();
 		// repaint();
@@ -153,7 +153,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public void canvasCenter() {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		int x = (tk.getScreenSize().width - getWidth()) / 2;
-		int y = (tk.getScreenSize().height - getHeight() - FloatingConsolePanel.EXPANDED_HEIGHT) / 4;
+		int y = (tk.getScreenSize().height - getHeight() - DesktopConsolePanel.EXPANDED_HEIGHT) / 4;
 		setLocation(x, y);
 	}
 
@@ -205,7 +205,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	private void setup() {
 		addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
-				if (e.getComponent() == ScreenWindow.this) positionCanvas();
+				if (e.getComponent() == DesktopScreenWindow.this) positionCanvas();
 			}});		
 		getRootPane().setTransferHandler(new ROMDropTransferHandler());
 		addHotspots();
@@ -388,7 +388,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	
 	private Canvas canvas;
 	
-	private ScreenFullWindow fullWindow;
+	private DesktopScreenFullWindow fullWindow;
 	private boolean fullScreen = false;
 		
 	private BufferStrategy bufferStrategy;
@@ -400,7 +400,7 @@ public class ScreenWindow extends SlickFrame implements DisplayCanvas {
 	public BufferedImage logoBar, favicon, icon64, icon32;	// Other windows use these
 	public static final String BASE_TITLE = "javatari";
 
-	public FloatingConsolePanel consolePanelWindow;
+	public DesktopConsolePanel consolePanelWindow;
 	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
 

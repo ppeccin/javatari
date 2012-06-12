@@ -13,10 +13,8 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowStateListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -31,9 +29,9 @@ import utils.slickframe.MousePressAndMotionListener;
 import utils.slickframe.SlickFrame;
 import atari.controls.ConsoleControlsSocket;
 
-public class FloatingConsolePanel extends SlickFrame {
+public class DesktopConsolePanel extends SlickFrame {
 
-	public FloatingConsolePanel(ScreenWindow masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
+	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
@@ -45,7 +43,7 @@ public class FloatingConsolePanel extends SlickFrame {
 	private void buildGUI() {
 		loadImages();
 		setLayout(new BorderLayout());
-		setTitle(ScreenWindow.BASE_TITLE + " - Console Panel");
+		setTitle(DesktopScreenWindow.BASE_TITLE + " - Console Panel");
 		setIconImages(Arrays.asList(new Image[] { masterWindow.icon64, masterWindow.icon32, masterWindow.favicon }));
 		addGlassPane();
 		setSize(desiredSize());
@@ -66,23 +64,26 @@ public class FloatingConsolePanel extends SlickFrame {
 	}
 
 	private void addMasterWindowListeners() {
+		masterWindow.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowIconified(WindowEvent e) {
+				if (isVisible()) setVisible(false);
+			}
+			@Override
+			public void windowActivated(WindowEvent e) {
+				if (!userClosed) setVisible(true); 	// Will ring to front
+			}
+		});
 		masterWindow.addComponentListener(new ComponentAdapter() {
+			@Override
 			public void componentMoved(ComponentEvent e) {
 				trackMasterWindow();
-			}});
-		masterWindow.addComponentListener(new ComponentAdapter() {
+			}
+			@Override
 			public void componentResized(ComponentEvent e) {
 				trackMasterWindow();
-			}});
-		masterWindow.addFocusListener(new FocusAdapter() {  
-			public void focusGained(FocusEvent e) {
-				if (!isVisible()) setVisible(true);
-			}});
-		masterWindow.addWindowStateListener(new WindowStateListener() {
-			public void windowStateChanged(WindowEvent e) {
-				if (masterWindow.getState() == ICONIFIED && isVisible()) setVisible(false);
-				if (masterWindow.getState() == NORMAL && !isVisible()) setVisible(true);
-		}});
+			}
+		});
 	}
 
 	private void loadImages() {
@@ -102,11 +103,12 @@ public class FloatingConsolePanel extends SlickFrame {
 				setFocusable(false);
 				setFocusableWindowState(false);
 			}
-			FloatingConsolePanel.super.setVisible(state);
+			DesktopConsolePanel.super.setVisible(state);
 			if (state) {
+				userClosed = false;
 				setState(Frame.NORMAL);
 				setSize(desiredSize());
-				toFront(); toFront();
+				toFront();
 				masterWindow.toFront();
 				masterWindow.requestFocus();
 			}
@@ -131,6 +133,7 @@ public class FloatingConsolePanel extends SlickFrame {
 			new Runnable() { @Override public void run() {
 				if (!docked) {
 					setVisible(false);
+					userClosed = true;
 					SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
 						toggleRetract();
 					}});
@@ -224,11 +227,12 @@ public class FloatingConsolePanel extends SlickFrame {
 	}
 	
 
-	private final ScreenWindow masterWindow;
+	private final DesktopScreenWindow masterWindow;
 	private final ConsolePanel consolePanel;
 	
 	private boolean retracted = false;
 	private boolean docked = false;
+	private boolean userClosed = true;
 	private Point dockedLocation;
 	private Thread sizeAdjustThread;
 	private HotspotManager hotspots;

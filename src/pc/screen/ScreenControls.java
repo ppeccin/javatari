@@ -10,9 +10,9 @@ import java.util.Map;
 
 import pc.screen.Screen.Control;
 
-public class ScreenControlsAdapter implements KeyListener {
+public class ScreenControls implements KeyListener {
 	
-	public ScreenControlsAdapter(Screen screen) {
+	public ScreenControls(Screen screen) {
 		this.screen = screen;
 		init();
 	}

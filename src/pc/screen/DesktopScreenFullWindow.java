@@ -18,9 +18,9 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-public class ScreenFullWindow extends JFrame implements DisplayCanvas {
+public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 
-	public ScreenFullWindow(ScreenWindow window) throws HeadlessException {
+	public DesktopScreenFullWindow(DesktopScreenWindow window) throws HeadlessException {
 		super();
 		this.window = window;
 		init();
@@ -34,7 +34,7 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 		getContentPane().setBackground(Color.BLACK);
 		getContentPane().setIgnoreRepaint(true);
 		setIconImages(Arrays.asList(new Image[] { window.icon64, window.icon32, window.favicon }));
-		setTitle(ScreenWindow.BASE_TITLE + " - Fullwindow");
+		setTitle(DesktopScreenWindow.BASE_TITLE + " - Fullwindow");
 	}
 
 	@Override
@@ -168,7 +168,7 @@ public class ScreenFullWindow extends JFrame implements DisplayCanvas {
 	}
 
 	
-	private final ScreenWindow window;
+	private final DesktopScreenWindow window;
 	private int canvasOriginX;
 	private int canvasOriginY;
 	private Dimension canvasEffectiveSize;

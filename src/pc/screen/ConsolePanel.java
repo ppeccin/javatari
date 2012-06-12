@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import utils.GraphicsDeviceHelper;
 import utils.slickframe.HotspotManager;
@@ -39,6 +38,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		this.consoleControlsSocket.addRedefinitionListener(this);
 		buildGUI();
 		addHotspots(forwardListener);
+		updateVisibleControlsState();
 	}
 
 	@Override
@@ -67,6 +67,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		setSize(size);
 		setPreferredSize(size);
 		setMaximumSize(size);
+		setFocusable(false);
 	}
 
 	private void loadImages() {
@@ -83,77 +84,53 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		}
 	}
 
-	@Override
-	public void setVisible(final boolean state) {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			if (!isVisible()) {
-				setFocusable(false);
-			}
-			updateVisibleControlsState();
-			ConsolePanel.super.setVisible(state);
-			if (state) {
-				setSize(desiredSize());
-			}
-		}});
-	}
-
 	private void addHotspots(MousePressAndMotionListener forwardListener) {
 		hotspots = forwardListener != null ?  new HotspotManager(this, forwardListener) : new HotspotManager(this);
 		hotspots.addHotspot(
 			new Rectangle(31, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.POWER, true);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(95, 52 - 137, 24, 46), 
 			new Runnable() { @Override public void run() { 
 				consoleControlsSocket.controlStateChanged(Control.BLACK_WHITE, true);
-				updateVisibleControlsState(); 
 			}});
 		hotspots.addHotspot(
 			new Rectangle(351, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.SELECT, true);
-				updateVisibleControlsState();
 			}},
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.SELECT, false);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(414, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.RESET, true);
-				updateVisibleControlsState();
 			}},
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.RESET, false);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(161, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.DIFFICULTY0, true);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(274, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
 				consoleControlsSocket.controlStateChanged(Control.DIFFICULTY1, true);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(160, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
 				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_FILE, true);
-				updateVisibleControlsState();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(150 + 85, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
 				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_URL, true);
-				updateVisibleControlsState();
 			}});
 	}
 

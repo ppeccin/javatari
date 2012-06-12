@@ -5,7 +5,7 @@ package main;
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
 import pc.savestate.FileSaveStateMedia;
-import pc.screen.ScreenWindow;
+import pc.screen.DesktopScreenWindow;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
@@ -21,7 +21,7 @@ public class TestStandalone {
 		final Console console = new Console();
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final ScreenWindow screen = new ScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final DesktopScreenWindow screen = new DesktopScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
 		final Speaker speaker = new Speaker(console.audioOutput());	
 		new FileSaveStateMedia(console.saveStateSocket());  
 		

@@ -48,7 +48,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		init();
 	}
 
-	public void setCanvas(DisplayCanvas canvas) {
+	public void setCanvas(ScreenDisplay canvas) {
 		this.canvas = canvas;
 		float scX = canvas.canvasDefaultOpenningScaleX(displayWidth, displayHeight);
 		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
@@ -220,7 +220,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 	private void init() {
-		screenControls = new ScreenControlsAdapter(this);
+		screenControls = new ScreenControls(this);
 		prepareImages();	 	
 		videoSignal.connectMonitor(this);
 		adjustToVideoSignal();
@@ -560,7 +560,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public String newDataMonitor = "nextLineMonitor";		// Used only for synchronization
 	public String refreshMonitor = "refreshMonitor";		// Used only for synchronization
 
-	private ScreenControlsAdapter screenControls;
+	private ScreenControls screenControls;
 
 	private boolean cartridgeChangeEnabled = CARTRIDGE_CHANGE;
 	
@@ -602,7 +602,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	
 	private int line = 0;
 
-	private DisplayCanvas canvas;
+	private ScreenDisplay canvas;
 
 	private BufferedImage frameImage;
 	

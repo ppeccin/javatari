@@ -40,7 +40,7 @@ import pc.cartridge.FileROMChooser;
 import pc.cartridge.URLROMChooser;
 import pc.controls.AWTConsoleControls;
 import pc.screen.ROMTransferHandlerUtil;
-import pc.screen.DisplayCanvas;
+import pc.screen.ScreenDisplay;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import atari.cartridge.Cartridge;
@@ -662,7 +662,7 @@ public class OldScreen implements ClockDriven, VideoMonitor {
 	private OldScreenWindow window;
 	private OldScreenFullWindow fullWindow;
 
-	private DisplayCanvas canvas;
+	private ScreenDisplay canvas;
 
 	private BufferedImage frameImage;
 	

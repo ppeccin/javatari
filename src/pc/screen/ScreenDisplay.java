@@ -6,7 +6,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 
-public interface DisplayCanvas {
+public interface ScreenDisplay {
 	
 	public void canvasCenter();
 	

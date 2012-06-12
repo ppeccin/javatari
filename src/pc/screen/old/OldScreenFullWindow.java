@@ -16,9 +16,9 @@ import java.lang.reflect.Constructor;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import pc.screen.DisplayCanvas;
+import pc.screen.ScreenDisplay;
 
-public class OldScreenFullWindow extends JFrame implements DisplayCanvas {
+public class OldScreenFullWindow extends JFrame implements ScreenDisplay {
 
 	public OldScreenFullWindow() throws HeadlessException {
 		super();
