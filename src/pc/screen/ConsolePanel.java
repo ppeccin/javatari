@@ -26,7 +26,7 @@ import atari.controls.ConsoleControlsSocket;
 
 public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
-	public ConsolePanel(Screen screen, ConsoleControlsSocket controlsSocket) {
+	public ConsolePanel(ConsoleControlsSocket controlsSocket, Screen screen) {
 		this(screen, controlsSocket, null);
 	}
 	

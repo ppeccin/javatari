@@ -28,7 +28,7 @@ public class MultiplayerClient {
 		
 		// Automatically adjust interface for Multiplayer Client operation
 		screen.consoleControls.p1ControlsMode(true);
-		screen.screen.cartridgeChangeEnabled(false);
+		screen.screen.setCartridgeChangeEnabled(false);
 
 		// Turn AV monitors on
 		screen.powerOn();                

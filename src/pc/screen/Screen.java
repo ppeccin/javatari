@@ -55,13 +55,33 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvasCenter();
 	}
 	
-	public void setControlInputComponent(Component component) {
-		screenControls.setInputComponent(component);
+	public void setFixedSize(boolean fixed) {
+		fixedSizeMode = fixed;
+	}
+	
+	public boolean isFixedSize() {
+		return fixedSizeMode;
+	}
+
+	public void setCartridgeChangeEnabled(boolean state) {
+		cartridgeChangeEnabled = state;
+	}
+
+	public boolean isCartridgeChangeEnabled() {
+		return cartridgeChangeEnabled;
+	}
+
+	public void addControlInputComponent(Component... inputs) {
+		screenControls.addInputComponents(inputs);
 	}
 	
 	public void powerOn() {
 		paintLogo();
 		clock.go();
+	}
+
+	public void powerOff() {
+		clock.pause();
 	}
 
 	@Override
@@ -124,21 +144,13 @@ public class Screen implements ClockDriven, VideoMonitor {
 		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
 	}
 
-	public void cartridgeChangeEnabled(boolean state) {
-		cartridgeChangeEnabled = state;
-	}
-
-	public boolean isCartridgeChangeEnabled() {
-		return cartridgeChangeEnabled;
-	}
-
 	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
 		cartridgeSocket.insert(cart, autoPower);
+		canvas.canvasRequestFocus();
 		// TODO Aqui mandava setar o foco. Tb precisa testar DnD ainda
 	};
 
 	private boolean newFrame() {
-		// TODO Aqui mandava mostrar quantidade de linhas em caso de Debug
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
 		// Copy only the contents needed (displayWidth x displayHight) to the frontBuffer
 		arrayCopyWithStride(
@@ -442,6 +454,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvas.canvasLeaveFullscreen();
 		Cartridge cart = FileROMChooser.chooseFile();
 		if (cart != null) cartridgeInsert(cart, autoPower);
+		else canvas.canvasRequestFocus();
+
 	}
 
 	private void loadCartridgeFromURL(boolean autoPower) {
@@ -449,6 +463,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 		canvas.canvasLeaveFullscreen();
 		Cartridge cart = URLROMChooser.chooseURL();
 		if (cart != null) cartridgeInsert(cart, autoPower);
+		else canvas.canvasRequestFocus();
 	}
 
 	private void loadCartridgeEmpty() {
@@ -519,6 +534,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 				setDisplayOrigin(displayOriginX, displayOriginYPct + 0.5); break;
 			case ORIGIN_Y_PLUS:
 				setDisplayOrigin(displayOriginX, displayOriginYPct - 0.5); break;
+			case SIZE_DEFAULT:
+				setDisplayDefaultSize(); break;
+		}
+		if (fixedSizeMode) return;
+		switch(control) {
 			case WIDTH_MINUS:
 				setDisplaySize(displayWidth - 1, displayHeightPct); break;
 			case WIDTH_PLUS:		
@@ -539,8 +559,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 				setDisplayScaleDefaultAspect(displayScaleY - 1); break;
 			case SIZE_PLUS:
 				setDisplayScaleDefaultAspect(displayScaleY + 1); break;
-			case SIZE_DEFAULT:
-				setDisplayDefaultSize(); break;
 		}
 	}
 
@@ -562,6 +580,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	private ScreenControls screenControls;
 
+	private boolean fixedSizeMode = FIXED_SIZE;
 	private boolean cartridgeChangeEnabled = CARTRIDGE_CHANGE;
 	
 	private final VideoSignal videoSignal;
@@ -638,6 +657,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public static final float    IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
 	public static final float    SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
+	private static final boolean FIXED_SIZE = Parameters.SCREEN_FIXED_SIZE;
 
 	public static final long serialVersionUID = 0L;
 

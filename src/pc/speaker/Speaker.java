@@ -24,10 +24,9 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 	public Speaker(AudioSignal signal, double fps) {
 		this.signal = signal;
 		this.fps = fps;
-		init();
 	}
 
-	public void init() {
+	public void getLine() {
 		AudioFormat audioFormat = signal.getAudioFormat();
 		try {
 			dataLine = AudioSystem.getSourceDataLine(audioFormat);
@@ -45,10 +44,17 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 	}
 
 	public void powerOn(){
+		if (dataLine == null) getLine();
 		if (dataLine == null) return;
 		signal.connectMonitor(this);
 		dataLine.start();
 		clock.go();
+	}
+
+	public void powerOff(){
+		if (dataLine == null) return;
+		dataLine.stop();
+		clock.pause();
 	}
 
 	@Override

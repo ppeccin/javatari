@@ -125,6 +125,7 @@ public class Parameters {
 			val = props.getProperty("SCREEN_INTERM_FRAME_ACCELERATION"); if (val != null) SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_SCANLINES_ACCELERATION"); if (val != null) SCREEN_SCANLINES_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_FIXED_SIZE"); if (val != null) SCREEN_FIXED_SIZE = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FULLSCREEN"); if (val != null) SCREEN_FULLSCREEN = Boolean.valueOf(val);
 
 			val = props.getProperty("SPEAKER_DEFAULT_FPS"); if (val != null) SPEAKER_DEFAULT_FPS = Double.valueOf(val);
@@ -194,6 +195,7 @@ public class Parameters {
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
 	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
+	public static boolean 	SCREEN_FIXED_SIZE = false;
 	public static boolean 	SCREEN_FULLSCREEN = false;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)

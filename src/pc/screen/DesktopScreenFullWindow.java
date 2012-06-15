@@ -119,6 +119,11 @@ public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 	}
 
 	@Override
+	public void canvasRequestFocus() {
+		requestFocus();
+	}
+
+	@Override
 	public void canvasLeaveFullscreen() {
 		window.canvasLeaveFullscreen();
 	}

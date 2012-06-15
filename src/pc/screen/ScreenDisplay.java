@@ -26,7 +26,8 @@ public interface ScreenDisplay {
 	
 	public float canvasDefaultOpenningScaleX(int displayWidth, int displayHeight);
 	
-	public void canvasLeaveFullscreen();
+	public void canvasRequestFocus();
 
+	public void canvasLeaveFullscreen();
 		
 }

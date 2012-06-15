@@ -17,10 +17,9 @@ public class ScreenControls implements KeyListener {
 		init();
 	}
 
-	public void setInputComponent(Component newInput) {
-		if (inputComponent != null) inputComponent.removeKeyListener(this);
-		inputComponent = newInput;	
-		inputComponent.addKeyListener(this);
+	public void addInputComponents(Component... inputs) {
+		for (int i = 0; i < inputs.length; i++)
+			inputs[i].addKeyListener(this);
 	}
 	
 	private void init() {
@@ -101,7 +100,6 @@ public class ScreenControls implements KeyListener {
 
 
 	private Screen screen; 
-	private Component inputComponent;
 	
 	private final Map<Integer, Control> keyCodeMap = new HashMap<Integer, Control>();
 	private final Map<Integer, Control> keyShiftCodeMap = new HashMap<Integer, Control>();

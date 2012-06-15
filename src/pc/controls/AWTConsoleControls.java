@@ -15,14 +15,17 @@ import atari.controls.ConsoleControlsInput;
 
 public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	
-	public AWTConsoleControls(ConsoleControlsInput input, VideoMonitor monitor, Component... sourceComponents) {
+	public AWTConsoleControls(ConsoleControlsInput input, VideoMonitor monitor) {
 		videoMonitor = monitor;
 		consoleControlsInput = input;
-		for (int i = 0; i < sourceComponents.length; i++) {
-			sourceComponents[i].setFocusTraversalKeysEnabled(false);
-			sourceComponents[i].addKeyListener(this);
-		}
 		init();
+	}
+
+	public void addInputComponents(Component... inputs) {
+		for (int i = 0; i < inputs.length; i++) {
+			inputs[i].setFocusTraversalKeysEnabled(false);
+			inputs[i].addKeyListener(this);
+		}
 	}
 
 	public void p1ControlsMode(boolean state) {
