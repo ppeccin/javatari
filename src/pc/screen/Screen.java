@@ -147,7 +147,6 @@ public class Screen implements ClockDriven, VideoMonitor {
 	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
 		cartridgeSocket.insert(cart, autoPower);
 		canvas.canvasRequestFocus();
-		// TODO Aqui mandava setar o foco. Tb precisa testar DnD ainda
 	};
 
 	private boolean newFrame() {
@@ -304,10 +303,14 @@ public class Screen implements ClockDriven, VideoMonitor {
 			int h = ces.height;
 			canvasGraphics.setBackground(Color.BLACK);
 			canvasGraphics.clearRect(0, 0, w, h);
+			int lw = logoIcon.getWidth(null);
+			int lh = logoIcon.getHeight(null);
+			float r = h < lh ? (float)h / lh : 1;
+			lw *= r; lh *= r;
 			canvasGraphics.drawImage(
-				logoIcon, 
-				(w - logoIcon.getWidth(null)) / 2, 
-				(h - logoIcon.getHeight(null)) / 2,
+				logoIcon,
+				(w - lw) / 2, (h - lh) / 2,
+				lw, lh,
 				null
 			);
 			paintOSD(canvasGraphics);

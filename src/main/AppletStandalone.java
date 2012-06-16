@@ -31,7 +31,7 @@ public class AppletStandalone extends JApplet {
 
 		// Create components
 		console = new Console();
-		screen = new ScreenWithConsolePanel(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket(), showConsolePanel);
+		screen = new ScreenWithConsolePanel(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket(), true, showConsolePanel);
 		speaker = new Speaker(console.audioOutput());
 		new FileSaveStateMedia(console.saveStateSocket());
 		
