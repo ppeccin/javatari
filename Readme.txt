@@ -2,6 +2,14 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
+Version 1.10
+============
+- Applet deployment support
+- Drag and drop of ROM links directly to Applet
+ 
+
+Previous Versions:
+
 Version 1.09
 ============
 - Drag&Drop and Copy&Paste of ROM files or URLs
@@ -9,9 +17,6 @@ Version 1.09
    no need to download and save to disk to open. Just drag the URL
 - Fullscreen UI button
  
-
-Previous Versions:
-
 Version 1.08
 ============
 - Another change in Cartridge loading functions
