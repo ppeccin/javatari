@@ -30,6 +30,7 @@ public class AppletStandalone extends JApplet {
 		String hidePanelParam = getParameter("HIDE_CONSOLE_PANEL");
 		boolean showConsolePanel = hidePanelParam == null || !hidePanelParam.toUpperCase().equals("TRUE");
 		String backgroundParam = getParameter("BACKGROUND");
+		System.out.println("Background color: " + backgroundParam);
 		Integer backColor = backgroundParam != null ? Integer.parseInt(backgroundParam) : null;
 
 		// Create components
@@ -55,6 +56,8 @@ public class AppletStandalone extends JApplet {
 	 	// If a Cartridge is provided, insert it
 		if (cart != null)
 			console.cartridgeSocket().insert(cart, true);
+		
+		screen.requestFocus();
 	}
 	
 	public void stop() {

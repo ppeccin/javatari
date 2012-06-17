@@ -24,7 +24,7 @@ public class FileSaveStateMedia implements SaveStateMedia {
 	public boolean save(int slot, ConsoleState state) {
 		try {
 			// Creates the savestate directory if needed
-			File dir = new File(BASE_DIR);
+			File dir = new File(savesDirectory());
 			if (!dir.isDirectory())
 				dir.mkdir();
 			FileOutputStream file = null;
@@ -32,7 +32,7 @@ public class FileSaveStateMedia implements SaveStateMedia {
 				ByteArrayOutputStream data = new ByteArrayOutputStream();
 				ObjectOutputStream stream = new ObjectOutputStream(data);
 				stream.writeObject(state);
-				file = new FileOutputStream(BASE_DIR + File.separator + "save" + slot + ".sav");
+				file = new FileOutputStream(savesDirectory() + File.separator + "save" + slot + ".sav");
 				file.write(data.toByteArray());
 			} finally {
 				if (file != null) file.close();
@@ -49,7 +49,7 @@ public class FileSaveStateMedia implements SaveStateMedia {
 		try{
 			FileInputStream file = null;
 			try{
-				file = new FileInputStream(BASE_DIR + File.separator + "save" + slot + ".sav");
+				file = new FileInputStream(savesDirectory() + File.separator + "save" + slot + ".sav");
 				byte[] data = new byte[file.available()];
 				file.read(data);
 				ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(data));
@@ -62,6 +62,21 @@ public class FileSaveStateMedia implements SaveStateMedia {
 		}
 		return null;
 	}
+
+	private String savesDirectory() {
+		if (savesDirectory != null) return savesDirectory;
+		try{
+			String userHome = System.getProperty("user.home");
+			if (userHome != null && !userHome.isEmpty()) 
+				return savesDirectory = userHome + File.separator + BASE_DIR;
+		} catch(SecurityException ex) {
+			// No permissions... Ignore and use default directory
+		}
+		return savesDirectory = BASE_DIR;
+	}
+	
+	
+	private String savesDirectory;
 	
 	private static final String BASE_DIR = "javatarisaves";
 
