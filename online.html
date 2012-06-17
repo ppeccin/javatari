@@ -40,6 +40,8 @@
 		<div id="header_wrap" class="outer">
         	<div class="inner">
 				<a id="forkme_banner" href="https://github.com/ppeccin/javatari">Source Code on GitHub</a>
+
+				<a href="http://javatari.org">
 				<img src="images/logo.png" alt="" 
 					style="
 						position: relative;
@@ -53,7 +55,9 @@
 						padding: 0px;
 					"
 				/>
-
+				</a>
+				
+				<a href="http://javatari.org">
 				<img src="images/logotextonly.png" alt="" 
 					style="
 						position: relative;
@@ -67,6 +71,7 @@
 						padding: 0px;
 					"
 				/>
+				</a>
 
 				<h2 id="project_tagline">A multiplayer Atari 2600 emulator written in pure Java. </br>No external libs.</h2>
 				<div id="downloads">
@@ -80,7 +85,10 @@
 		<div id="main_content_wrap" class="outer">
 			<div id="main_content" class="inner">
 
-				<div style="margin: 8px auto; width: 660px;">
+				<h4 align="center" style="color: #777; margin-top: 10px;">Load ROMs from disk with F5 or simply drag & drop ROM files or links from other websites!</h4>
+
+				<div style="margin: 5px auto; width: 655px;">
+
 					<applet width="654" height="685" 
 						code="main.AppletStandalone"
 						_archive="files/javatari110.jar" >
@@ -88,7 +96,43 @@
 						<param name="background" value="15921906">
 						<_param name="image" value="files/javatari-splash.jpeg">
 					</applet>
+
 			   	</div>
+
+				<h3>Controls</h3>
+				<p>
+(In addition to the UI buttons)</br>
+</br>
+P1 Controls:  Arrow Keys / Space: Fire</br>
+P2 Controls:  F,T,G,H / A: Fire</br>
+Alt + J:      Swap P1&lt;&gt;P2 Controls</br>
+Alt + L:      Connect/Disconnect Paddles</br>
+</br>
+Alt + ENTER:   Toggle FullScreen</br>
+Alt + R:       Toggle CRT modes</br>
+Alt + Q:       Toggle Filter</br>
+Alt + D:       Toggle Debug modes</br>
+Alt + C:       Toggle Collisions</br>
+Alt + V:       Toggle NTSC/PAL</br>
+Alt + P:       Toggle Pause</br>
+Alt + F:       Next Frame (during Pause)</br>
+</br>
+F5:            Load Cartridge from file</br>
+F6:            Load Cartridge from URL</br>
+F7:            Remove Cartridge</br>
+ALT + F5/F6:   Load Cartridge without auto power on/off</br>
+Also Drag&Drop and Copy&Paste of ROM files and URLs</br>
+</br>
+ALT + F1:      Fry Console (quickly power off/on)</br>
+</br>
+Ctr + 1-0:     Save State</br>
+Alt + 1-0:     Load State</br>
+</br>
+Shft + Arrows: Screen Size</br>
+Backspace:     Default Screen Size</br>
+</br>
+TAB:           Fast Speed</br>
+				</p>
 
 			</div>
 		</div>

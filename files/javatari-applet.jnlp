@@ -7,7 +7,6 @@
 		<homepage href="http://javatari.org" />
 		<icon href="javatari-icon.png" />
 		<icon kind="shortcut" href="javatari-icon.png" />
-		<icon kind="splash" href="javatari-splash.png" />
 	</information>
 	<update check="always" policy="always" />
  	<security>
