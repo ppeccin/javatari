@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.util.ArrayList;
 
 import javax.swing.JApplet;
@@ -28,6 +29,8 @@ public class AppletStandalone extends JApplet {
 
 		String hidePanelParam = getParameter("HIDE_CONSOLE_PANEL");
 		boolean showConsolePanel = hidePanelParam == null || !hidePanelParam.toUpperCase().equals("TRUE");
+		String backgroundParam = getParameter("BACKGROUND");
+		Integer backColor = backgroundParam != null ? Integer.parseInt(backgroundParam) : null;
 
 		// Create components
 		console = new Console();
@@ -35,8 +38,9 @@ public class AppletStandalone extends JApplet {
 		speaker = new Speaker(console.audioOutput());
 		new FileSaveStateMedia(console.saveStateSocket());
 		
-		// Add the screen to the Applet
+		// Add the screen to the Applet and set the background color
 		setContentPane(screen);
+		if (backColor != null) setBackground(new Color(backColor));
 		
 	 	// If a Cartridge is provided, read it
 		if (Parameters.mainArg != null)
