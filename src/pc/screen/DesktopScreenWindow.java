@@ -313,6 +313,11 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 				exit();
 			}});
 		hotspots.addHotspot(
+			new Rectangle(-99 -22, -24, 17, 19),
+			new Runnable() { @Override public void run() {
+				openSettings();
+			}});
+		hotspots.addHotspot(
 			new Rectangle(-74 -22, -20, 13, 15), 
 			new Runnable() { @Override public void run() { 
 				setState(ICONIFIED);
@@ -358,6 +363,11 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 		}
 	}
 	
+	private void openSettings() {
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(null);
+		settingsDialog.setVisible(true);
+	}
+
 	private void exit() {
 		// Close program
 		Terminator.terminate();
@@ -401,6 +411,8 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 		
 	private BufferStrategy bufferStrategy;
 	private HotspotManager hotspots;
+
+	private SettingsDialog settingsDialog;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
 		bottomBar, bottomLeftBar, bottomRightBar, logoBar;

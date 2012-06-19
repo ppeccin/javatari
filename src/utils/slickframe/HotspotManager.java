@@ -102,7 +102,7 @@ public class HotspotManager {
 	}
 	
 	// Used for debugging
-	protected void paintHotspots(Graphics g) {
+	public void paintHotspots(Graphics g) {
 		g.setColor(Color.YELLOW);
 		for (Iterator<HotspotAction> it = hotspots.iterator(); it.hasNext();) {
 			HotspotAction hotspot = (HotspotAction) it.next();

@@ -255,6 +255,16 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
 			new Runnable() { @Override public void run() { 
 			}});
+		hotspots.addHotspot(
+				new Rectangle(-29, -24, 17, 19),
+				new Runnable() { @Override public void run() {
+					openSettings();
+				}});
+	}
+
+	private void openSettings() {
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(null);
+		settingsDialog.setVisible(true);
 	}
 
 	private void loadImages() {
@@ -315,6 +325,8 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	
 	private BufferStrategy bufferStrategy;
 	private HotspotManager hotspots;
+
+	private SettingsDialog settingsDialog;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
 		bottomBar, bottomLeftBar, bottomLeftBarNoPower, bottomRightBar, bottomRightBarFixedSize, logoBar;
