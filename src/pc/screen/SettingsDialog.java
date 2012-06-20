@@ -3,10 +3,15 @@ package pc.screen;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URI;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,8 +26,8 @@ import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+
+import parameters.Parameters;
 
 public class SettingsDialog extends JDialog {
 
@@ -62,7 +67,6 @@ public class SettingsDialog extends JDialog {
 		setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
 		setModal(true);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(SettingsDialog.class.getResource("/pc/screen/images/Favicon.png")));
-		setAlwaysOnTop(true);
 		setTitle("javatari");
 		setResizable(false);
 		setSize(491, 324);
@@ -77,6 +81,7 @@ public class SettingsDialog extends JDialog {
 			contentPanel.add(tabbedPane, BorderLayout.CENTER);
 			{
 				JPanel panel = new JPanel();
+				panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				panel.setBackground(UIManager.getColor("Panel.background"));
 				tabbedPane.addTab("About", null, panel, null);
 				panel.setLayout(null);
@@ -114,11 +119,21 @@ public class SettingsDialog extends JDialog {
 					panel.add(lblOfficialHomepage);
 				}
 				{
-					JLabel lblHttpjavatariotg = new JLabel("http://javatari.org");
+					JButton lblHttpjavatariotg = new JButton("http://javatari.org");
+					lblHttpjavatariotg.setFocusPainted(false);
+					lblHttpjavatariotg.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							openOfficialWebPage();
+						}
+					});
+					lblHttpjavatariotg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					lblHttpjavatariotg.setBorder(null);
+					lblHttpjavatariotg.setContentAreaFilled(false);
+					lblHttpjavatariotg.setBorderPainted(false);
 					lblHttpjavatariotg.setHorizontalAlignment(SwingConstants.CENTER);
 					lblHttpjavatariotg.setForeground(Color.BLUE);
 					lblHttpjavatariotg.setFont(new Font("Tahoma", Font.PLAIN, 14));
-					lblHttpjavatariotg.setBounds(254, 139, 137, 21);
+					lblHttpjavatariotg.setBounds(267, 139, 111, 17);
 					panel.add(lblHttpjavatariotg);
 				}
 				{
@@ -136,7 +151,7 @@ public class SettingsDialog extends JDialog {
 				{
 					JLabel lblNewLabel = new JLabel("");
 					lblNewLabel.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
-					lblNewLabel.setBounds(60, 72, 75, 90);
+					lblNewLabel.setBounds(63, 72, 75, 90);
 					panel.add(lblNewLabel);
 				}
 				
@@ -147,7 +162,7 @@ public class SettingsDialog extends JDialog {
 				txtUp.setFont(new Font("Tahoma", Font.PLAIN, 11));
 				txtUp.setHorizontalAlignment(SwingConstants.CENTER);
 				txtUp.setText("UP");
-				txtUp.setBounds(77, 50, 40, 20);
+				txtUp.setBounds(80, 50, 40, 20);
 				panel.add(txtUp);
 				txtUp.setColumns(10);
 				
@@ -159,7 +174,7 @@ public class SettingsDialog extends JDialog {
 				txtRight.setText("RIGHT");
 				txtRight.setHorizontalAlignment(SwingConstants.CENTER);
 				txtRight.setColumns(10);
-				txtRight.setBounds(134, 111, 40, 20);
+				txtRight.setBounds(137, 111, 40, 20);
 				panel.add(txtRight);
 				
 				txtLeft = new JTextField();
@@ -170,7 +185,7 @@ public class SettingsDialog extends JDialog {
 				txtLeft.setText("LEFT");
 				txtLeft.setHorizontalAlignment(SwingConstants.CENTER);
 				txtLeft.setColumns(10);
-				txtLeft.setBounds(19, 111, 40, 20);
+				txtLeft.setBounds(22, 111, 40, 20);
 				panel.add(txtLeft);
 				
 				txtDown = new JTextField();
@@ -181,31 +196,31 @@ public class SettingsDialog extends JDialog {
 				txtDown.setText("DOWN");
 				txtDown.setHorizontalAlignment(SwingConstants.CENTER);
 				txtDown.setColumns(10);
-				txtDown.setBounds(77, 164, 40, 20);
+				txtDown.setBounds(80, 164, 40, 20);
 				panel.add(txtDown);
 				
 				JLabel lblRight = new JLabel("Right");
 				lblRight.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblRight.setHorizontalAlignment(SwingConstants.CENTER);
-				lblRight.setBounds(135, 95, 38, 14);
+				lblRight.setBounds(138, 95, 38, 14);
 				panel.add(lblRight);
 				
 				JLabel lblLeft = new JLabel("Left");
 				lblLeft.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblLeft.setHorizontalAlignment(SwingConstants.CENTER);
-				lblLeft.setBounds(21, 95, 36, 14);
+				lblLeft.setBounds(24, 95, 36, 14);
 				panel.add(lblLeft);
 				
 				JLabel lblDown = new JLabel("Down");
 				lblDown.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblDown.setHorizontalAlignment(SwingConstants.CENTER);
-				lblDown.setBounds(78, 185, 38, 14);
+				lblDown.setBounds(81, 185, 38, 14);
 				panel.add(lblDown);
 				
 				JLabel lblUp = new JLabel("Up");
 				lblUp.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblUp.setHorizontalAlignment(SwingConstants.CENTER);
-				lblUp.setBounds(78, 34, 38, 14);
+				lblUp.setBounds(81, 34, 38, 14);
 				panel.add(lblUp);
 				
 				txtSpace = new JTextField();
@@ -216,25 +231,25 @@ public class SettingsDialog extends JDialog {
 				txtSpace.setText("SPC");
 				txtSpace.setHorizontalAlignment(SwingConstants.CENTER);
 				txtSpace.setColumns(10);
-				txtSpace.setBounds(19, 62, 40, 20);
+				txtSpace.setBounds(22, 62, 40, 20);
 				panel.add(txtSpace);
 				
 				JLabel lblFire = new JLabel("Fire 1");
 				lblFire.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblFire.setHorizontalAlignment(SwingConstants.CENTER);
-				lblFire.setBounds(20, 46, 38, 14);
+				lblFire.setBounds(23, 46, 38, 14);
 				panel.add(lblFire);
 				
 				JLabel lblPlayer = new JLabel("Player 1");
 				lblPlayer.setFont(new Font("Tahoma", Font.BOLD, 14));
 				lblPlayer.setHorizontalAlignment(SwingConstants.CENTER);
-				lblPlayer.setBounds(60, 9, 74, 20);
+				lblPlayer.setBounds(63, 9, 74, 20);
 				panel.add(lblPlayer);
 				
 				JLabel lblFire_1 = new JLabel("Fire 2");
 				lblFire_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblFire_1.setHorizontalAlignment(SwingConstants.CENTER);
-				lblFire_1.setBounds(135, 46, 38, 14);
+				lblFire_1.setBounds(138, 46, 38, 14);
 				panel.add(lblFire_1);
 				
 				txtIns = new JTextField();
@@ -242,10 +257,10 @@ public class SettingsDialog extends JDialog {
 				txtIns.setEditable(false);
 				txtIns.setBorder(new LineBorder(Color.LIGHT_GRAY));
 				txtIns.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtIns.setText("INS");
+				txtIns.setText("DEL");
 				txtIns.setHorizontalAlignment(SwingConstants.CENTER);
 				txtIns.setColumns(10);
-				txtIns.setBounds(134, 62, 40, 20);
+				txtIns.setBounds(137, 62, 40, 20);
 				panel.add(txtIns);
 				
 				JTextPane txtpnAltJ_1 = new JTextPane();
@@ -258,7 +273,7 @@ public class SettingsDialog extends JDialog {
 				
 				JLabel label = new JLabel("");
 				label.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
-				label.setBounds(336, 72, 75, 90);
+				label.setBounds(333, 72, 75, 90);
 				panel.add(label);
 				
 				txtT = new JTextField();
@@ -268,7 +283,7 @@ public class SettingsDialog extends JDialog {
 				txtT.setEditable(false);
 				txtT.setColumns(10);
 				txtT.setBackground(Color.WHITE);
-				txtT.setBounds(353, 50, 40, 20);
+				txtT.setBounds(350, 50, 40, 20);
 				panel.add(txtT);
 				
 				txtH = new JTextField();
@@ -278,7 +293,7 @@ public class SettingsDialog extends JDialog {
 				txtH.setEditable(false);
 				txtH.setColumns(10);
 				txtH.setBackground(Color.WHITE);
-				txtH.setBounds(410, 111, 40, 20);
+				txtH.setBounds(407, 111, 40, 20);
 				panel.add(txtH);
 				
 				txtF = new JTextField();
@@ -288,7 +303,7 @@ public class SettingsDialog extends JDialog {
 				txtF.setEditable(false);
 				txtF.setColumns(10);
 				txtF.setBackground(Color.WHITE);
-				txtF.setBounds(295, 111, 40, 20);
+				txtF.setBounds(292, 111, 40, 20);
 				panel.add(txtF);
 				
 				txtG = new JTextField();
@@ -298,31 +313,31 @@ public class SettingsDialog extends JDialog {
 				txtG.setEditable(false);
 				txtG.setColumns(10);
 				txtG.setBackground(Color.WHITE);
-				txtG.setBounds(353, 164, 40, 20);
+				txtG.setBounds(350, 164, 40, 20);
 				panel.add(txtG);
 				
 				JLabel label_1 = new JLabel("Right");
 				label_1.setHorizontalAlignment(SwingConstants.CENTER);
 				label_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_1.setBounds(411, 95, 38, 14);
+				label_1.setBounds(408, 95, 38, 14);
 				panel.add(label_1);
 				
 				JLabel label_2 = new JLabel("Left");
 				label_2.setHorizontalAlignment(SwingConstants.CENTER);
 				label_2.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_2.setBounds(297, 95, 36, 14);
+				label_2.setBounds(294, 95, 36, 14);
 				panel.add(label_2);
 				
 				JLabel label_3 = new JLabel("Down");
 				label_3.setHorizontalAlignment(SwingConstants.CENTER);
 				label_3.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_3.setBounds(354, 185, 38, 14);
+				label_3.setBounds(351, 185, 38, 14);
 				panel.add(label_3);
 				
 				JLabel label_4 = new JLabel("Up");
 				label_4.setHorizontalAlignment(SwingConstants.CENTER);
 				label_4.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_4.setBounds(354, 34, 38, 14);
+				label_4.setBounds(351, 34, 38, 14);
 				panel.add(label_4);
 				
 				txtZ = new JTextField();
@@ -332,25 +347,25 @@ public class SettingsDialog extends JDialog {
 				txtZ.setEditable(false);
 				txtZ.setColumns(10);
 				txtZ.setBackground(Color.WHITE);
-				txtZ.setBounds(295, 62, 40, 20);
+				txtZ.setBounds(292, 62, 40, 20);
 				panel.add(txtZ);
 				
 				JLabel label_5 = new JLabel("Fire 1");
 				label_5.setHorizontalAlignment(SwingConstants.CENTER);
 				label_5.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_5.setBounds(296, 46, 38, 14);
+				label_5.setBounds(293, 46, 38, 14);
 				panel.add(label_5);
 				
 				JLabel lblPlayer_1 = new JLabel("Player 2");
 				lblPlayer_1.setHorizontalAlignment(SwingConstants.CENTER);
 				lblPlayer_1.setFont(new Font("Tahoma", Font.BOLD, 14));
-				lblPlayer_1.setBounds(336, 9, 74, 20);
+				lblPlayer_1.setBounds(333, 9, 74, 20);
 				panel.add(lblPlayer_1);
 				
 				JLabel label_7 = new JLabel("Fire 2");
 				label_7.setHorizontalAlignment(SwingConstants.CENTER);
 				label_7.setFont(new Font("Tahoma", Font.PLAIN, 12));
-				label_7.setBounds(411, 46, 38, 14);
+				label_7.setBounds(408, 46, 38, 14);
 				panel.add(label_7);
 				
 				textField_5 = new JTextField();
@@ -359,7 +374,7 @@ public class SettingsDialog extends JDialog {
 				textField_5.setEditable(false);
 				textField_5.setColumns(10);
 				textField_5.setBackground(Color.WHITE);
-				textField_5.setBounds(410, 62, 40, 20);
+				textField_5.setBounds(407, 62, 40, 20);
 				panel.add(textField_5);
 			}
 			
@@ -452,7 +467,18 @@ public class SettingsDialog extends JDialog {
 		setLocationRelativeTo(parent);
 	}
 
-	
+	private void openOfficialWebPage() {
+		if (!Desktop.isDesktopSupported()) return;
+		try {
+			Desktop desktop = Desktop.getDesktop();
+			if (!desktop.isSupported(Desktop.Action.BROWSE)) return;
+			desktop.browse(new URI(Parameters.OFFICIAL_WEBSITE));
+		} catch (Exception e) {
+			// Give up
+		}
+	}
+
+
 	private static final long serialVersionUID = 1L;
 
 }

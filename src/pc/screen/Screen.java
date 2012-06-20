@@ -28,7 +28,7 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
@@ -247,11 +247,12 @@ public class Screen implements ClockDriven, VideoMonitor {
 			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("pc/screen/images/Logo.png");
 		} catch (IOException e) {}
 		// Prepare the OSD paint component
-		osdComponent = new JButton();
+		osdComponent = new JLabel();
 		osdComponent.setForeground(Color.GREEN);
 		osdComponent.setBackground(new Color(0x50000000, true));
-		osdComponent.setFont(new Font(osdComponent.getName(), Font.BOLD, 15));
+		osdComponent.setFont(new Font("Arial", Font.BOLD, 15));
 		osdComponent.setBorder(new EmptyBorder(5, 12, 5, 12));
+		osdComponent.setOpaque(true);
 		// Prepare CRT mode 2 texture
 		scanlinesTextureImage = new BufferedImage(2048, 1280, BufferedImage.TYPE_INT_ARGB_PRE);
 		Graphics2D g = scanlinesTextureImage.createGraphics();
@@ -615,7 +616,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	
 	private int osdFramesLeft = -1;
 	private String osdMessage; 
-	private JButton osdComponent;
+	private JLabel osdComponent;
 	
 	private boolean qualityRendering = QUALITY_RENDERING;
 	private int crtMode = CRT_MODE;

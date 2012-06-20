@@ -256,10 +256,10 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 			new Runnable() { @Override public void run() { 
 			}});
 		hotspots.addHotspot(
-				new Rectangle(-29, -24, 17, 19),
-				new Runnable() { @Override public void run() {
-					openSettings();
-				}});
+			new Rectangle(-28, -24, 17, 19),
+			new Runnable() { @Override public void run() {
+				openSettings();
+			}});
 	}
 
 	private void openSettings() {

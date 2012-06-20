@@ -313,34 +313,34 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 				exit();
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-99 -22, -24, 17, 19),
-			new Runnable() { @Override public void run() {
-				openSettings();
+			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
+			new Runnable() { @Override public void run() { 
+				consolePanelWindow.toggle();
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-74 -22, -20, 13, 15), 
+			new Rectangle(-74 -44, -20, 13, 15), 
 			new Runnable() { @Override public void run() { 
 				setState(ICONIFIED);
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-56 - 22, -21, 13, 16), 
+			new Rectangle(-55 - 44, -21, 12, 16), 
 			new Runnable() { @Override public void run() { 
 				screen.controlStateChanged(Screen.Control.SIZE_MINUS, true);
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-40 - 22, -24, 14, 19), 
+			new Rectangle(-40 - 44, -24, 14, 19), 
 			new Runnable() { @Override public void run() { 
 				screen.controlStateChanged(Screen.Control.SIZE_PLUS, true);
 			}});
 		hotspots.addHotspot(
-			new Rectangle(-42, -24, 17, 19), 
+			new Rectangle(-20 -44, -24, 17, 19), 
 			new Runnable() { @Override public void run() { 
 				fullScreen(!fullScreen);
 			}});
 		hotspots.addHotspot(
-			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
-			new Runnable() { @Override public void run() { 
-				consolePanelWindow.toggle();
+			new Rectangle(-41, -24, 17, 19),
+			new Runnable() { @Override public void run() {
+				openSettings();
 			}});
 	}
 

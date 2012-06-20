@@ -14,10 +14,7 @@ import atari.cartridge.Cartridge;
 public class FileROMChooser {
 
 	public static Cartridge chooseFile() {
-		if (lastFileChosen == null) {
-			String path = Parameters.readPreference(LAST_FILE_CHOSEN_PREF);
-			if (path != null) lastFileChosen = new File(path);
-		}
+		if (lastFileChosen == null) lastFileChosen = new File(Parameters.LAST_ROM_FILE_CHOSEN);
 		try {
 			if (chooser == null) {
 				chooser = new JFileChooser();
@@ -31,13 +28,12 @@ public class FileROMChooser {
 			return FileServiceROMChooser.chooseFile();
 		}
 		lastFileChosen = chooser.getSelectedFile();
-		Parameters.storePreference(LAST_FILE_CHOSEN_PREF, lastFileChosen.toString());
+		Parameters.LAST_ROM_FILE_CHOSEN = lastFileChosen.toString();
+		Parameters.savePreferences();
 		return ROMLoader.load(lastFileChosen);
 	}
 	
 	private static JFileChooser chooser;
 	private static File lastFileChosen;
-
-	private static final String LAST_FILE_CHOSEN_PREF = "lastROMFileChosen";
 
 }

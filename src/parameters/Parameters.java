@@ -2,11 +2,14 @@
 
 package parameters;
 
+import java.awt.event.KeyEvent;
 import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+
+import javax.swing.UIManager;
 
 import utils.Terminator;
 
@@ -14,34 +17,23 @@ public class Parameters {
 
 	// Load Properties file and also process command line options and parameters
 	public static void init(String[] args) {
+		setLookAndFeel();
+
 		parseMainArg(args);
 		loadPropertiesFile();
 		parseOptions(args);
 		processProperties();
+		loadPreferences();
+	}
+
+	private static void setLookAndFeel() {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception ex) {
+			ex.printStackTrace(); // Give up
+		}
 	}
 	
-	public static String readPreference(String name) {
-		if (getUserPreferences() == null) return null;
-		return getUserPreferences().get(name, "");
-	}
-
-	public static boolean storePreference(String name, String value) {
-		if (getUserPreferences() == null) return false;
-		getUserPreferences().put(name, value);
-		return true;
-	}
-
-	public static Preferences getUserPreferences() {
-		if (!userPreferencesAsked)
-			try{
-				userPreferencesAsked = true;
-				userPreferences = Preferences.userRoot().node("javatari");
-			} catch(AccessControlException ex) {
-				// Ignore
-			}
-		return userPreferences;
-	}
-
 	private static void parseMainArg(String[] args) {
 		for (String arg : args)
 			if (!arg.startsWith("-")) {
@@ -84,10 +76,59 @@ public class Parameters {
 		}
 	}
 
+	private static void loadPreferences() {
+		Preferences prefs = getUserPreferences();
+		if (prefs == null) return;
+		String val;
+		val = prefs.get("keyP0Left", null); if (val != null) KEY_P0_LEFT = Integer.parseInt(val);
+		val = prefs.get("keyP0Up", null); if (val != null) KEY_P0_UP = Integer.parseInt(val);
+		val = prefs.get("keyP0Right", null); if (val != null) KEY_P0_RIGHT = Integer.parseInt(val);
+		val = prefs.get("keyP0Down", null); if (val != null) KEY_P0_DOWN = Integer.parseInt(val);
+		val = prefs.get("keyP0Button", null); if (val != null) KEY_P0_BUTTON = Integer.parseInt(val);
+		val = prefs.get("keyP0Button2", null); if (val != null) KEY_P0_BUTTON2 = Integer.parseInt(val);
+		val = prefs.get("keyP1Left", null); if (val != null) KEY_P1_LEFT = Integer.parseInt(val);
+		val = prefs.get("keyP1Up", null); if (val != null) KEY_P1_UP = Integer.parseInt(val);
+		val = prefs.get("keyP1Right", null); if (val != null) KEY_P1_RIGHT = Integer.parseInt(val);
+		val = prefs.get("keyP1Down", null); if (val != null) KEY_P1_DOWN = Integer.parseInt(val);
+		val = prefs.get("keyP1Button", null); if (val != null) KEY_P1_BUTTON = Integer.parseInt(val);
+		val = prefs.get("keyP1Button2", null); if (val != null) KEY_P1_BUTTON2 = Integer.parseInt(val);
+		val = prefs.get("lastROMFileChosen", null); if (val != null) LAST_ROM_FILE_CHOSEN = val;
+		val = prefs.get("lastROMURLChosen", null); if (val != null) LAST_ROM_URL_CHOSEN = val;
+	}
+	
+	public static void savePreferences() {
+		Preferences prefs = getUserPreferences();
+		if (prefs == null) return;
+		prefs.put("keyP0Left", String.valueOf(KEY_P0_LEFT));
+		prefs.put("keyP0Up", String.valueOf(KEY_P0_UP));
+		prefs.put("keyP0Right", String.valueOf(KEY_P0_RIGHT));
+		prefs.put("keyP0Down", String.valueOf(KEY_P0_DOWN));
+		prefs.put("keyP0Button", String.valueOf(KEY_P0_BUTTON));
+		prefs.put("keyP0Button2", String.valueOf(KEY_P0_BUTTON2));
+		prefs.put("keyP1Left", String.valueOf(KEY_P1_LEFT));
+		prefs.put("keyP1Up", String.valueOf(KEY_P1_UP));
+		prefs.put("keyP1Right", String.valueOf(KEY_P1_RIGHT));
+		prefs.put("keyP1Down", String.valueOf(KEY_P1_DOWN));
+		prefs.put("keyP1Button", String.valueOf(KEY_P1_BUTTON));
+		prefs.put("keyP1Button2", String.valueOf(KEY_P1_BUTTON2));
+	 	prefs.put("lastROMFileChosen", LAST_ROM_FILE_CHOSEN);
+		prefs.put("lastROMURLChosen", LAST_ROM_URL_CHOSEN);
+	}
+	
+	private static Preferences getUserPreferences() {
+		if (!userPreferencesAsked)
+			try{
+				userPreferencesAsked = true;
+				userPreferences = Preferences.userRoot().node("javatari");
+			} catch(AccessControlException ex) {
+				// Ignore
+			}
+		return userPreferences;
+	}
+
 	private static void processProperties() {
 		String val;
 		try {
-
 			val = props.getProperty("TIA_FORCED_CLOCK"); if (val != null) TIA_FORCED_CLOCK = Double.valueOf(val);
 			val = props.getProperty("TIA_DEFAULT_CLOCK_NTSC"); if (val != null) TIA_DEFAULT_CLOCK_NTSC = Double.valueOf(val);
 			val = props.getProperty("TIA_DEFAULT_CLOCK_PAL"); if (val != null) TIA_DEFAULT_CLOCK_PAL = Double.valueOf(val);
@@ -143,13 +184,11 @@ public class Parameters {
 			val = props.getProperty("SERVER_SERVICE_PORT"); if (val != null) SERVER_SERVICE_PORT = Integer.valueOf(val);
 			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
 			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
-
 		} catch(Exception ex) {
 			System.out.println("Error processing properties:\n" + ex);
 			Terminator.terminate();
 		}
 	}
-
 
 
 	// Cartridge URL to load passed as argument
@@ -214,9 +253,29 @@ public class Parameters {
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
 
+	public static String 	OFFICIAL_WEBSITE = "http://javatari.org";
+	
 	private static Properties props = new Properties();
-
+	
 	private static Preferences userPreferences;
 	private static boolean userPreferencesAsked = false;
+
+	// DEFAULTS, but the following parameters can be customized as user preferences
+
+	public static int KEY_P0_LEFT    = KeyEvent.VK_LEFT;
+	public static int KEY_P0_UP      = KeyEvent.VK_UP;
+	public static int KEY_P0_RIGHT   = KeyEvent.VK_RIGHT;
+	public static int KEY_P0_DOWN    = KeyEvent.VK_DOWN;
+	public static int KEY_P0_BUTTON  = KeyEvent.VK_SPACE;
+	public static int KEY_P0_BUTTON2 = KeyEvent.VK_DELETE;
+	public static int KEY_P1_LEFT    = KeyEvent.VK_F;
+	public static int KEY_P1_UP      = KeyEvent.VK_T;
+	public static int KEY_P1_RIGHT   = KeyEvent.VK_H;
+	public static int KEY_P1_DOWN    = KeyEvent.VK_G;
+	public static int KEY_P1_BUTTON  = KeyEvent.VK_A;
+	public static int KEY_P1_BUTTON2 = KeyEvent.VK_PERIOD;
+ 
+	public static String LAST_ROM_FILE_CHOSEN = "";
+	public static String LAST_ROM_URL_CHOSEN = "";
 
 }
