@@ -13,7 +13,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
-import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.Insets;
@@ -48,7 +47,7 @@ import atari.controls.ConsoleControlsSocket;
 
 public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 
-	public DesktopScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) throws HeadlessException {
+	public DesktopScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		super();
 		screen = new Screen(videoSignal, cartridgeSocket);
 		consolePanelWindow = new DesktopConsolePanel(this, screen, controlsSocket);
@@ -364,7 +363,7 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 	}
 	
 	private void openSettings() {
-		if (settingsDialog == null) settingsDialog = new SettingsDialog(null);
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(consoleControls);
 		settingsDialog.setVisible(true);
 	}
 

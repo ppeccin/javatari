@@ -14,11 +14,13 @@ import javax.swing.UIManager;
 import utils.Terminator;
 
 public class Parameters {
+	
+	static{
+		setLookAndFeel();
+	}
 
 	// Load Properties file and also process command line options and parameters
 	public static void init(String[] args) {
-		setLookAndFeel();
-
 		parseMainArg(args);
 		loadPropertiesFile();
 		parseOptions(args);
@@ -260,20 +262,35 @@ public class Parameters {
 	private static Preferences userPreferences;
 	private static boolean userPreferencesAsked = false;
 
-	// DEFAULTS, but the following parameters can be customized as user preferences
+	// DEFATULS for the customizable preferences below
+	
+	public static final int DEFAULT_KEY_P0_LEFT    = KeyEvent.VK_LEFT;
+	public static final int DEFAULT_KEY_P0_UP      = KeyEvent.VK_UP;
+	public static final int DEFAULT_KEY_P0_RIGHT   = KeyEvent.VK_RIGHT;
+	public static final int DEFAULT_KEY_P0_DOWN    = KeyEvent.VK_DOWN;
+	public static final int DEFAULT_KEY_P0_BUTTON  = KeyEvent.VK_SPACE;
+	public static final int DEFAULT_KEY_P0_BUTTON2 = KeyEvent.VK_DELETE;
+	public static final int DEFAULT_KEY_P1_LEFT    = KeyEvent.VK_F;
+	public static final int DEFAULT_KEY_P1_UP      = KeyEvent.VK_T;
+	public static final int DEFAULT_KEY_P1_RIGHT   = KeyEvent.VK_H;
+	public static final int DEFAULT_KEY_P1_DOWN    = KeyEvent.VK_G;
+	public static final int DEFAULT_KEY_P1_BUTTON  = KeyEvent.VK_A;
+	public static final int DEFAULT_KEY_P1_BUTTON2 = KeyEvent.VK_PERIOD;
+	
+	// The following parameters can be customized as user preferences, not via properties file or command line
 
-	public static int KEY_P0_LEFT    = KeyEvent.VK_LEFT;
-	public static int KEY_P0_UP      = KeyEvent.VK_UP;
-	public static int KEY_P0_RIGHT   = KeyEvent.VK_RIGHT;
-	public static int KEY_P0_DOWN    = KeyEvent.VK_DOWN;
-	public static int KEY_P0_BUTTON  = KeyEvent.VK_SPACE;
-	public static int KEY_P0_BUTTON2 = KeyEvent.VK_DELETE;
-	public static int KEY_P1_LEFT    = KeyEvent.VK_F;
-	public static int KEY_P1_UP      = KeyEvent.VK_T;
-	public static int KEY_P1_RIGHT   = KeyEvent.VK_H;
-	public static int KEY_P1_DOWN    = KeyEvent.VK_G;
-	public static int KEY_P1_BUTTON  = KeyEvent.VK_A;
-	public static int KEY_P1_BUTTON2 = KeyEvent.VK_PERIOD;
+	public static int KEY_P0_LEFT    = DEFAULT_KEY_P0_LEFT;
+	public static int KEY_P0_UP      = DEFAULT_KEY_P0_UP;
+	public static int KEY_P0_RIGHT   = DEFAULT_KEY_P0_RIGHT;
+	public static int KEY_P0_DOWN    = DEFAULT_KEY_P0_DOWN;
+	public static int KEY_P0_BUTTON  = DEFAULT_KEY_P0_BUTTON;
+	public static int KEY_P0_BUTTON2 = DEFAULT_KEY_P0_BUTTON2;
+	public static int KEY_P1_LEFT    = DEFAULT_KEY_P1_LEFT;
+	public static int KEY_P1_UP      = DEFAULT_KEY_P1_UP;
+	public static int KEY_P1_RIGHT   = DEFAULT_KEY_P1_RIGHT;
+	public static int KEY_P1_DOWN    = DEFAULT_KEY_P1_DOWN;
+	public static int KEY_P1_BUTTON  = DEFAULT_KEY_P1_BUTTON;
+	public static int KEY_P1_BUTTON2 = DEFAULT_KEY_P1_BUTTON2;
  
 	public static String LAST_ROM_FILE_CHOSEN = "";
 	public static String LAST_ROM_URL_CHOSEN = "";

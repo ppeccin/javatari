@@ -12,7 +12,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.HeadlessException;
 import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -32,24 +31,32 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import parameters.Parameters;
+import pc.controls.AWTConsoleControls;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import utils.slickframe.HotspotManager;
 import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
+import atari.controls.ConsoleControlsSocket;
 
 public class ScreenPanel extends JPanel implements ScreenDisplay {
 
-	public ScreenPanel(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) throws HeadlessException {
+	public ScreenPanel(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		super();
 		init();
 		screen = new Screen(videoSignal, cartridgeSocket);
 		screen.addControlInputComponent(this);
 		screen.setCanvas(this);
+		consoleControls = new AWTConsoleControls(controlsSocket, screen);
+		consoleControls.addInputComponents(this);
 	}
 
 	public Screen screen() {
 		return screen;
+	}
+
+	public AWTConsoleControls consoleControls() {
+		return consoleControls;
 	}
 	
 	public void powerOn() {
@@ -263,7 +270,7 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	}
 
 	private void openSettings() {
-		if (settingsDialog == null) settingsDialog = new SettingsDialog(null);
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(consoleControls);
 		settingsDialog.setVisible(true);
 	}
 
@@ -321,8 +328,9 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	}
 	
 	private Screen screen;
+	private AWTConsoleControls consoleControls;
 	private Canvas canvas;
-	
+
 	private BufferStrategy bufferStrategy;
 	private HotspotManager hotspots;
 

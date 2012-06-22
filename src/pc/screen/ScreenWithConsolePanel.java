@@ -5,26 +5,23 @@ package pc.screen;
 import general.av.video.VideoSignal;
 
 import java.awt.FlowLayout;
-import java.awt.HeadlessException;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 import javax.swing.JPanel;
 
-import pc.controls.AWTConsoleControls;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
 public class ScreenWithConsolePanel extends JPanel {
 
-	public ScreenWithConsolePanel(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, boolean screenFixedSize, boolean showConsolePanel) throws HeadlessException {
+	public ScreenWithConsolePanel(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, boolean screenFixedSize, boolean showConsolePanel) {
 		super();
-		screenPanel = new ScreenPanel(videoSignal, cartridgeSocket);
+		screenPanel = new ScreenPanel(videoSignal, controlsSocket, cartridgeSocket);
 		screenPanel.screen().setFixedSize(screenFixedSize);
 		screenPanel.screen().addControlInputComponent(this);
+		screenPanel.consoleControls().addInputComponents(this);
 		if (showConsolePanel) consolePanel = new ConsolePanel(controlsSocket, screenPanel.screen());
-		AWTConsoleControls consoleControls = new AWTConsoleControls(controlsSocket, screenPanel.screen());
-		consoleControls.addInputComponents(screenPanel, this);
 		setup();
 	}
 	

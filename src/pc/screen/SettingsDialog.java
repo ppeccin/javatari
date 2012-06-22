@@ -1,8 +1,9 @@
+// Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
+
 package pc.screen;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -11,7 +12,11 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,26 +33,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import parameters.Parameters;
+import pc.controls.AWTConsoleControls;
+import pc.controls.KeyNames;
 
 public class SettingsDialog extends JDialog {
 
-	private final JPanel contentPanel = new JPanel();
-	private JTextField txtUp;
-	private JTextField txtRight;
-	private JTextField txtLeft;
-	private JTextField txtDown;
-	private JTextField txtSpace;
-	private JTextField txtIns;
-	private JTextField txtT;
-	private JTextField txtH;
-	private JTextField txtF;
-	private JTextField txtG;
-	private JTextField txtZ;
-	private JTextField textField_5;
-
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		try {
 			SettingsDialog dialog = new SettingsDialog(null);
@@ -59,19 +49,167 @@ public class SettingsDialog extends JDialog {
 		}
 	}
 
-	/**
-	 * Create the dialog.
-	 */
-	public SettingsDialog(Component parent) {
+	public SettingsDialog(AWTConsoleControls consoleControls) {
+		this.consoleControls = consoleControls;
+		buildGUI();
+		buildKeyFieldsList();
+		setControlsKeyListener();
+	}
+		
+	@Override
+	public void setVisible(boolean state) {
+		initNewKeys();
+		refreshKeyNames();
+		super.setVisible(state);
+	}
+	
+	private void refreshKeyNames() {
+		keyP0Up.setText(KeyNames.get(newKEY_P0_UP));
+		keyP0Down.setText(KeyNames.get(newKEY_P0_DOWN));
+		keyP0Left.setText(KeyNames.get(newKEY_P0_LEFT));
+		keyP0Right.setText(KeyNames.get(newKEY_P0_RIGHT));
+		keyP0Button.setText(KeyNames.get(newKEY_P0_BUTTON));
+		keyP0Button2.setText(KeyNames.get(newKEY_P0_BUTTON2));
+		keyP1Up.setText(KeyNames.get(newKEY_P1_UP));
+		keyP1Down.setText(KeyNames.get(newKEY_P1_DOWN));
+		keyP1Left.setText(KeyNames.get(newKEY_P1_LEFT));
+		keyP1Right.setText(KeyNames.get(newKEY_P1_RIGHT));
+		keyP1Button.setText(KeyNames.get(newKEY_P1_BUTTON));
+		keyP1Button2.setText(KeyNames.get(newKEY_P1_BUTTON2));	
+		for (JTextField field : keyFieldsList)
+			field.setBackground(field.getText().trim().isEmpty() ? Color.YELLOW : Color.WHITE);
+	}
+	
+	private void setControlsKeyListener() {
+		KeyAdapter lis = new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				setControlKey(e);
+			}};
+		for (JTextField field : keyFieldsList)
+			field.addKeyListener(lis);
+	}
+
+	private void setControlKey(KeyEvent e) {
+		int code = e.getKeyCode();
+		if (!KeyNames.hasName(code)) return;
+		unsetControlKey(code);
+		Object comp = e.getSource();
+		if (comp == keyP0Up) newKEY_P0_UP = code;
+		if (comp == keyP0Down) newKEY_P0_DOWN = code;
+		if (comp == keyP0Left) newKEY_P0_LEFT = code;
+		if (comp == keyP0Right) newKEY_P0_RIGHT = code;
+		if (comp == keyP0Button) newKEY_P0_BUTTON = code;
+		if (comp == keyP0Button2) newKEY_P0_BUTTON2 = code;
+		if (comp == keyP1Up) newKEY_P1_UP = code;
+		if (comp == keyP1Down) newKEY_P1_DOWN = code;
+		if (comp == keyP1Left) newKEY_P1_LEFT = code;
+		if (comp == keyP1Right) newKEY_P1_RIGHT = code;
+		if (comp == keyP1Button) newKEY_P1_BUTTON = code;
+		if (comp == keyP1Button2) newKEY_P1_BUTTON2 = code;
+		refreshKeyNames();
+	}
+
+	private void unsetControlKey(int code) {
+		if (newKEY_P0_UP == code) newKEY_P0_UP = -1;
+		if (newKEY_P0_DOWN == code) newKEY_P0_DOWN = -1;
+		if (newKEY_P0_LEFT == code) newKEY_P0_LEFT = -1;
+		if (newKEY_P0_RIGHT == code) newKEY_P0_RIGHT = -1;
+		if (newKEY_P0_BUTTON == code) newKEY_P0_BUTTON = -1;
+		if (newKEY_P0_BUTTON2 == code) newKEY_P0_BUTTON2 = -1;
+		if (newKEY_P1_UP == code) newKEY_P1_UP = -1;
+		if (newKEY_P1_DOWN == code) newKEY_P1_DOWN = -1;
+		if (newKEY_P1_LEFT == code) newKEY_P1_LEFT = -1;
+		if (newKEY_P1_RIGHT == code) newKEY_P1_RIGHT = -1;
+		if (newKEY_P1_BUTTON == code) newKEY_P1_BUTTON = -1;
+		if (newKEY_P1_BUTTON2 == code) newKEY_P1_BUTTON2 = -1;
+	}
+	
+	private void acceptKeyChanges() {
+		Parameters.KEY_P0_UP      = newKEY_P0_UP;
+		Parameters.KEY_P0_DOWN    = newKEY_P0_DOWN;
+		Parameters.KEY_P0_LEFT    = newKEY_P0_LEFT;
+		Parameters.KEY_P0_RIGHT   = newKEY_P0_RIGHT;
+		Parameters.KEY_P0_BUTTON  = newKEY_P0_BUTTON;
+		Parameters.KEY_P0_BUTTON2 = newKEY_P0_BUTTON2;
+		Parameters.KEY_P1_UP      = newKEY_P1_UP;
+		Parameters.KEY_P1_DOWN    = newKEY_P1_DOWN;
+		Parameters.KEY_P1_LEFT    = newKEY_P1_LEFT;
+		Parameters.KEY_P1_RIGHT   = newKEY_P1_RIGHT;
+		Parameters.KEY_P1_BUTTON  = newKEY_P1_BUTTON;
+		Parameters.KEY_P1_BUTTON2 = newKEY_P1_BUTTON2;	
+		Parameters.savePreferences();
+		if (consoleControls != null) consoleControls.initJoystickKeys();
+	}
+
+	private void buildKeyFieldsList() {
+		keyFieldsList = Arrays.asList(new JTextField[] {
+			keyP0Up, keyP0Down, keyP0Left, keyP0Right, keyP0Button, keyP0Button2,
+			keyP1Up, keyP1Down,	keyP1Left, keyP1Right, keyP1Button, keyP1Button2
+		});
+		
+	}
+
+	private void initNewKeys() {
+		newKEY_P0_UP      = Parameters.KEY_P0_UP; 
+		newKEY_P0_DOWN    = Parameters.KEY_P0_DOWN;
+		newKEY_P0_LEFT    = Parameters.KEY_P0_LEFT;
+		newKEY_P0_RIGHT   = Parameters.KEY_P0_RIGHT;
+		newKEY_P0_BUTTON  = Parameters.KEY_P0_BUTTON;
+		newKEY_P0_BUTTON2 = Parameters.KEY_P0_BUTTON2;
+		newKEY_P1_UP      = Parameters.KEY_P1_UP;
+		newKEY_P1_DOWN    = Parameters.KEY_P1_DOWN;
+		newKEY_P1_LEFT    = Parameters.KEY_P1_LEFT;
+		newKEY_P1_RIGHT   = Parameters.KEY_P1_RIGHT;
+		newKEY_P1_BUTTON  = Parameters.KEY_P1_BUTTON;
+		newKEY_P1_BUTTON2 = Parameters.KEY_P1_BUTTON2;
+	}
+
+	private void officialWebPageAction() {
+		if (!Desktop.isDesktopSupported()) return;
+		try {
+			Desktop desktop = Desktop.getDesktop();
+			if (!desktop.isSupported(Desktop.Action.BROWSE)) return;
+			desktop.browse(new URI(Parameters.OFFICIAL_WEBSITE));
+		} catch (Exception e) {
+			// Give up
+		}
+	}
+	
+	private void defaultsAction() {
+		newKEY_P0_UP      = Parameters.DEFAULT_KEY_P0_UP; 
+		newKEY_P0_DOWN    = Parameters.DEFAULT_KEY_P0_DOWN;
+		newKEY_P0_LEFT    = Parameters.DEFAULT_KEY_P0_LEFT;
+		newKEY_P0_RIGHT   = Parameters.DEFAULT_KEY_P0_RIGHT;
+		newKEY_P0_BUTTON  = Parameters.DEFAULT_KEY_P0_BUTTON;
+		newKEY_P0_BUTTON2 = Parameters.DEFAULT_KEY_P0_BUTTON2;
+		newKEY_P1_UP      = Parameters.DEFAULT_KEY_P1_UP;
+		newKEY_P1_DOWN    = Parameters.DEFAULT_KEY_P1_DOWN;
+		newKEY_P1_LEFT    = Parameters.DEFAULT_KEY_P1_LEFT;
+		newKEY_P1_RIGHT   = Parameters.DEFAULT_KEY_P1_RIGHT;
+		newKEY_P1_BUTTON  = Parameters.DEFAULT_KEY_P1_BUTTON;
+		newKEY_P1_BUTTON2 = Parameters.DEFAULT_KEY_P1_BUTTON2;
+		refreshKeyNames();
+	}
+
+	private void okAction() {
+		acceptKeyChanges();
+		setVisible(false);
+	}
+	
+	private void cancelAction() {
+		setVisible(false);
+	}
+
+	private void buildGUI() {
 		setModalityType(ModalityType.APPLICATION_MODAL);
-		setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
 		setModal(true);
 		setIconImage(Toolkit.getDefaultToolkit().getImage(SettingsDialog.class.getResource("/pc/screen/images/Favicon.png")));
 		setTitle("javatari");
 		setResizable(false);
 		setSize(491, 324);
 		getContentPane().setLayout(new BorderLayout());
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
@@ -123,7 +261,7 @@ public class SettingsDialog extends JDialog {
 					lblHttpjavatariotg.setFocusPainted(false);
 					lblHttpjavatariotg.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							openOfficialWebPage();
+							officialWebPageAction();
 						}
 					});
 					lblHttpjavatariotg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -145,123 +283,123 @@ public class SettingsDialog extends JDialog {
 				}
 			}
 			{
-				JPanel panel = new JPanel();
-				tabbedPane.addTab("Controls", null, panel, null);
-				panel.setLayout(null);
+				controlsPanel = new JPanel();
+				tabbedPane.addTab("Controls", null, controlsPanel, null);
+				controlsPanel.setLayout(null);
 				{
 					JLabel lblNewLabel = new JLabel("");
 					lblNewLabel.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
 					lblNewLabel.setBounds(63, 72, 75, 90);
-					panel.add(lblNewLabel);
+					controlsPanel.add(lblNewLabel);
 				}
 				
-				txtUp = new JTextField();
-				txtUp.setBackground(Color.WHITE);
-				txtUp.setEditable(false);
-				txtUp.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtUp.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtUp.setHorizontalAlignment(SwingConstants.CENTER);
-				txtUp.setText("UP");
-				txtUp.setBounds(80, 50, 40, 20);
-				panel.add(txtUp);
-				txtUp.setColumns(10);
+				keyP0Up = new JTextField();
+				keyP0Up.setBackground(Color.WHITE);
+				keyP0Up.setEditable(false);
+				keyP0Up.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Up.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Up.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Up.setText("UP");
+				keyP0Up.setBounds(80, 50, 40, 20);
+				controlsPanel.add(keyP0Up);
+				keyP0Up.setColumns(10);
 				
-				txtRight = new JTextField();
-				txtRight.setBackground(Color.WHITE);
-				txtRight.setEditable(false);
-				txtRight.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtRight.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtRight.setText("RIGHT");
-				txtRight.setHorizontalAlignment(SwingConstants.CENTER);
-				txtRight.setColumns(10);
-				txtRight.setBounds(137, 111, 40, 20);
-				panel.add(txtRight);
+				keyP0Right = new JTextField();
+				keyP0Right.setBackground(Color.WHITE);
+				keyP0Right.setEditable(false);
+				keyP0Right.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Right.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Right.setText("RIGHT");
+				keyP0Right.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Right.setColumns(10);
+				keyP0Right.setBounds(137, 111, 40, 20);
+				controlsPanel.add(keyP0Right);
 				
-				txtLeft = new JTextField();
-				txtLeft.setBackground(Color.WHITE);
-				txtLeft.setEditable(false);
-				txtLeft.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtLeft.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtLeft.setText("LEFT");
-				txtLeft.setHorizontalAlignment(SwingConstants.CENTER);
-				txtLeft.setColumns(10);
-				txtLeft.setBounds(22, 111, 40, 20);
-				panel.add(txtLeft);
+				keyP0Left = new JTextField();
+				keyP0Left.setBackground(Color.WHITE);
+				keyP0Left.setEditable(false);
+				keyP0Left.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Left.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Left.setText("LEFT");
+				keyP0Left.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Left.setColumns(10);
+				keyP0Left.setBounds(22, 111, 40, 20);
+				controlsPanel.add(keyP0Left);
 				
-				txtDown = new JTextField();
-				txtDown.setBackground(Color.WHITE);
-				txtDown.setEditable(false);
-				txtDown.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtDown.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtDown.setText("DOWN");
-				txtDown.setHorizontalAlignment(SwingConstants.CENTER);
-				txtDown.setColumns(10);
-				txtDown.setBounds(80, 164, 40, 20);
-				panel.add(txtDown);
+				keyP0Down = new JTextField();
+				keyP0Down.setBackground(Color.WHITE);
+				keyP0Down.setEditable(false);
+				keyP0Down.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Down.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Down.setText("DOWN");
+				keyP0Down.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Down.setColumns(10);
+				keyP0Down.setBounds(80, 164, 40, 20);
+				controlsPanel.add(keyP0Down);
 				
 				JLabel lblRight = new JLabel("Right");
 				lblRight.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblRight.setHorizontalAlignment(SwingConstants.CENTER);
 				lblRight.setBounds(138, 95, 38, 14);
-				panel.add(lblRight);
+				controlsPanel.add(lblRight);
 				
 				JLabel lblLeft = new JLabel("Left");
 				lblLeft.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblLeft.setHorizontalAlignment(SwingConstants.CENTER);
 				lblLeft.setBounds(24, 95, 36, 14);
-				panel.add(lblLeft);
+				controlsPanel.add(lblLeft);
 				
 				JLabel lblDown = new JLabel("Down");
 				lblDown.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblDown.setHorizontalAlignment(SwingConstants.CENTER);
 				lblDown.setBounds(81, 185, 38, 14);
-				panel.add(lblDown);
+				controlsPanel.add(lblDown);
 				
 				JLabel lblUp = new JLabel("Up");
 				lblUp.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblUp.setHorizontalAlignment(SwingConstants.CENTER);
 				lblUp.setBounds(81, 34, 38, 14);
-				panel.add(lblUp);
+				controlsPanel.add(lblUp);
 				
-				txtSpace = new JTextField();
-				txtSpace.setBackground(Color.WHITE);
-				txtSpace.setEditable(false);
-				txtSpace.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtSpace.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtSpace.setText("SPC");
-				txtSpace.setHorizontalAlignment(SwingConstants.CENTER);
-				txtSpace.setColumns(10);
-				txtSpace.setBounds(22, 62, 40, 20);
-				panel.add(txtSpace);
+				keyP0Button = new JTextField();
+				keyP0Button.setBackground(Color.WHITE);
+				keyP0Button.setEditable(false);
+				keyP0Button.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Button.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Button.setText("SPC");
+				keyP0Button.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Button.setColumns(10);
+				keyP0Button.setBounds(22, 62, 40, 20);
+				controlsPanel.add(keyP0Button);
 				
 				JLabel lblFire = new JLabel("Fire 1");
 				lblFire.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblFire.setHorizontalAlignment(SwingConstants.CENTER);
 				lblFire.setBounds(23, 46, 38, 14);
-				panel.add(lblFire);
+				controlsPanel.add(lblFire);
 				
 				JLabel lblPlayer = new JLabel("Player 1");
 				lblPlayer.setFont(new Font("Tahoma", Font.BOLD, 14));
 				lblPlayer.setHorizontalAlignment(SwingConstants.CENTER);
 				lblPlayer.setBounds(63, 9, 74, 20);
-				panel.add(lblPlayer);
+				controlsPanel.add(lblPlayer);
 				
 				JLabel lblFire_1 = new JLabel("Fire 2");
 				lblFire_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				lblFire_1.setHorizontalAlignment(SwingConstants.CENTER);
 				lblFire_1.setBounds(138, 46, 38, 14);
-				panel.add(lblFire_1);
+				controlsPanel.add(lblFire_1);
 				
-				txtIns = new JTextField();
-				txtIns.setBackground(Color.WHITE);
-				txtIns.setEditable(false);
-				txtIns.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				txtIns.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtIns.setText("DEL");
-				txtIns.setHorizontalAlignment(SwingConstants.CENTER);
-				txtIns.setColumns(10);
-				txtIns.setBounds(137, 62, 40, 20);
-				panel.add(txtIns);
+				keyP0Button2 = new JTextField();
+				keyP0Button2.setBackground(Color.WHITE);
+				keyP0Button2.setEditable(false);
+				keyP0Button2.setBorder(new LineBorder(Color.LIGHT_GRAY));
+				keyP0Button2.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Button2.setText("DEL");
+				keyP0Button2.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP0Button2.setColumns(10);
+				keyP0Button2.setBounds(137, 62, 40, 20);
+				controlsPanel.add(keyP0Button2);
 				
 				JTextPane txtpnAltJ_1 = new JTextPane();
 				txtpnAltJ_1.setEditable(false);
@@ -269,113 +407,120 @@ public class SettingsDialog extends JDialog {
 				txtpnAltJ_1.setText("ALT + J : Swap P1<>P2\r\nALT + L : Toggle Paddles");
 				txtpnAltJ_1.setOpaque(false);
 				txtpnAltJ_1.setBounds(162, 167, 145, 36);
-				panel.add(txtpnAltJ_1);
+				controlsPanel.add(txtpnAltJ_1);
 				
 				JLabel label = new JLabel("");
 				label.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
 				label.setBounds(333, 72, 75, 90);
-				panel.add(label);
+				controlsPanel.add(label);
 				
-				txtT = new JTextField();
-				txtT.setText("T");
-				txtT.setHorizontalAlignment(SwingConstants.CENTER);
-				txtT.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtT.setEditable(false);
-				txtT.setColumns(10);
-				txtT.setBackground(Color.WHITE);
-				txtT.setBounds(350, 50, 40, 20);
-				panel.add(txtT);
+				keyP1Up = new JTextField();
+				keyP1Up.setText("T");
+				keyP1Up.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Up.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Up.setEditable(false);
+				keyP1Up.setColumns(10);
+				keyP1Up.setBackground(Color.WHITE);
+				keyP1Up.setBounds(350, 50, 40, 20);
+				controlsPanel.add(keyP1Up);
 				
-				txtH = new JTextField();
-				txtH.setText("H");
-				txtH.setHorizontalAlignment(SwingConstants.CENTER);
-				txtH.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtH.setEditable(false);
-				txtH.setColumns(10);
-				txtH.setBackground(Color.WHITE);
-				txtH.setBounds(407, 111, 40, 20);
-				panel.add(txtH);
+				keyP1Right = new JTextField();
+				keyP1Right.setText("H");
+				keyP1Right.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Right.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Right.setEditable(false);
+				keyP1Right.setColumns(10);
+				keyP1Right.setBackground(Color.WHITE);
+				keyP1Right.setBounds(407, 111, 40, 20);
+				controlsPanel.add(keyP1Right);
 				
-				txtF = new JTextField();
-				txtF.setText("F");
-				txtF.setHorizontalAlignment(SwingConstants.CENTER);
-				txtF.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtF.setEditable(false);
-				txtF.setColumns(10);
-				txtF.setBackground(Color.WHITE);
-				txtF.setBounds(292, 111, 40, 20);
-				panel.add(txtF);
+				keyP1Left = new JTextField();
+				keyP1Left.setText("F");
+				keyP1Left.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Left.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Left.setEditable(false);
+				keyP1Left.setColumns(10);
+				keyP1Left.setBackground(Color.WHITE);
+				keyP1Left.setBounds(292, 111, 40, 20);
+				controlsPanel.add(keyP1Left);
 				
-				txtG = new JTextField();
-				txtG.setText("G");
-				txtG.setHorizontalAlignment(SwingConstants.CENTER);
-				txtG.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtG.setEditable(false);
-				txtG.setColumns(10);
-				txtG.setBackground(Color.WHITE);
-				txtG.setBounds(350, 164, 40, 20);
-				panel.add(txtG);
+				keyP1Down = new JTextField();
+				keyP1Down.setText("G");
+				keyP1Down.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Down.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Down.setEditable(false);
+				keyP1Down.setColumns(10);
+				keyP1Down.setBackground(Color.WHITE);
+				keyP1Down.setBounds(350, 164, 40, 20);
+				controlsPanel.add(keyP1Down);
 				
 				JLabel label_1 = new JLabel("Right");
 				label_1.setHorizontalAlignment(SwingConstants.CENTER);
 				label_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_1.setBounds(408, 95, 38, 14);
-				panel.add(label_1);
+				controlsPanel.add(label_1);
 				
 				JLabel label_2 = new JLabel("Left");
 				label_2.setHorizontalAlignment(SwingConstants.CENTER);
 				label_2.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_2.setBounds(294, 95, 36, 14);
-				panel.add(label_2);
+				controlsPanel.add(label_2);
 				
 				JLabel label_3 = new JLabel("Down");
 				label_3.setHorizontalAlignment(SwingConstants.CENTER);
 				label_3.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_3.setBounds(351, 185, 38, 14);
-				panel.add(label_3);
+				controlsPanel.add(label_3);
 				
 				JLabel label_4 = new JLabel("Up");
 				label_4.setHorizontalAlignment(SwingConstants.CENTER);
 				label_4.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_4.setBounds(351, 34, 38, 14);
-				panel.add(label_4);
+				controlsPanel.add(label_4);
 				
-				txtZ = new JTextField();
-				txtZ.setText("A");
-				txtZ.setHorizontalAlignment(SwingConstants.CENTER);
-				txtZ.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				txtZ.setEditable(false);
-				txtZ.setColumns(10);
-				txtZ.setBackground(Color.WHITE);
-				txtZ.setBounds(292, 62, 40, 20);
-				panel.add(txtZ);
+				keyP1Button = new JTextField();
+				keyP1Button.setText("A");
+				keyP1Button.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Button.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Button.setEditable(false);
+				keyP1Button.setColumns(10);
+				keyP1Button.setBackground(Color.WHITE);
+				keyP1Button.setBounds(292, 62, 40, 20);
+				controlsPanel.add(keyP1Button);
 				
 				JLabel label_5 = new JLabel("Fire 1");
 				label_5.setHorizontalAlignment(SwingConstants.CENTER);
 				label_5.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_5.setBounds(293, 46, 38, 14);
-				panel.add(label_5);
+				controlsPanel.add(label_5);
 				
 				JLabel lblPlayer_1 = new JLabel("Player 2");
 				lblPlayer_1.setHorizontalAlignment(SwingConstants.CENTER);
 				lblPlayer_1.setFont(new Font("Tahoma", Font.BOLD, 14));
 				lblPlayer_1.setBounds(333, 9, 74, 20);
-				panel.add(lblPlayer_1);
+				controlsPanel.add(lblPlayer_1);
 				
 				JLabel label_7 = new JLabel("Fire 2");
 				label_7.setHorizontalAlignment(SwingConstants.CENTER);
 				label_7.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				label_7.setBounds(408, 46, 38, 14);
-				panel.add(label_7);
+				controlsPanel.add(label_7);
 				
-				textField_5 = new JTextField();
-				textField_5.setHorizontalAlignment(SwingConstants.CENTER);
-				textField_5.setFont(new Font("Tahoma", Font.PLAIN, 11));
-				textField_5.setEditable(false);
-				textField_5.setColumns(10);
-				textField_5.setBackground(Color.WHITE);
-				textField_5.setBounds(407, 62, 40, 20);
-				panel.add(textField_5);
+				keyP1Button2 = new JTextField();
+				keyP1Button2.setHorizontalAlignment(SwingConstants.CENTER);
+				keyP1Button2.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Button2.setEditable(false);
+				keyP1Button2.setColumns(10);
+				keyP1Button2.setBackground(Color.WHITE);
+				keyP1Button2.setBounds(407, 62, 40, 20);
+				controlsPanel.add(keyP1Button2);
+				
+				JLabel lbldoubleclickToChange = new JLabel("(double-click to change)");
+				lbldoubleclickToChange.setToolTipText("");
+				lbldoubleclickToChange.setHorizontalAlignment(SwingConstants.CENTER);
+				lbldoubleclickToChange.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lbldoubleclickToChange.setBounds(168, 12, 133, 15);
+				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
 			JPanel panel = new JPanel();
@@ -440,45 +585,64 @@ public class SettingsDialog extends JDialog {
 		}
 		{
 			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
+			buttonPane.setLayout(new BorderLayout(0, 0));
 			{
+				
+				JPanel panel = new JPanel();
+				FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+				flowLayout.setAlignment(FlowLayout.LEFT);
+				buttonPane.add(panel, BorderLayout.WEST);
+				
+				JButton btnNewButton = new JButton("Defaults");
+				btnNewButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						defaultsAction();
+					}
+				});
+				panel.add(btnNewButton);
+				
+				JPanel panel_1 = new JPanel();
+				buttonPane.add(panel_1, BorderLayout.EAST);
 				JButton okButton = new JButton("  OK  ");
+				panel_1.add(okButton);
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						setVisible(false);
+						okAction();
 					}
 				});
 				okButton.setActionCommand("OK");
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						setVisible(false);
-					}
-				});
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
+				{
+					JButton cancelButton = new JButton("Cancel");
+					panel_1.add(cancelButton);
+					cancelButton.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							cancelAction();
+						}
+					});
+					cancelButton.setActionCommand("Cancel");
+				}
+				// getRootPane().setDefaultButton(okButton);
 			}
 		}
-		setLocationRelativeTo(parent);
-	}
-
-	private void openOfficialWebPage() {
-		if (!Desktop.isDesktopSupported()) return;
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			if (!desktop.isSupported(Desktop.Action.BROWSE)) return;
-			desktop.browse(new URI(Parameters.OFFICIAL_WEBSITE));
-		} catch (Exception e) {
-			// Give up
-		}
+		setLocationRelativeTo(null);
 	}
 
 
+	private final AWTConsoleControls consoleControls;
+
+	private final JPanel contentPanel = new JPanel();
+	private JPanel controlsPanel;
+	private JTextField
+		keyP0Up, keyP0Down, keyP0Left, keyP0Right, keyP0Button, keyP0Button2, 
+		keyP1Up, keyP1Down, keyP1Left, keyP1Right, keyP1Button, keyP1Button2;
+
+	private List<JTextField> keyFieldsList;
+
+	private int
+		newKEY_P0_UP, newKEY_P0_DOWN, newKEY_P0_LEFT, newKEY_P0_RIGHT, newKEY_P0_BUTTON, newKEY_P0_BUTTON2,
+		newKEY_P1_UP, newKEY_P1_DOWN, newKEY_P1_LEFT, newKEY_P1_RIGHT, newKEY_P1_BUTTON, newKEY_P1_BUTTON2;
+
+	
 	private static final long serialVersionUID = 1L;
-
 }

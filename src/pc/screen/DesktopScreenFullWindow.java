@@ -8,7 +8,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.image.BufferStrategy;
@@ -20,7 +19,7 @@ import javax.swing.SwingUtilities;
 
 public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 
-	public DesktopScreenFullWindow(DesktopScreenWindow window) throws HeadlessException {
+	public DesktopScreenFullWindow(DesktopScreenWindow window) {
 		super();
 		this.window = window;
 		init();

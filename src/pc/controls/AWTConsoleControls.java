@@ -19,7 +19,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	public AWTConsoleControls(ConsoleControlsInput input, VideoMonitor monitor) {
 		videoMonitor = monitor;
 		consoleControlsInput = input;
-		init();
+		initKeys();
 	}
 
 	public void addInputComponents(Component... inputs) {
@@ -31,7 +31,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 
 	public void p1ControlsMode(boolean state) {
 		p1ControlsMode = state;
-		initJoysticks();
+		initJoystickKeys();
 	}
 	
 	public void paddleMode(boolean state) {
@@ -199,8 +199,8 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 		}
 	}
 
-	private void init() {
-		initJoysticks(); 
+	private void initKeys() {
+		initJoystickKeys(); 
 		
 		normalCodeMap.put(KEY_POWER,       Control.POWER); 
 		normalCodeMap.put(KEY_BLACK_WHITE, Control.BLACK_WHITE); 
@@ -247,7 +247,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 		withALTCodeMap.put(KEY_STATE_12, Control.LOAD_STATE_12); 
 	}
 
-	private void initJoysticks() {
+	public void initJoystickKeys() {
 		joysticksCodeMap.clear();
 		if (!p1ControlsMode) {
 			joysticksCodeMap.put(Parameters.KEY_P0_LEFT,    Control.JOY0_LEFT); 
