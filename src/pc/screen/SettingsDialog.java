@@ -233,7 +233,7 @@ public class SettingsDialog extends JDialog {
 					lblNewButton.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 				}
 				
-				JLabel lblVerion = new JLabel("version 1.10");
+				JLabel lblVerion = new JLabel(Parameters.VERSION);
 				lblVerion.setHorizontalAlignment(SwingConstants.CENTER);
 				lblVerion.setFont(new Font("Tahoma", Font.PLAIN, 13));
 				lblVerion.setBounds(58, 183, 85, 14);
@@ -525,7 +525,7 @@ public class SettingsDialog extends JDialog {
 			}
 			
 			JPanel panel = new JPanel();
-			tabbedPane.addTab("Advanced", null, panel, null);
+			tabbedPane.addTab("Help", null, panel, null);
 			panel.setLayout(null);
 			
 			JTextPane txtpnAltJ = new JTextPane();

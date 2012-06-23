@@ -4,9 +4,9 @@ Visit http://javatari.org
 
 Version 1.11
 ============
-- New Settings Dialog
-- About and Help page
+- New Settings Window
 - Configurable Controls
+- Help and About pages
  
 
 Previous Versions:

@@ -200,11 +200,13 @@ public class Parameters {
 		}
 	}
 
+	// Main Emulator Version
+	public static final String VERSION = "version 1.11";
 
+	
 	// Cartridge URL to load passed as argument
 	public static String mainArg = null;
 
-	
 	// DEFAULTS
 
 	public static double	TIA_FORCED_CLOCK = 0;							//  0 = No Forced Clock
@@ -284,6 +286,7 @@ public class Parameters {
 	public static final int DEFAULT_KEY_P1_DOWN    = KeyEvent.VK_G;
 	public static final int DEFAULT_KEY_P1_BUTTON  = KeyEvent.VK_A;
 	public static final int DEFAULT_KEY_P1_BUTTON2 = KeyEvent.VK_PERIOD;
+
 	
 	// The following parameters can be customized as user preferences, not via properties file or command line
 
