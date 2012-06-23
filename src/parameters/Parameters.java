@@ -19,7 +19,7 @@ public class Parameters {
 		setLookAndFeel();
 	}
 
-	// Load Properties file and also process command line options and parameters
+	// Load Properties file and also process command line options, then load preferences. Order is of relevance
 	public static void init(String[] args) {
 		parseMainArg(args);
 		loadPropertiesFile();
@@ -32,7 +32,7 @@ public class Parameters {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception ex) {
-			ex.printStackTrace(); // Give up
+			// Give up
 		}
 	}
 	
@@ -74,7 +74,7 @@ public class Parameters {
 		try {
 			props.putAll(System.getProperties());
 		} catch (AccessControlException ex) {
-			// Ignore
+			// Give up
 		}
 	}
 
@@ -82,39 +82,47 @@ public class Parameters {
 		Preferences prefs = getUserPreferences();
 		if (prefs == null) return;
 		String val;
-		val = prefs.get("keyP0Left", null); if (val != null) KEY_P0_LEFT = Integer.parseInt(val);
-		val = prefs.get("keyP0Up", null); if (val != null) KEY_P0_UP = Integer.parseInt(val);
-		val = prefs.get("keyP0Right", null); if (val != null) KEY_P0_RIGHT = Integer.parseInt(val);
-		val = prefs.get("keyP0Down", null); if (val != null) KEY_P0_DOWN = Integer.parseInt(val);
-		val = prefs.get("keyP0Button", null); if (val != null) KEY_P0_BUTTON = Integer.parseInt(val);
-		val = prefs.get("keyP0Button2", null); if (val != null) KEY_P0_BUTTON2 = Integer.parseInt(val);
-		val = prefs.get("keyP1Left", null); if (val != null) KEY_P1_LEFT = Integer.parseInt(val);
-		val = prefs.get("keyP1Up", null); if (val != null) KEY_P1_UP = Integer.parseInt(val);
-		val = prefs.get("keyP1Right", null); if (val != null) KEY_P1_RIGHT = Integer.parseInt(val);
-		val = prefs.get("keyP1Down", null); if (val != null) KEY_P1_DOWN = Integer.parseInt(val);
-		val = prefs.get("keyP1Button", null); if (val != null) KEY_P1_BUTTON = Integer.parseInt(val);
-		val = prefs.get("keyP1Button2", null); if (val != null) KEY_P1_BUTTON2 = Integer.parseInt(val);
-		val = prefs.get("lastROMFileChosen", null); if (val != null) LAST_ROM_FILE_CHOSEN = val;
-		val = prefs.get("lastROMURLChosen", null); if (val != null) LAST_ROM_URL_CHOSEN = val;
+		try {
+			val = prefs.get("keyP0Left", null); if (val != null) KEY_P0_LEFT = Integer.parseInt(val);
+			val = prefs.get("keyP0Up", null); if (val != null) KEY_P0_UP = Integer.parseInt(val);
+			val = prefs.get("keyP0Right", null); if (val != null) KEY_P0_RIGHT = Integer.parseInt(val);
+			val = prefs.get("keyP0Down", null); if (val != null) KEY_P0_DOWN = Integer.parseInt(val);
+			val = prefs.get("keyP0Button", null); if (val != null) KEY_P0_BUTTON = Integer.parseInt(val);
+			val = prefs.get("keyP0Button2", null); if (val != null) KEY_P0_BUTTON2 = Integer.parseInt(val);
+			val = prefs.get("keyP1Left", null); if (val != null) KEY_P1_LEFT = Integer.parseInt(val);
+			val = prefs.get("keyP1Up", null); if (val != null) KEY_P1_UP = Integer.parseInt(val);
+			val = prefs.get("keyP1Right", null); if (val != null) KEY_P1_RIGHT = Integer.parseInt(val);
+			val = prefs.get("keyP1Down", null); if (val != null) KEY_P1_DOWN = Integer.parseInt(val);
+			val = prefs.get("keyP1Button", null); if (val != null) KEY_P1_BUTTON = Integer.parseInt(val);
+			val = prefs.get("keyP1Button2", null); if (val != null) KEY_P1_BUTTON2 = Integer.parseInt(val);
+			val = prefs.get("lastROMFileChosen", null); if (val != null) LAST_ROM_FILE_CHOSEN = val;
+			val = prefs.get("lastROMURLChosen", null); if (val != null) LAST_ROM_URL_CHOSEN = val;
+		} catch (Exception e) {
+			// Give up
+		}
 	}
 	
 	public static void savePreferences() {
 		Preferences prefs = getUserPreferences();
 		if (prefs == null) return;
-		prefs.put("keyP0Left", String.valueOf(KEY_P0_LEFT));
-		prefs.put("keyP0Up", String.valueOf(KEY_P0_UP));
-		prefs.put("keyP0Right", String.valueOf(KEY_P0_RIGHT));
-		prefs.put("keyP0Down", String.valueOf(KEY_P0_DOWN));
-		prefs.put("keyP0Button", String.valueOf(KEY_P0_BUTTON));
-		prefs.put("keyP0Button2", String.valueOf(KEY_P0_BUTTON2));
-		prefs.put("keyP1Left", String.valueOf(KEY_P1_LEFT));
-		prefs.put("keyP1Up", String.valueOf(KEY_P1_UP));
-		prefs.put("keyP1Right", String.valueOf(KEY_P1_RIGHT));
-		prefs.put("keyP1Down", String.valueOf(KEY_P1_DOWN));
-		prefs.put("keyP1Button", String.valueOf(KEY_P1_BUTTON));
-		prefs.put("keyP1Button2", String.valueOf(KEY_P1_BUTTON2));
-	 	prefs.put("lastROMFileChosen", LAST_ROM_FILE_CHOSEN);
-		prefs.put("lastROMURLChosen", LAST_ROM_URL_CHOSEN);
+		try {
+			prefs.put("keyP0Left", String.valueOf(KEY_P0_LEFT));
+			prefs.put("keyP0Up", String.valueOf(KEY_P0_UP));
+			prefs.put("keyP0Right", String.valueOf(KEY_P0_RIGHT));
+			prefs.put("keyP0Down", String.valueOf(KEY_P0_DOWN));
+			prefs.put("keyP0Button", String.valueOf(KEY_P0_BUTTON));
+			prefs.put("keyP0Button2", String.valueOf(KEY_P0_BUTTON2));
+			prefs.put("keyP1Left", String.valueOf(KEY_P1_LEFT));
+			prefs.put("keyP1Up", String.valueOf(KEY_P1_UP));
+			prefs.put("keyP1Right", String.valueOf(KEY_P1_RIGHT));
+			prefs.put("keyP1Down", String.valueOf(KEY_P1_DOWN));
+			prefs.put("keyP1Button", String.valueOf(KEY_P1_BUTTON));
+			prefs.put("keyP1Button2", String.valueOf(KEY_P1_BUTTON2));
+		 	prefs.put("lastROMFileChosen", LAST_ROM_FILE_CHOSEN);
+			prefs.put("lastROMURLChosen", LAST_ROM_URL_CHOSEN);
+		} catch (Exception e) {
+			// Give up
+		}
 	}
 	
 	private static Preferences getUserPreferences() {
@@ -123,7 +131,7 @@ public class Parameters {
 				userPreferencesAsked = true;
 				userPreferences = Preferences.userRoot().node("javatari");
 			} catch(AccessControlException ex) {
-				// Ignore
+				// Give up
 			}
 		return userPreferences;
 	}

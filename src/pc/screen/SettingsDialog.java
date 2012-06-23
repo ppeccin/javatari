@@ -170,6 +170,7 @@ public class SettingsDialog extends JDialog {
 		try {
 			Desktop desktop = Desktop.getDesktop();
 			if (!desktop.isSupported(Desktop.Action.BROWSE)) return;
+			setVisible(false);
 			desktop.browse(new URI(Parameters.OFFICIAL_WEBSITE));
 		} catch (Exception e) {
 			// Give up
