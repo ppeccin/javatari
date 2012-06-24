@@ -31,13 +31,42 @@ import atari.controls.ConsoleControlsSocket;
 
 public class DesktopConsolePanel extends SlickFrame {
 
-	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Screen screen, ConsoleControlsSocket controlsSocket) {
+	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Screen screen) {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
 		addHotspots(detachMouseListener());
-		consolePanel = new ConsolePanel(screen, controlsSocket, hotspots.detachMouseListener());
+		consolePanel = new ConsolePanel(screen, hotspots.detachMouseListener());
 		buildGUI();
+	}
+
+	public void connect(ConsoleControlsSocket controlsSocket) {
+		consolePanel.connect(controlsSocket);
+	}
+
+	@Override
+	public void setVisible(final boolean state) {
+		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			if (!isVisible()) {
+				setFocusable(false);
+				setFocusableWindowState(false);
+			}
+			DesktopConsolePanel.super.setVisible(state);
+			if (state) {
+				userClosed = false;
+				setState(Frame.NORMAL);
+				setSize(desiredSize());
+				toFront();
+				masterWindow.toFront();
+				masterWindow.requestFocus();
+			}
+		}});
+	}
+
+	public void toggle() {
+		if (!isVisible())
+			setVisible(true);
+		toggleRetract();
 	}
 
 	private void buildGUI() {
@@ -94,31 +123,6 @@ public class DesktopConsolePanel extends SlickFrame {
 		} catch (IOException ex) {
 			System.out.println("Console Panel: unable to load images\n" + ex);
 		}
-	}
-
-	@Override
-	public void setVisible(final boolean state) {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			if (!isVisible()) {
-				setFocusable(false);
-				setFocusableWindowState(false);
-			}
-			DesktopConsolePanel.super.setVisible(state);
-			if (state) {
-				userClosed = false;
-				setState(Frame.NORMAL);
-				setSize(desiredSize());
-				toFront();
-				masterWindow.toFront();
-				masterWindow.requestFocus();
-			}
-		}});
-	}
-
-	public void toggle() {
-		if (!isVisible())
-			setVisible(true);
-		toggleRetract();
 	}
 
 	private void addHotspots(MousePressAndMotionListener forwardListener) {

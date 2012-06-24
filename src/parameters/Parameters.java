@@ -9,8 +9,6 @@ import java.util.Properties;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 
-import javax.swing.UIManager;
-
 import utils.Terminator;
 
 public class Parameters {
@@ -30,7 +28,7 @@ public class Parameters {
 
 	private static void setLookAndFeel() {
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			// UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception ex) {
 			// Give up
 		}

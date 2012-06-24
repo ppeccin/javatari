@@ -41,14 +41,19 @@ import atari.controls.ConsoleControlsSocket;
 
 public class ScreenPanel extends JPanel implements ScreenDisplay {
 
-	public ScreenPanel(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+	public ScreenPanel() {
 		super();
 		init();
-		screen = new Screen(videoSignal, cartridgeSocket);
+		screen = new Screen();
 		screen.addControlInputComponent(this);
 		screen.setCanvas(this);
-		consoleControls = new AWTConsoleControls(controlsSocket, screen);
+		consoleControls = new AWTConsoleControls(screen);
 		consoleControls.addInputComponents(this);
+	}
+
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+		screen.connect(videoSignal, cartridgeSocket);
+		consoleControls.connect(controlsSocket);
 	}
 
 	public Screen screen() {

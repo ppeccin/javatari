@@ -23,8 +23,10 @@ public class MultiplayerClient {
 		final ClientConsole console = new ClientConsole(remoteReceiver);
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker(console.audioOutput());
+		final DesktopScreenWindow screen = new DesktopScreenWindow();
+		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final Speaker speaker = new Speaker();
+		speaker.connect(console.audioOutput());
 		
 		// Automatically adjust interface for Multiplayer Client operation
 		screen.consoleControls.p1ControlsMode(true);

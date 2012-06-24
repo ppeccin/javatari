@@ -17,36 +17,20 @@ import parameters.Parameters;
 
 public class Speaker implements ClockDriven, AudioMonitor  {
 
-	public Speaker(AudioSignal signal) {
-		this(signal, DEFAULT_FPS);
+	public Speaker() {
+		super();
+		fps = DEFAULT_FPS;
+		clock = new Clock(this, fps);
 	}
 	
-	public Speaker(AudioSignal signal, double fps) {
+	public void connect(AudioSignal signal) {	// Must be powered off to connect a signal
 		this.signal = signal;
-		this.fps = fps;
-	}
-
-	public void getLine() {
-		AudioFormat audioFormat = signal.getAudioFormat();
-		try {
-			dataLine = AudioSystem.getSourceDataLine(audioFormat);
-			dataLine.open(audioFormat, OUTPUT_BUFFER_SIZE);
-			inputBuffer = ByteBuffer.allocateDirect(INPUT_BUFFER_SIZE);
-			tempBuffer = new byte[inputBuffer.capacity()];
-			clock = new Clock(this, fps);
-			if (ADDED_THREAD_PRIORITY != 0) clock.setPriority(Thread.NORM_PRIORITY + ADDED_THREAD_PRIORITY);
-			System.out.println("Sound Mixer Line: " + dataLine);
-			System.out.println("Sound Output buffer: " + dataLine.getBufferSize());
-		} catch (Exception ex) {
-			System.out.println("Unable to acquire audio line:\n" + ex);
-			dataLine = null;
-		}
+		signal.connectMonitor(this);
 	}
 
 	public void powerOn(){
 		if (dataLine == null) getLine();
 		if (dataLine == null) return;
-		signal.connectMonitor(this);
 		dataLine.start();
 		clock.go();
 	}
@@ -71,6 +55,28 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 	@Override
 	public void synchOutput() {
 		refresh();
+	}
+
+	@Override
+	public void clockPulse() {
+		synchOutput();
+	}
+
+	private void getLine() {
+		if (signal == null) return;
+		AudioFormat audioFormat = signal.getAudioFormat();
+		try {
+			dataLine = AudioSystem.getSourceDataLine(audioFormat);
+			dataLine.open(audioFormat, OUTPUT_BUFFER_SIZE);
+			inputBuffer = ByteBuffer.allocateDirect(INPUT_BUFFER_SIZE);
+			tempBuffer = new byte[inputBuffer.capacity()];
+			if (ADDED_THREAD_PRIORITY != 0) clock.setPriority(Thread.NORM_PRIORITY + ADDED_THREAD_PRIORITY);
+			System.out.println("Sound Mixer Line: " + dataLine);
+			System.out.println("Sound Output buffer: " + dataLine.getBufferSize());
+		} catch (Exception ex) {
+			System.out.println("Unable to acquire audio line:\n" + ex);
+			dataLine = null;
+		}
 	}
 
 	private synchronized int getFromInputBuffer(byte[] buffer, int quant) {
@@ -104,15 +110,11 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 		dataLine.write(tempBuffer, 0, data);
 	}
 
-	@Override
-	public void clockPulse() {
-		synchOutput();
-	}
 
-	public Clock clock;
+	public final Clock clock;
 	private final double fps;
 
-	private final AudioSignal signal;
+	private AudioSignal signal;
 	
 	private SourceDataLine dataLine;
 	private ByteBuffer inputBuffer;

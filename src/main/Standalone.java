@@ -22,9 +22,12 @@ public class Standalone {
 		final Console console = new Console();
 		
 		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker(console.audioOutput());
-		new FileSaveStateMedia(console.saveStateSocket());
+		final DesktopScreenWindow screen = new DesktopScreenWindow();
+		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		final Speaker speaker = new Speaker();
+		speaker.connect(console.audioOutput());
+		final FileSaveStateMedia stateMedia = new FileSaveStateMedia();
+		stateMedia.connect(console.saveStateSocket());
 		
 		// Turn AV monitors on
 		screen.powerOn();                

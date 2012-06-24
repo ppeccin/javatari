@@ -47,15 +47,21 @@ import atari.controls.ConsoleControlsSocket;
 
 public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 
-	public DesktopScreenWindow(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+	public DesktopScreenWindow() {
 		super();
-		screen = new Screen(videoSignal, cartridgeSocket);
-		consolePanelWindow = new DesktopConsolePanel(this, screen, controlsSocket);
+		screen = new Screen();
+		consolePanelWindow = new DesktopConsolePanel(this, screen);
 		fullWindow = new DesktopScreenFullWindow(this);
 		screen.addControlInputComponent(this);
-		consoleControls = new AWTConsoleControls(controlsSocket, screen);
+		consoleControls = new AWTConsoleControls(screen);
 		consoleControls.addInputComponents(this);
 		setup();
+	}
+
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+		screen.connect(videoSignal, cartridgeSocket);
+		consolePanelWindow.connect(controlsSocket);
+		consoleControls.connect(controlsSocket);
 	}
 
 	public void powerOn() {
@@ -65,6 +71,13 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 		}});
 	}
 	
+	public void powerOff() {
+		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			if (fullScreen) fullScreen(false);
+			screen.powerOff();
+		}});
+	}
+
 	@Override
 	protected void init() {
 		loadImages();
@@ -401,10 +414,10 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 	
 	public Screen screen;
 	public AWTConsoleControls consoleControls;
-	public DesktopConsolePanel consolePanelWindow;
-	
+
 	private Canvas canvas;
 	
+	private DesktopConsolePanel consolePanelWindow;
 	private DesktopScreenFullWindow fullWindow;
 	private boolean fullScreen = false;
 		
@@ -413,19 +426,19 @@ public class DesktopScreenWindow extends SlickFrame implements ScreenDisplay {
 
 	private SettingsDialog settingsDialog;
 
+	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
+	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
+
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
 		bottomBar, bottomLeftBar, bottomRightBar, logoBar;
 	
 	public BufferedImage favicon, icon64, icon32;	// Other windows use these
 
+	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
+
 	public static final String BASE_TITLE = "javatari";
 	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
-
-	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
-	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
-
-	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
 
 	public static final long serialVersionUID = 1L;
 

@@ -16,14 +16,14 @@ import atari.console.savestate.SaveStateSocket;
 
 public class FileSaveStateMedia implements SaveStateMedia {
 
-	public FileSaveStateMedia(SaveStateSocket socket) {
+	public void connect(SaveStateSocket socket) {
 		socket.connectMedia(this);
 	}
 
 	@Override
 	public boolean save(int slot, ConsoleState state) {
 		try {
-			// Creates the savestate directory if needed
+			// Create the savestate directory if needed
 			File dir = new File(savesDirectory());
 			if (!dir.isDirectory())
 				dir.mkdir();

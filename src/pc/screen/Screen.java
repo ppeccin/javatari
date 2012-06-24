@@ -41,11 +41,17 @@ import atari.cartridge.CartridgeSocket;
 
 public class Screen implements ClockDriven, VideoMonitor {
 	
-	public Screen(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) {
+	public Screen() {
+		super();
 		this.fps = DEFAULT_FPS;
-		this.videoSignal = videoSignal;
-		this.cartridgeSocket = cartridgeSocket;
 		init();
+	}
+
+	public void connect(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) {
+		this.cartridgeSocket = cartridgeSocket;
+		this.videoSignal = videoSignal;
+		videoSignal.connectMonitor(this);
+		adjustToVideoSignal();
 	}
 
 	public void setCanvas(ScreenDisplay canvas) {
@@ -82,6 +88,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 
 	public void powerOff() {
 		clock.pause();
+		paintLogo();
 	}
 
 	@Override
@@ -233,12 +240,11 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void init() {
 		screenControls = new ScreenControls(this);
 		prepareImages();	 	
-		videoSignal.connectMonitor(this);
-		adjustToVideoSignal();
+		adjustToVideoStandard(VideoStandard.NTSC);
 		setDisplayDefaultSize();	
 		clock = new Clock(this, fps);
 		cleanBackBuffer();
-		newFrame();
+		paintLogo();
 	}
 
 	private void prepareImages() {
@@ -276,7 +282,7 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private void adjustToVideoStandard(VideoStandard videoStandard) {
 		// Synchronize on nextLine() and refresh() monitors to avoid changing the standard while receiving lines / refreshing frame 
 		synchronized (refreshMonitor) { synchronized (newDataMonitor) {
-			signalStandard = videoSignal.standard();
+			signalStandard = videoStandard;
 			signalWidth = videoStandard.width;
 			signalHeight = videoStandard.height;
 			setDisplaySize(displayWidth, displayHeightPct);
@@ -587,8 +593,8 @@ public class Screen implements ClockDriven, VideoMonitor {
 	private boolean fixedSizeMode = FIXED_SIZE;
 	private boolean cartridgeChangeEnabled = CARTRIDGE_CHANGE;
 	
-	private final VideoSignal videoSignal;
-	private final CartridgeSocket cartridgeSocket;
+	private VideoSignal videoSignal;
+	private CartridgeSocket cartridgeSocket;
 	private final double fps;
 	
 	private VideoStandard signalStandard;
@@ -716,5 +722,4 @@ public class Screen implements ClockDriven, VideoMonitor {
 	}
 
 }
-
 

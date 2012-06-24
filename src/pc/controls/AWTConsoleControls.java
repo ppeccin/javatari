@@ -16,10 +16,14 @@ import atari.controls.ConsoleControlsInput;
 
 public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	
-	public AWTConsoleControls(ConsoleControlsInput input, VideoMonitor monitor) {
+	public AWTConsoleControls(VideoMonitor monitor) {
+		super();
 		videoMonitor = monitor;
-		consoleControlsInput = input;
 		initKeys();
+	}
+
+	public void connect(ConsoleControlsInput input) {
+		consoleControlsInput = input;
 	}
 
 	public void addInputComponents(Component... inputs) {

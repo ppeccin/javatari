@@ -15,14 +15,19 @@ import atari.controls.ConsoleControlsSocket;
 
 public class ScreenWithConsolePanel extends JPanel {
 
-	public ScreenWithConsolePanel(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, boolean screenFixedSize, boolean showConsolePanel) {
+	public ScreenWithConsolePanel(boolean screenFixedSize, boolean showConsolePanel) {
 		super();
-		screenPanel = new ScreenPanel(videoSignal, controlsSocket, cartridgeSocket);
+		screenPanel = new ScreenPanel();
 		screenPanel.screen().setFixedSize(screenFixedSize);
 		screenPanel.screen().addControlInputComponent(this);
 		screenPanel.consoleControls().addInputComponents(this);
-		if (showConsolePanel) consolePanel = new ConsolePanel(controlsSocket, screenPanel.screen());
+		if (showConsolePanel) consolePanel = new ConsolePanel(screenPanel.screen(), null);
 		setup();
+	}
+
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+		screenPanel.connect(videoSignal, controlsSocket, cartridgeSocket);
+		if (consolePanel != null) consolePanel.connect(controlsSocket);
 	}
 	
 	public void powerOn() {

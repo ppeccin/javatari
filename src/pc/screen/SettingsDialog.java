@@ -403,10 +403,10 @@ public class SettingsDialog extends JDialog {
 				controlsPanel.add(keyP0Button2);
 				
 				JTextPane txtpnAltJ_1 = new JTextPane();
+				txtpnAltJ_1.setOpaque(false);
 				txtpnAltJ_1.setEditable(false);
 				txtpnAltJ_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
 				txtpnAltJ_1.setText("ALT + J : Swap P1<>P2\r\nALT + L : Toggle Paddles");
-				txtpnAltJ_1.setOpaque(false);
 				txtpnAltJ_1.setBounds(162, 167, 145, 36);
 				controlsPanel.add(txtpnAltJ_1);
 				
@@ -524,62 +524,65 @@ public class SettingsDialog extends JDialog {
 				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
+			JPanel panel_1 = new JPanel();
+			tabbedPane.addTab("Network", null, panel_1, null);
+			
 			JPanel panel = new JPanel();
 			tabbedPane.addTab("Help", null, panel, null);
 			panel.setLayout(null);
 			
 			JTextPane txtpnAltJ = new JTextPane();
+			txtpnAltJ.setOpaque(false);
 			txtpnAltJ.setEditable(false);
 			txtpnAltJ.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnAltJ.setBounds(18, 10, 78, 203);
 			panel.add(txtpnAltJ);
-			txtpnAltJ.setOpaque(false);
 			txtpnAltJ.setText("CTR + 1-0 :\r\nALT + 1-0 :\r\n\r\nALT + ENT :\r\nALT + V :\r\nALT + R :\r\nALT + Q :\r\n\r\nALT + D :\r\nALT + C :\r\nALT + P :\r\nALT + F :\r\nTAB :");
 			
 			JTextPane txtpnFullscreenNtsc = new JTextPane();
+			txtpnFullscreenNtsc.setOpaque(false);
 			txtpnFullscreenNtsc.setEditable(false);
 			txtpnFullscreenNtsc.setText("Save State\r\nLoad State\r\n\r\nFullscreen\r\nNTSC / PAL\r\nCRT Modes\r\nFilter\r\n\r\nDebug Modes\r\nCollisions\r\nPause\r\nNext Frame\r\nFast Speed");
-			txtpnFullscreenNtsc.setOpaque(false);
 			txtpnFullscreenNtsc.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnFullscreenNtsc.setBounds(95, 10, 82, 203);
 			panel.add(txtpnFullscreenNtsc);
 			
 			JTextPane txtpnAltF = new JTextPane();
+			txtpnAltF.setOpaque(false);
 			txtpnAltF.setEditable(false);
 			txtpnAltF.setText("ALT + F1 :\r\n\r\nALT + F5 :\r\nALT + F6 :\r\nF7 :\r\n");
-			txtpnAltF.setOpaque(false);
 			txtpnAltF.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnAltF.setBounds(218, 10, 71, 81);
 			panel.add(txtpnAltF);
 			
 			JTextPane txtpnFryConsoleLoad = new JTextPane();
+			txtpnFryConsoleLoad.setOpaque(false);
 			txtpnFryConsoleLoad.setEditable(false);
 			txtpnFryConsoleLoad.setText("Fry Console\r\n\r\nLoad Cartridge\r\nwith no Power Cycle\r\nRemove Cartridge");
-			txtpnFryConsoleLoad.setOpaque(false);
 			txtpnFryConsoleLoad.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnFryConsoleLoad.setBounds(287, 10, 127, 81);
 			panel.add(txtpnFryConsoleLoad);
 			
 			JTextPane txtpnCtraltArrows = new JTextPane();
+			txtpnCtraltArrows.setOpaque(false);
 			txtpnCtraltArrows.setEditable(false);
 			txtpnCtraltArrows.setText("CTR-ALT + Arrows :\r\nCTR-SHT + Arrows :\r\nALT-SHT + Arrows :\r\n\r\nBACKSPACE :\r\n");
-			txtpnCtraltArrows.setOpaque(false);
 			txtpnCtraltArrows.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnCtraltArrows.setBounds(218, 130, 121, 81);
 			panel.add(txtpnCtraltArrows);
 			
 			JTextPane txtpnAlsoPossibleDo = new JTextPane();
+			txtpnAlsoPossibleDo.setOpaque(false);
 			txtpnAlsoPossibleDo.setEditable(false);
 			txtpnAlsoPossibleDo.setText("Drag/Drop or Copy/Paste of files and URLs");
-			txtpnAlsoPossibleDo.setOpaque(false);
 			txtpnAlsoPossibleDo.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnAlsoPossibleDo.setBounds(218, 100, 240, 21);
 			panel.add(txtpnAlsoPossibleDo);
 			
 			JTextPane txtpnDisplayOriginDisplay = new JTextPane();
+			txtpnDisplayOriginDisplay.setOpaque(false);
 			txtpnDisplayOriginDisplay.setEditable(false);
 			txtpnDisplayOriginDisplay.setText("Display Origin\r\nDisplay Size\r\nDisplay Scale\r\n\r\nDisplay Defaults");
-			txtpnDisplayOriginDisplay.setOpaque(false);
 			txtpnDisplayOriginDisplay.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnDisplayOriginDisplay.setBounds(343, 130, 100, 81);
 			panel.add(txtpnDisplayOriginDisplay);

@@ -26,18 +26,17 @@ import atari.controls.ConsoleControlsSocket;
 
 public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
-	public ConsolePanel(ConsoleControlsSocket controlsSocket, Screen screen) {
-		this(screen, controlsSocket, null);
-	}
-	
-	public ConsolePanel(Screen screen, ConsoleControlsSocket controlsSocket, MousePressAndMotionListener forwardListener) {
+	public ConsolePanel(Screen screen, MousePressAndMotionListener forwardListener) {
 		super();
 		this.screen = screen;
-		this.consoleControlsSocket = controlsSocket;
-		this.consoleControlsSocket.addForwardedInput(this);
-		this.consoleControlsSocket.addRedefinitionListener(this);
 		buildGUI();
 		addHotspots(forwardListener);
+	}
+
+	public void connect(ConsoleControlsSocket controlsSocket) {
+		consoleControlsSocket = controlsSocket;
+		consoleControlsSocket.addForwardedInput(this);
+		consoleControlsSocket.addRedefinitionListener(this);
 		updateVisibleControlsState();
 	}
 
@@ -89,38 +88,38 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		hotspots.addHotspot(
 			new Rectangle(31, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.POWER, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.POWER, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(95, 52 - 137, 24, 46), 
 			new Runnable() { @Override public void run() { 
-				consoleControlsSocket.controlStateChanged(Control.BLACK_WHITE, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.BLACK_WHITE, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(351, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.SELECT, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.SELECT, true);
 			}},
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.SELECT, false);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.SELECT, false);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(414, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.RESET, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.RESET, true);
 			}},
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.RESET, false);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.RESET, false);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(161, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.DIFFICULTY0, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.DIFFICULTY0, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(274, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
-				consoleControlsSocket.controlStateChanged(Control.DIFFICULTY1, true);
+				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.DIFFICULTY1, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(160, 52 - 135, 74, 43),
@@ -155,6 +154,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 			0, initialHeight, getWidth() - ins.left - ins.right, initialHeight + getHeight() - ins.top - ins.bottom,
 			null);
 		// Controls state
+		if (controlsStateReport.isEmpty()) return;
 		int panelBottom = getHeight() - ins.bottom;
 		if (!controlsStateReport.get(Control.POWER)) g.drawImage(powerDownImage, ins.left + 33, panelBottom - 87, null);
 		if (controlsStateReport.get(Control.BLACK_WHITE)) g.drawImage(colorDownImage, ins.left + 97, panelBottom - 87, null);
@@ -176,7 +176,8 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 	private BufferedImage p1DiffDownImage;
 	
 	private final Screen screen;
-	private final ConsoleControlsSocket consoleControlsSocket;
+	
+	private ConsoleControlsSocket consoleControlsSocket;
 	private Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();
 	
 	public static final int WIDTH = 465;

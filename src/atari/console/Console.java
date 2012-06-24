@@ -124,6 +124,7 @@ public class Console {
 			return;
 		}
 		// Otherwise use the VideoStandard detected by the monitor
+		if (tia.videoOutput().monitor() == null) return;
 		videoStandardAutoDetectionInProgress = true;
 		tia.videoOutput().monitor().videoStandardDetectionStart();
 		new Thread() { public void run() {

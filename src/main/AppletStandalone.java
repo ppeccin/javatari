@@ -35,9 +35,12 @@ public class AppletStandalone extends JApplet {
 
 		// Create components
 		console = new Console();
-		screen = new ScreenWithConsolePanel(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket(), true, showConsolePanel);
-		speaker = new Speaker(console.audioOutput());
-		new FileSaveStateMedia(console.saveStateSocket());
+		screen = new ScreenWithConsolePanel(true, showConsolePanel);
+		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
+		speaker = new Speaker();
+		speaker.connect(console.audioOutput());
+		FileSaveStateMedia stateMedia = new FileSaveStateMedia();
+		stateMedia.connect(console.saveStateSocket());
 		
 		// Add the screen to the Applet and set the background color
 		setContentPane(screen);
