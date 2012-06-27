@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.screen;
+package pc.room.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -33,14 +33,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import parameters.Parameters;
-import pc.controls.AWTConsoleControls;
-import pc.controls.KeyNames;
+import pc.room.RoomManager;
 
 public class SettingsDialog extends JDialog {
 
 	public static void main(String[] args) {
 		try {
-			SettingsDialog dialog = new SettingsDialog(null);
+			SettingsDialog dialog = new SettingsDialog();
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setLocationRelativeTo(null);
 			dialog.setVisible(true);
@@ -49,8 +48,7 @@ public class SettingsDialog extends JDialog {
 		}
 	}
 
-	public SettingsDialog(AWTConsoleControls consoleControls) {
-		this.consoleControls = consoleControls;
+	public SettingsDialog() {
 		buildGUI();
 		buildKeyFieldsList();
 		setControlsKeyListener();
@@ -139,7 +137,7 @@ public class SettingsDialog extends JDialog {
 		Parameters.KEY_P1_BUTTON  = newKEY_P1_BUTTON;
 		Parameters.KEY_P1_BUTTON2 = newKEY_P1_BUTTON2;	
 		Parameters.savePreferences();
-		if (consoleControls != null) consoleControls.initJoystickKeys();
+		RoomManager.currentRoom().controls().initJoystickKeys();
 	}
 
 	private void buildKeyFieldsList() {
@@ -632,8 +630,6 @@ public class SettingsDialog extends JDialog {
 		setLocationRelativeTo(null);
 	}
 
-
-	private final AWTConsoleControls consoleControls;
 
 	private final JPanel contentPanel = new JPanel();
 	private JPanel controlsPanel;

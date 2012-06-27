@@ -78,6 +78,10 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 	}
 
+	public void destroy() {
+		mainClockDestroy();
+	}
+	
 	public void showOSD(String message) {
 		tia.videoOutput().showOSD(message);
 	}
@@ -172,6 +176,10 @@ public class Console {
 	
 	protected void mainClockPause() {
 		mainClock.pause();
+	}
+	
+	protected void mainClockDestroy() {
+		mainClock.terminate();
 	}
 	
 	protected void socketsCreate() {
@@ -284,6 +292,10 @@ public class Console {
 			if (autoPower && powerOn) powerOff();
 			cartridge(cartridge); 
 			if (autoPower && !powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
+		}
+		@Override
+		public Cartridge inserted() {
+			return cartridge();
 		}
 	}	
 	

@@ -23,29 +23,34 @@ public class ClientConsole extends Console implements ClockDriven {
 
 	@Override
 	protected void mainClockCreate() {
-		// Ignore, the clock is controlled remotely 
+		// Ignore, the clock is controlled remotely
 	}
 
 	@Override
 	protected void mainClockAdjustToNormal() {
-		// Ignore, the clock is controlled remotely 
+		// Ignore, the clock is controlled remotely
 	}
 
 	@Override
 	protected void mainClockAdjustToFast() {
-		// Ignore, the clock is controlled remotely 
+		// Ignore, the clock is controlled remotely
 	}
 
 	@Override
 	protected void mainClockGo() {
-		// Ignore, the clock is controlled remotely 
+		// Ignore, the clock is controlled remotely
 	}
 	
 	@Override
 	protected void mainClockPause() {
-		// Ignore, the clock is controlled remotely 
+		// Ignore, the clock is controlled remotely
 	}
 	
+	@Override
+	protected void mainClockDestroy() {
+		// Ignore, the clock is controlled remotely
+	}
+
 	@Override
 	protected void socketsCreate() {
 		controlsSocket = new ClientConsoleControlsSocketAdapter();
@@ -66,7 +71,7 @@ public class ClientConsole extends Console implements ClockDriven {
 	}
 
 	public void disconnected(){
-		showOSD("Connection to Player 1 Server lost");
+		showOSD("Disconnected from Player 1 Server");
 	}
 
 	public void receiveServerUpdate(ServerUpdate update) {

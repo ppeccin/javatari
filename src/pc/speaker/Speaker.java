@@ -41,6 +41,12 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 		clock.pause();
 	}
 
+	public void destroy() {
+		dataLine.close();
+		dataLine = null;
+		clock.terminate();
+	}
+
 	@Override
 	public synchronized void nextSamples(byte[] buffer, int quant) {
 		// Drop samples that don't fit the input buffer available capacity

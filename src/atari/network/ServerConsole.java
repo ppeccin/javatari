@@ -83,7 +83,7 @@ public class ServerConsole extends Console implements ClockDriven {
 	}
 
 	public void clientDisconnected() {
-		showOSD("Player 2 Client Disconnected!");
+		showOSD("Player 2 Client Disconnected");
 	}
 
 	public void receiveClientControlChanges(List<ControlChange> clientControlChages) {

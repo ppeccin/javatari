@@ -3,13 +3,7 @@
 package main;
 
 import parameters.Parameters;
-import pc.cartridge.ROMLoader;
-import pc.savestate.FileSaveStateMedia;
-import pc.screen.DesktopScreenWindow;
-import pc.speaker.Speaker;
-import utils.Terminator;
-import atari.cartridge.Cartridge;
-import atari.console.Console;
+import pc.room.RoomManager;
 
 public class Standalone {
 
@@ -17,28 +11,9 @@ public class Standalone {
 
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
-		
-		// Create the Console
-		final Console console = new Console();
-		
-		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow();
-		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker();
-		speaker.connect(console.audioOutput());
-		final FileSaveStateMedia stateMedia = new FileSaveStateMedia();
-		stateMedia.connect(console.saveStateSocket());
-		
-		// Turn AV monitors on
-		screen.powerOn();                
-	 	speaker.powerOn();
 
-	 	// If a Cartridge is provided, insert it
-		if (Parameters.mainArg != null) {
-			Cartridge cart = ROMLoader.load(Parameters.mainArg);
-			if (cart == null) Terminator.terminate();
-			console.cartridgeSocket().insert(cart, true);
-		}
+		// Build a Room for Standalone play and turn everything on
+		RoomManager.buildStandaloneRoom().powerOn();
 
 	}
 				

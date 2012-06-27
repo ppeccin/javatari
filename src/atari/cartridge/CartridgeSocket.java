@@ -5,5 +5,6 @@ package atari.cartridge;
 public interface CartridgeSocket {
 
 	public void insert(Cartridge cartridge, boolean autoPowerControl);
+	public Cartridge inserted();
 	
 }

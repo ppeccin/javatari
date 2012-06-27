@@ -19,8 +19,9 @@ public final class BUS implements BUS16Bits {
 	}
 
 	public void powerOn() {
-		// Data in the bus come random at creation if no Cartridge is inserted
+		// Data in the bus come random at powerOn
 		if (cartridge == null) data = (byte)Randomizer.instance.nextInt(256);
+		else data = 0;
 	}
 
 	public void powerOff() {

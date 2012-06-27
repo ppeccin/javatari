@@ -69,7 +69,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@Override
 	// To perform better, TIA is using one clock cycle per frame
 	public void clockPulse() {
-		if (!powerOn || debugPaused() || videoOutput.monitor == null) return;
+		if (!powerOn || (debugPause && debugPausedNoMoreFrames())) return;
 		boolean videoOutputVSynched = false;	
 		do {
 			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
@@ -128,8 +128,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		}
 	}
 
-	private boolean debugPaused() {
-		if (!debugPause) return false;
+	private boolean debugPausedNoMoreFrames() {
 		if (debugPauseMoreFrames <= 0) return true;
 		debugPauseMoreFrames--;
 		return false;

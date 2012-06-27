@@ -17,7 +17,7 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
+public class DesktopScreenFullWindow extends JFrame implements MonitorDisplay {
 
 	public DesktopScreenFullWindow(DesktopScreenWindow window) {
 		super();
@@ -48,33 +48,33 @@ public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 	}
 
 	@Override
-	public void canvasSize(Dimension size) {
+	public void displaySize(Dimension size) {
 		canvasOriginX = (getWidth() - size.width) / 2;
 		canvasOriginY = (getHeight() - size.height) / 2;
 		canvasEffectiveSize = size;
 		repaint();
 		if (bufferStrategy != null && bufferStrategy.getCapabilities().getFlipContents() != FlipContents.BACKGROUND) {
-			clearBackgoundFrames = Screen.MULTI_BUFFERING + 2;		// Extra 2 frames more than needed
+			clearBackgoundFrames = Monitor.MULTI_BUFFERING + 2;		// Extra 2 frames more than needed
 		}
 	}
 
 	@Override
-	public void canvasMinimumSize(Dimension minSize) {
+	public void displayMinimumSize(Dimension minSize) {
 		// Full window is not manually resized
 	}
 
 	@Override
-	public void canvasCenter() {
+	public void displayCenter() {
 		// Full window is always centered
 	}
 
 	@Override
-	public Dimension canvasEffectiveSize() {
+	public Dimension displayEffectiveSize() {
 		return canvasEffectiveSize;
 	}
 
 	@Override
-	public Graphics2D canvasGraphics() {
+	public Graphics2D displayGraphics() {
 		Graphics2D canvasGraphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : getGraphics());
 		// Clears the background when needed, but just for a few frames
 		if (clearBackgoundFrames-- > 0) {
@@ -86,56 +86,56 @@ public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 	}
 
 	@Override
-	public void canvasFinishFrame(Graphics2D graphics) {
+	public void displayFinishFrame(Graphics2D graphics) {
 		graphics.dispose();
 		if (bufferStrategy != null) bufferStrategy.show();
 	}
 
 	@Override
-	public void canvasClear() {
-		Graphics2D canvasGraphics = canvasGraphics();
+	public void displayClear() {
+		Graphics2D canvasGraphics = displayGraphics();
 		canvasGraphics.setColor(Color.BLACK);
 		canvasGraphics.clearRect(0, 0, getWidth(), getHeight());
-		canvasFinishFrame(canvasGraphics);
+		displayFinishFrame(canvasGraphics);
 	}
 
 	@Override
-	public Container canvasContainer() {
+	public Container displayContainer() {
 		return this;
 	}
 
 	@Override
 	// Gets the largest possible size at the default aspect
-	public float canvasDefaultOpenningScaleX(int displayWidth, int displayHeight) {
+	public float displayDefaultOpenningScaleX(int displayWidth, int displayHeight) {
 		float scaleX = getWidth() / displayWidth;
-		scaleX -= (scaleX % Screen.DEFAULT_SCALE_ASPECT_X);				// Round multiple of the default X scale
-		float h = scaleX / Screen.DEFAULT_SCALE_ASPECT_X * displayHeight;
+		scaleX -= (scaleX % Monitor.DEFAULT_SCALE_ASPECT_X);				// Round multiple of the default X scale
+		float h = scaleX / Monitor.DEFAULT_SCALE_ASPECT_X * displayHeight;
 		while (h > getHeight() + 20) {									// 20 is a little tolerance
-			scaleX -= Screen.DEFAULT_SCALE_ASPECT_X;					// Decrease one full default X scale
-			h = scaleX / Screen.DEFAULT_SCALE_ASPECT_X * displayHeight;
+			scaleX -= Monitor.DEFAULT_SCALE_ASPECT_X;					// Decrease one full default X scale
+			h = scaleX / Monitor.DEFAULT_SCALE_ASPECT_X * displayHeight;
 		}
 		return scaleX;
 	}
 
 	@Override
-	public void canvasRequestFocus() {
+	public void displayRequestFocus() {
 		requestFocus();
 	}
 
 	@Override
-	public void canvasLeaveFullscreen() {
-		window.canvasLeaveFullscreen();
+	public void displayLeaveFullscreen() {
+		window.displayLeaveFullscreen();
 	}
 
 	public void canvasSetRenderingMode() {
-		if (Screen.MULTI_BUFFERING <= 0) return;
+		if (Monitor.MULTI_BUFFERING <= 0) return;
 		BufferCapabilities desiredCaps = new BufferCapabilities(
 			new ImageCapabilities(true), new ImageCapabilities(true),
-			Screen.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
+			Monitor.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
 		);
 		// First try with vSync option
 		Class<?> extBufCapClass = null;
-		if (Screen.BUFFER_VSYNC != -1)
+		if (Monitor.BUFFER_VSYNC != -1)
 			try {
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
 				extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
@@ -143,22 +143,22 @@ public class DesktopScreenFullWindow extends JFrame implements ScreenDisplay {
 				Constructor<?> extBufCapConstructor = extBufCapClass.getConstructor(
 					new Class[] { BufferCapabilities.class, vSyncTypeClass }
 				);
-	            Object vSyncType = vSyncTypeClass.getField(Screen.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
+	            Object vSyncType = vSyncTypeClass.getField(Monitor.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
 	            BufferCapabilities extBuffCaps = (BufferCapabilities)extBufCapConstructor.newInstance(
 	            	new Object[] { desiredCaps, vSyncType }
 	            );
 	            // Try creating the BufferStrategy
-	            createBufferStrategy(Screen.MULTI_BUFFERING, extBuffCaps);
+	            createBufferStrategy(Monitor.MULTI_BUFFERING, extBuffCaps);
 			} catch (Exception ex) {}
 		// Then try with remaining options (Flipping, etc)
 		if (getBufferStrategy() == null)
 			try {
-				createBufferStrategy(Screen.MULTI_BUFFERING, desiredCaps);
+				createBufferStrategy(Monitor.MULTI_BUFFERING, desiredCaps);
 			} catch (Exception ex) {}
 		// Last, use the default
 		if (getBufferStrategy() == null) {
 			System.out.println("Could not create desired BufferStrategy. Switching to default...");
-			createBufferStrategy(Screen.MULTI_BUFFERING);
+			createBufferStrategy(Monitor.MULTI_BUFFERING);
 		}
 		bufferStrategy = getBufferStrategy();
 		// Show info about the granted BufferStrategy

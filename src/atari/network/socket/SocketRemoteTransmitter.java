@@ -9,22 +9,33 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.swing.JOptionPane;
 
 import parameters.Parameters;
 import atari.network.ControlChange;
 import atari.network.RemoteTransmitter;
-import atari.network.ServerUpdate;
 import atari.network.ServerConsole;
+import atari.network.ServerUpdate;
 
 public class SocketRemoteTransmitter implements RemoteTransmitter {
 
-	public SocketRemoteTransmitter() throws RemoteException {
+	public SocketRemoteTransmitter() {
 		updates = new ConcurrentLinkedQueue<ServerUpdate>();
+	}
+
+	public void start() throws IOException {
+		// Open the serverSocket the first time to get errors early here
+		serverSocket = new ServerSocket(SERVICE_PORT);
+		updatesSender = new UpdatesSender();
+		updatesSender.start();
+	}
+
+	public void stop() throws IOException {
+		started = false;
+		if (updatesSender != null) updatesSender.interrupt();	// Will stop the sender loop
+		// Also stop listening serverSocket if needed
+		if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
 	}
 
 	@Override
@@ -51,36 +62,40 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 		return outputStream != null;
 	}
 
-	public boolean listen() {
-		try {
-			ServerSocket serverSocket = new ServerSocket(SERVICE_PORT);
-			connectReceiver(serverSocket.accept());
-			serverSocket.close();
-		} catch(Exception ex) {
- 			JOptionPane.showMessageDialog(null, "Server start failed: unable to open socket\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
- 			return false;
- 		}
-		return true;
+	private void listen() throws IOException {
+		// Reopen the serverSocked if needed (2nd client connection and so on)
+		if (serverSocket == null || serverSocket.isClosed())
+			serverSocket = new ServerSocket(SERVICE_PORT);
+		Socket conn = serverSocket.accept();
+		serverSocket.close();
+		connect(conn);
 	}
 
-	private void connectReceiver(Socket socket) throws IOException {
+	private void connect(Socket toSocket) throws IOException {
+		socket = toSocket;
 		socket.setTcpNoDelay(true);
 		socketOutputStream = socket.getOutputStream();
 		outputStream = new ObjectOutputStream(socketOutputStream);
 		socketInputStream = socket.getInputStream();
 		inputStream = new ObjectInputStream(socketInputStream);
 		resetUpdatesPending();
-		updatesSender = new UpdatesSender();
-		updatesSender.start();
 		console.clientConnected();
 	}
 
-	private void disconnectReceiver() {
-		outputStream = null;
-		inputStream = null;
+	private void disconnect() {
+		boolean wasConnected = outputStream != null;
+		cleanStreamsSilently();
 		resetUpdatesPending();
-		console.clientDisconnected();
-		listen();
+		if (wasConnected) console.clientDisconnected();
+	}
+
+	private void cleanStreamsSilently() {
+		try { socket.close(); } catch (Exception e) {}
+		try { socketOutputStream.close(); } catch (Exception e) {}
+		try { socketInputStream.close(); } catch (Exception e) {}
+		socket = null;
+		socketOutputStream = null; outputStream = null;
+		socketInputStream = null; inputStream = null;
 	}
 
 	private void resetUpdatesPending() {
@@ -91,49 +106,64 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 	}
 	
 
+	private boolean started = false;
+	private ServerSocket serverSocket;
+	private Socket socket;
+
 	private ServerConsole console;
-	
+
 	private ConcurrentLinkedQueue<ServerUpdate> updates;
 	private UpdatesSender updatesSender;
 	private OutputStream socketOutputStream;
 	private InputStream socketInputStream;
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
+
 	
 	private static final int MAX_UPDATES_PENDING = Parameters.SERVER_MAX_UPDATES_PENDING;
 	
-	public static final String SERVICE_NAME = Parameters.SERVER_SERVICE_NAME;
 	public static final int SERVICE_PORT = Parameters.SERVER_SERVICE_PORT;
 	
 	
 	private class UpdatesSender extends Thread {
 		@Override
 		public void run() {
-			ServerUpdate update;
+			started = true;
 			try {
-				while(true) {
-					synchronized(updates) {
-						while((update = updates.poll()) == null) {
-							try {
-								updates.wait();
-							} catch (InterruptedException e) {}
+				while (started) {
+					listen();
+					try {
+						ServerUpdate update;
+						while (started) {
+							synchronized (updates) {
+								while ((update = updates.poll()) == null)
+									updates.wait();
+								updates.notifyAll();
+							}
+							if (started && update != null) {
+								synchronized (outputStream) {
+									outputStream.writeObject(update);
+									outputStream.flush();
+									socketOutputStream.flush();
+									@SuppressWarnings("unchecked")
+									List<ControlChange> clientControlChanges = 
+										(List<ControlChange>) inputStream.readObject();
+									if (clientControlChanges != null)
+										console.receiveClientControlChanges(clientControlChanges);
+								}
+							}
 						}
-						updates.notifyAll();
-					}
-					if (outputStream != null) {
-						outputStream.writeObject(update);
-						outputStream.flush();
-						socketOutputStream.flush();
-						@SuppressWarnings("unchecked")
-						List<ControlChange> clientControlChanges = (List<ControlChange>) inputStream.readObject();
-						if (clientControlChanges != null) console.receiveClientControlChanges(clientControlChanges);
-					}
+					} catch (Exception ex) {
+					} 
+					// Exception while connected or interrupted. Try to disconnect
+					disconnect();
 				}
-			} catch (IOException e) {
-				disconnectReceiver();
-			} catch (ClassNotFoundException e) {
-				disconnectReceiver();
+			} catch (Exception ex) {
+				// Exception while listening or connecting or interrupted. Try to disconnect
+				disconnect();
 			}
+			started = false;
+			updatesSender = null;
 		}
 	}
 

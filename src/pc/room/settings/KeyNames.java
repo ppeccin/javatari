@@ -1,6 +1,6 @@
 // Copyright 2011-2012 Paulo Augusto Peccin. See licence.txt distributed with this file.
 
-package pc.controls;
+package pc.room.settings;
 
 import static java.awt.event.KeyEvent.*;
 

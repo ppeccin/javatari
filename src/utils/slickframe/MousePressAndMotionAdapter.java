@@ -4,4 +4,6 @@ package utils.slickframe;
 
 import java.awt.event.MouseAdapter;
 
-public class MousePressAndMotionAdapter extends MouseAdapter implements MousePressAndMotionListener {}
+public class MousePressAndMotionAdapter extends MouseAdapter implements MousePressAndMotionListener {
+	
+}

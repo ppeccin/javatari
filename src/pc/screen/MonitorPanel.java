@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import parameters.Parameters;
-import pc.controls.AWTConsoleControls;
+import pc.room.RoomManager;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import utils.slickframe.HotspotManager;
@@ -39,40 +39,37 @@ import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
-public class ScreenPanel extends JPanel implements ScreenDisplay {
+public class MonitorPanel extends JPanel implements MonitorDisplay {
 
-	public ScreenPanel() {
+	public MonitorPanel() {
 		super();
 		init();
-		screen = new Screen();
-		screen.addControlInputComponent(this);
-		screen.setCanvas(this);
-		consoleControls = new AWTConsoleControls(screen);
-		consoleControls.addInputComponents(this);
+		monitor = new Monitor();
+		monitor.setDisplay(this);
+		// Does not add control components. Its the parent responsibility to do so.
 	}
 
 	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
-		screen.connect(videoSignal, cartridgeSocket);
-		consoleControls.connect(controlsSocket);
+		monitor.connect(videoSignal, cartridgeSocket);
 	}
 
-	public Screen screen() {
-		return screen;
+	public Monitor monitor() {
+		return monitor;
 	}
 
-	public AWTConsoleControls consoleControls() {
-		return consoleControls;
-	}
-	
 	public void powerOn() {
 		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
 			setVisible(true);
-			screen.powerOn();
+			monitor.powerOn();
 		}});
 	}
 	
 	public void powerOff() {
-		screen.powerOff();
+		monitor.powerOff();
+	}
+
+	public void destroy() {
+		monitor.destroy();
 	}
 
 	private void init() {
@@ -137,7 +134,7 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	}
 
 	@Override
-	public void canvasSize(Dimension size) {
+	public void displaySize(Dimension size) {
 		// Redefines the panel bounds, and the internal Canvas will follow accordingly
 		Dimension panelDim = panelDimensionForCanvasDimension(size);
 		if (getSize().equals(panelDim)) return;
@@ -150,69 +147,69 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	}
 
 	@Override
-	public void canvasCenter() {
+	public void displayCenter() {
 		// Screen should never change position
 	}
 
 	@Override
-	public Dimension canvasEffectiveSize() {
+	public Dimension displayEffectiveSize() {
 		return canvas.getSize();
 	}
 
 	@Override
-	public Graphics2D canvasGraphics() {
+	public Graphics2D displayGraphics() {
 		Graphics2D graphics = (Graphics2D) (bufferStrategy != null ? bufferStrategy.getDrawGraphics() : canvas.getGraphics());
 		return graphics;
 	}
 
 	@Override
-	public void canvasFinishFrame(Graphics2D graphics) {
+	public void displayFinishFrame(Graphics2D graphics) {
 		graphics.dispose();
 		if (bufferStrategy != null) bufferStrategy.show();
 	}
 
 	@Override
-	public Container canvasContainer() {
+	public Container displayContainer() {
 		return this;
 	}
 
 	@Override
-	public void canvasClear() {
-		Graphics2D canvasGraphics = canvasGraphics();
+	public void displayClear() {
+		Graphics2D canvasGraphics = displayGraphics();
 		canvasGraphics.setColor(Color.BLACK);
 		canvasGraphics.clearRect(0, 0, getWidth(), getHeight());
-		canvasFinishFrame(canvasGraphics);
+		displayFinishFrame(canvasGraphics);
 	}
 	
 	@Override
-	public float canvasDefaultOpenningScaleX(int displayWidh, int displayHeight) {
-		return Screen.DEFAULT_SCALE_X;
+	public float displayDefaultOpenningScaleX(int displayWidh, int displayHeight) {
+		return Monitor.DEFAULT_SCALE_X;
 	}
 
 	@Override
-	public void canvasMinimumSize(Dimension minSize) {
+	public void displayMinimumSize(Dimension minSize) {
 		// Ignore
 	}
 	
 	@Override
-	public void canvasRequestFocus() {
+	public void displayRequestFocus() {
 		requestFocus();
 	}
 
 	@Override
-	public void canvasLeaveFullscreen() {
+	public void displayLeaveFullscreen() {
 		// Ignore
 	}
 
 	public void canvasSetRenderingMode() {
-		if (Screen.MULTI_BUFFERING <= 0) return;
+		if (Monitor.MULTI_BUFFERING <= 0) return;
 		BufferCapabilities desiredCaps = new BufferCapabilities(
 			new ImageCapabilities(true), new ImageCapabilities(true),
-			Screen.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
+			Monitor.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
 		);
 		// First try with vSync option
 		Class<?> extBufCapClass = null;
-		if (Screen.BUFFER_VSYNC != -1)
+		if (Monitor.BUFFER_VSYNC != -1)
 			try {
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
 				extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
@@ -220,22 +217,22 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 				Constructor<?> extBufCapConstructor = extBufCapClass.getConstructor(
 					new Class[] { BufferCapabilities.class, vSyncTypeClass }
 				);
-	            Object vSyncType = vSyncTypeClass.getField(Screen.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
+	            Object vSyncType = vSyncTypeClass.getField(Monitor.BUFFER_VSYNC == 1 ? "VSYNC_ON" : "VSYNC_OFF").get(null);
 	            BufferCapabilities extBuffCaps = (BufferCapabilities)extBufCapConstructor.newInstance(
 	            	new Object[] { desiredCaps, vSyncType }
 	            );
 	            // Try creating the BufferStrategy
-	            canvas.createBufferStrategy(Screen.MULTI_BUFFERING, extBuffCaps);
+	            canvas.createBufferStrategy(Monitor.MULTI_BUFFERING, extBuffCaps);
 			} catch (Exception ex) {}
 		// Then try with remaining options (Flipping, etc)
 		if (canvas.getBufferStrategy() == null)
 			try {
-				canvas.createBufferStrategy(Screen.MULTI_BUFFERING, desiredCaps);
+				canvas.createBufferStrategy(Monitor.MULTI_BUFFERING, desiredCaps);
 			} catch (Exception ex) {}
 		// Last, use the default
 		if (canvas.getBufferStrategy() == null) {
 			System.out.println("Could not create desired BufferStrategy. Switching to default...");
-			canvas.createBufferStrategy(Screen.MULTI_BUFFERING);
+			canvas.createBufferStrategy(Monitor.MULTI_BUFFERING);
 		}
 		bufferStrategy = canvas.getBufferStrategy();
 		// Show info about the granted BufferStrategy
@@ -270,13 +267,8 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 		hotspots.addHotspot(
 			new Rectangle(-28, -24, 17, 19),
 			new Runnable() { @Override public void run() {
-				openSettings();
+				RoomManager.openSettings();
 			}});
-	}
-
-	private void openSettings() {
-		if (settingsDialog == null) settingsDialog = new SettingsDialog(consoleControls);
-		settingsDialog.setVisible(true);
 	}
 
 	private void loadImages() {
@@ -323,23 +315,20 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 		for (int x = 512; x < w - 512; x += 256) 
 			g.drawImage(bottomBar, x, h - 30, x + 256, h, 0, 0, 256, 30, null);
 		g.drawImage(logoBar, halfW - 12, h - 30, null);
-		BufferedImage bLeftBar = screen.isFixedSize() ? bottomLeftBarNoPower : bottomLeftBar;
+		BufferedImage bLeftBar = monitor.isFixedSize() ? bottomLeftBarNoPower : bottomLeftBar;
 		g.drawImage(bLeftBar, 0, h - 30, maxHalfW, h, 0, 0, maxHalfW, 30, null);
-		BufferedImage bRightBar = screen.isFixedSize() ? bottomRightBarFixedSize : bottomRightBar;
+		BufferedImage bRightBar = monitor.isFixedSize() ? bottomRightBarFixedSize : bottomRightBar;
 		g.drawImage(bRightBar, w - maxHalfW, h - 30, w, h, 512 - maxHalfW, 0, 512, 30, null);
 		g.drawImage(bottomLeft, 0, halfH, 4, h - 30, 0, 600 - halfH, 4, 600, null);
 		g.drawImage(bottomRight, w - 4, halfH, w, h - 30, 0, 600 - halfH, 4, 600, null);
 		g.dispose();
 	}
 	
-	private Screen screen;
-	private AWTConsoleControls consoleControls;
+	private Monitor monitor;
 	private Canvas canvas;
 
 	private BufferStrategy bufferStrategy;
 	private HotspotManager hotspots;
-
-	private SettingsDialog settingsDialog;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
 		bottomBar, bottomLeftBar, bottomLeftBarNoPower, bottomRightBar, bottomRightBarFixedSize, logoBar;
@@ -377,7 +366,7 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 	class ROMDropTransferHandler extends TransferHandler {
 		@Override
 		public boolean canImport(TransferSupport support) {
-			if (!screen.isCartridgeChangeEnabled()) return false;
+			if (!monitor.isCartridgeChangeEnabled()) return false;
 			Transferable transf = support.getTransferable();
 			if (!ROMTransferHandlerUtil.canAccept(transf)) return false;
 			if (support.isDrop() && support.getUserDropAction() != LINK) support.setDropAction(COPY);
@@ -390,7 +379,7 @@ public class ScreenPanel extends JPanel implements ScreenDisplay {
 			if (cart == null) return false;
 			// LINK Action means load Cartridge without auto power! :-)
 			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;
-			screen.cartridgeInsert(cart, autoPower);
+			monitor.cartridgeInsert(cart, autoPower);
 			return true;
 		}
 		private static final long serialVersionUID = 1L;

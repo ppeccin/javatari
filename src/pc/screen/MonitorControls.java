@@ -8,12 +8,12 @@ import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import pc.screen.Screen.Control;
+import pc.screen.Monitor.Control;
 
-public class ScreenControls implements KeyListener {
+public class MonitorControls implements KeyListener {
 	
-	public ScreenControls(Screen screen) {
-		this.screen = screen;
+	public MonitorControls(Monitor monitor) {
+		this.monitor = monitor;
 		init();
 	}
 
@@ -68,14 +68,14 @@ public class ScreenControls implements KeyListener {
 	public void keyPressed(KeyEvent e) {
 		Control control = controlForEvent(e);
 		if (control == null) return;
-		screen.controlStateChanged(control, true);
+		monitor.controlStateChanged(control, true);
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
 		Control control = controlForEvent(e);
 		if (control == null) return;
-		screen.controlStateChanged(control, false);
+		monitor.controlStateChanged(control, false);
 	}
 
 	private Control controlForEvent(KeyEvent e) {
@@ -99,7 +99,7 @@ public class ScreenControls implements KeyListener {
 	}
 
 
-	private Screen screen; 
+	private Monitor monitor; 
 	
 	private final Map<Integer, Control> keyCodeMap = new HashMap<Integer, Control>();
 	private final Map<Integer, Control> keyShiftCodeMap = new HashMap<Integer, Control>();

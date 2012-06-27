@@ -7,8 +7,9 @@ import javax.swing.JApplet;
 
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
+import pc.controls.AWTConsoleControls;
 import pc.savestate.FileSaveStateMedia;
-import pc.screen.ScreenWithConsolePanel;
+import pc.screen.PanelScreen;
 import pc.speaker.Speaker;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
@@ -16,6 +17,9 @@ import atari.console.Console;
 public class AppletStandalone extends JApplet {
 
 	public void init() {
+
+		System.out.println("APPLET INIT");
+		
 		// Builds an Array of args from the Applet parameters to mimic command line args
 		ArrayList<String> args = new ArrayList<String>();
 		for (int i = -1; i < 50; i++) {
@@ -35,10 +39,13 @@ public class AppletStandalone extends JApplet {
 
 		// Create components
 		console = new Console();
-		screen = new ScreenWithConsolePanel(true, showConsolePanel);
+		screen = new PanelScreen(true, showConsolePanel);
 		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
 		speaker = new Speaker();
 		speaker.connect(console.audioOutput());
+		AWTConsoleControls controls = new AWTConsoleControls(screen.monitor());
+		controls.addInputComponents(screen.controlsInputComponents());
+		controls.connect(console.controlsSocket());
 		FileSaveStateMedia stateMedia = new FileSaveStateMedia();
 		stateMedia.connect(console.saveStateSocket());
 		
@@ -52,6 +59,9 @@ public class AppletStandalone extends JApplet {
 	}
 	
 	public void start() {
+
+		System.out.println("APPLET START");
+		
 		// Turn AV monitors on
 		screen.powerOn();                
 	 	speaker.powerOn();
@@ -64,16 +74,30 @@ public class AppletStandalone extends JApplet {
 	}
 	
 	public void stop() {
+
+		System.out.println("APPLET STOP");
+
 		// Turn monitors and console off
 	 	speaker.powerOff();
 		screen.powerOff();                
 		console.powerOff();
 	}
 
+	@Override
+	public void destroy() {
+
+		System.out.println("APPLET DESTROY");
+
+		// Destroy components
+		console.destroy();
+		screen.destroy();
+		speaker.destroy();
+	}
+
 
 	private Cartridge cart;
 	private Console console;
-	private ScreenWithConsolePanel screen;
+	private PanelScreen screen;
 	private Speaker speaker;
 	
 	private static final long serialVersionUID = 1L;

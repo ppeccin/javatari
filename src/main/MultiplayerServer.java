@@ -2,56 +2,34 @@
 
 package main;
 
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.io.IOException;
+
+import javax.swing.JOptionPane;
 
 import parameters.Parameters;
-import pc.cartridge.ROMLoader;
-import pc.savestate.FileSaveStateMedia;
-import pc.screen.DesktopScreenWindow;
-import pc.speaker.Speaker;
+import pc.room.RoomManager;
+import pc.room.ServerRoom;
 import utils.Terminator;
-import atari.cartridge.Cartridge;
-import atari.network.ServerConsole;
-import atari.network.socket.SocketRemoteTransmitter;
 
 public class MultiplayerServer {
 
-	public static void main(String[] args) throws RemoteException, AlreadyBoundException, NotBoundException {
+	public static void main(String[] args) throws IOException {
 
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
-		
-		// Use Socket implementation
-		final SocketRemoteTransmitter remoteTransmitter = new SocketRemoteTransmitter();
 
-		// Create the Console
-		final ServerConsole console = new ServerConsole(remoteTransmitter);
+		// Build a ServerRoom for P1 Server play and turn everything on
+		ServerRoom serverRoom = RoomManager.buildServerRoom();
+		serverRoom.powerOn();
 		
-		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow();
-		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker();
-		speaker.connect(console.audioOutput());
-		final FileSaveStateMedia stateMedia = new FileSaveStateMedia();
-		stateMedia.connect(console.saveStateSocket());
-		
-		// Turn AV monitors on
-		screen.powerOn();                
-	 	speaker.powerOn();
- 	
-	 	// If a Cartridge is provided, insert it
-		if (Parameters.mainArg != null) {
-			Cartridge cart = ROMLoader.load(Parameters.mainArg);
-			if (cart == null) Terminator.terminate();
-			console.cartridgeSocket().insert(cart, true);
+		// Start listening for P2 Client connections
+		try {
+			serverRoom.startServer();
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Server start failed:\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
+			Terminator.terminate();
 		}
-	 	
-	 	// Listen for client connection
-		boolean success = remoteTransmitter.listen();
-		if (!success) System.exit(1);
-		 
+
 	}
 				
 }

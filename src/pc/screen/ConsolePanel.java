@@ -26,7 +26,7 @@ import atari.controls.ConsoleControlsSocket;
 
 public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
-	public ConsolePanel(Screen screen, MousePressAndMotionListener forwardListener) {
+	public ConsolePanel(Monitor screen, MousePressAndMotionListener forwardListener) {
 		super();
 		this.screen = screen;
 		buildGUI();
@@ -124,12 +124,12 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 		hotspots.addHotspot(
 			new Rectangle(160, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_FILE, true);
+				screen.controlStateChanged(pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE, true);
 			}});
 		hotspots.addHotspot(
 			new Rectangle(150 + 85, 52 - 135, 74, 43),
 			new Runnable() { @Override public void run() {
-				screen.controlStateChanged(pc.screen.Screen.Control.LOAD_CARTRIDGE_URL, true);
+				screen.controlStateChanged(pc.screen.Monitor.Control.LOAD_CARTRIDGE_URL, true);
 			}});
 	}
 
@@ -175,7 +175,7 @@ public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleCont
 	private BufferedImage p0DiffDownImage;
 	private BufferedImage p1DiffDownImage;
 	
-	private final Screen screen;
+	private final Monitor screen;
 	
 	private ConsoleControlsSocket consoleControlsSocket;
 	private Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();

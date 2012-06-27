@@ -4,11 +4,9 @@ package main;
 
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
-import pc.savestate.FileSaveStateMedia;
-import pc.screen.DesktopScreenWindow;
-import pc.speaker.Speaker;
+import pc.room.Room;
+import pc.room.RoomManager;
 import atari.cartridge.Cartridge;
-import atari.console.Console;
 
 public class TestStandalone {
 
@@ -17,33 +15,24 @@ public class TestStandalone {
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
 		
-		// Create the Console
-		final Console console = new Console();
-		
-		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow();
-		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker();
-		speaker.connect(console.audioOutput());
-		final FileSaveStateMedia stateMedia = new FileSaveStateMedia();
-		stateMedia.connect(console.saveStateSocket());
-		
-		// Turn AV monitors on
-	 	screen.powerOn();                
-	 	speaker.powerOn();
+		// Build a Room for Standalone play
+		final Room room = RoomManager.buildStandaloneRoom();
 
 	 	// Insert test Cartridge
 		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/hero.bin");
-	 	if (cart != null) console.cartridgeSocket().insert(cart, true);
+		if (cart != null) room.console().cartridgeSocket().insert(cart, false);
+
+		// Turn everything on
+		room.powerOn();
 
 	 	// Keep logging info about clocks speeds achieved 
 	 	(new Thread() { @Override public void run() {
 		 	while(true) {
-				System.out.println(console.mainClock() + ", " + screen.screen.clock + ", " + speaker.clock);
+				System.out.println(room.console().mainClock() + ", " + room.screen().monitor().clock + ", " + room.speaker().clock);
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
 	 	}}).start();
-	 	
+
 	}
-				
+
 }

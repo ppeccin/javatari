@@ -31,12 +31,12 @@ import atari.controls.ConsoleControlsSocket;
 
 public class DesktopConsolePanel extends SlickFrame {
 
-	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Screen screen) {
+	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Monitor monitor) {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
 		addHotspots(detachMouseListener());
-		consolePanel = new ConsolePanel(screen, hotspots.detachMouseListener());
+		consolePanel = new ConsolePanel(monitor, hotspots.detachMouseListener());
 		buildGUI();
 	}
 
@@ -46,21 +46,19 @@ public class DesktopConsolePanel extends SlickFrame {
 
 	@Override
 	public void setVisible(final boolean state) {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			if (!isVisible()) {
-				setFocusable(false);
-				setFocusableWindowState(false);
-			}
-			DesktopConsolePanel.super.setVisible(state);
-			if (state) {
-				userClosed = false;
-				setState(Frame.NORMAL);
-				setSize(desiredSize());
-				toFront();
-				masterWindow.toFront();
-				masterWindow.requestFocus();
-			}
-		}});
+		if (!isVisible()) {
+			setFocusable(false);
+			setFocusableWindowState(false);
+		}
+		DesktopConsolePanel.super.setVisible(state);
+		if (state) {
+			userClosed = false;
+			setState(Frame.NORMAL);
+			setSize(desiredSize());
+			toFront();
+			masterWindow.toFront();
+			masterWindow.requestFocus();
+		}
 	}
 
 	public void toggle() {

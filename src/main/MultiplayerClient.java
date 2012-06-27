@@ -2,44 +2,28 @@
 
 package main;
 
-import java.rmi.RemoteException;
+import java.io.IOException;
 
 import parameters.Parameters;
-import pc.screen.DesktopScreenWindow;
-import pc.speaker.Speaker;
-import atari.network.ClientConsole;
-import atari.network.socket.SocketRemoteReceiver;
+import pc.room.ClientRoom;
+import pc.room.RoomManager;
+import utils.Terminator;
 
 public class MultiplayerClient {
 
-	public static void main(String[] args) throws RemoteException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 
+		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
-		
-		// Use Socket implementation
-		final SocketRemoteReceiver remoteReceiver = new SocketRemoteReceiver();
 
-		// Create the Console
-		final ClientConsole console = new ClientConsole(remoteReceiver);
+		// Build a ClientRoom for P2 Client play and turn everything on
+		ClientRoom clientRoom = RoomManager.buildClientRoom();
+		clientRoom.powerOn();
 		
-		// Plug PC interfaces for Video, Audio, Controls, Cartridge and SaveState
-		final DesktopScreenWindow screen = new DesktopScreenWindow();
-		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		final Speaker speaker = new Speaker();
-		speaker.connect(console.audioOutput());
+		// Start connection to P1 Server
+		boolean success = clientRoom.askUserForConnection(Parameters.mainArg);
+		if (!success) Terminator.terminate();
 		
-		// Automatically adjust interface for Multiplayer Client operation
-		screen.consoleControls.p1ControlsMode(true);
-		screen.screen.setCartridgeChangeEnabled(false);
-
-		// Turn AV monitors on
-		screen.powerOn();                
-	 	speaker.powerOn();
-
- 		// Try connection
- 		boolean success = remoteReceiver.askUserForConnection(Parameters.mainArg);
- 		if (!success) System.exit(1);
- 		
 	}
 
 }
