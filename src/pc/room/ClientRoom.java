@@ -11,6 +11,22 @@ import atari.network.socket.SocketRemoteReceiver;
 
 public class ClientRoom extends Room {
 	
+	public ClientRoom() {
+		super();
+		buildPeripherals();
+		setPeripheralsForClientMode();
+		buildConsole();
+		connectConsole();
+	}
+
+	ClientRoom(Room room) {
+		super();
+		copyPeripherals(room);
+		setPeripheralsForClientMode();
+		buildConsole();
+		connectConsole();
+	}
+
 	public void startClient(String server) throws IOException {
  		remoteReceiver.start(server);
 	}
@@ -44,9 +60,11 @@ public class ClientRoom extends Room {
  		}
 	}
 	
-	@Override
-	protected void buildPeripherals() {
-		super.buildPeripherals();
+	public SocketRemoteReceiver remoteReceiver() {
+		return remoteReceiver;
+	}
+
+	private void setPeripheralsForClientMode() {
 		// Automatically adjust interface for Multiplayer Client operation
 		controls.p1ControlsMode(true);
 		screen.monitor().setCartridgeChangeEnabled(false);
@@ -58,10 +76,6 @@ public class ClientRoom extends Room {
 		console = new ClientConsole(remoteReceiver);
 	}
 
-	@Override
-	protected void insertCartridgeProvided() {
-		// P2 Clientw never change Cartridge
-	}
 
 	private SocketRemoteReceiver remoteReceiver;
 

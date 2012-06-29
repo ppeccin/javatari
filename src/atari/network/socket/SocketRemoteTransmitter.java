@@ -25,17 +25,37 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 	}
 
 	public void start() throws IOException {
+		start(port);	// Last port used or default port
+	}
+
+	public void start(int port) throws IOException {
 		// Open the serverSocket the first time to get errors early here
-		serverSocket = new ServerSocket(SERVICE_PORT);
+		this.port = port;
+		serverSocket = new ServerSocket(port);
 		updatesSender = new UpdatesSender();
+		started = true;
 		updatesSender.start();
 	}
 
 	public void stop() throws IOException {
 		started = false;
-		if (updatesSender != null) updatesSender.interrupt();	// Will stop the sender loop
-		// Also stop listening serverSocket if needed
+		// Stop listening serverSocket if needed
 		if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+		if (updatesSender == null) return;
+		updatesSender.interrupt();	// Will stop the sender loop
+		try {
+			updatesSender.join();
+		} catch (InterruptedException e) {
+			// No problem
+		}
+	}
+	
+	public boolean isStarted() {
+		return started;
+	}
+	
+	public int port() {
+		return port;
 	}
 
 	@Override
@@ -65,7 +85,7 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 	private void listen() throws IOException {
 		// Reopen the serverSocked if needed (2nd client connection and so on)
 		if (serverSocket == null || serverSocket.isClosed())
-			serverSocket = new ServerSocket(SERVICE_PORT);
+			serverSocket = new ServerSocket(port);
 		Socket conn = serverSocket.accept();
 		serverSocket.close();
 		connect(conn);
@@ -109,6 +129,7 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 	private boolean started = false;
 	private ServerSocket serverSocket;
 	private Socket socket;
+	private int port = Parameters.SERVER_SERVICE_PORT;
 
 	private ServerConsole console;
 
@@ -122,13 +143,10 @@ public class SocketRemoteTransmitter implements RemoteTransmitter {
 	
 	private static final int MAX_UPDATES_PENDING = Parameters.SERVER_MAX_UPDATES_PENDING;
 	
-	public static final int SERVICE_PORT = Parameters.SERVER_SERVICE_PORT;
-	
 	
 	private class UpdatesSender extends Thread {
 		@Override
 		public void run() {
-			started = true;
 			try {
 				while (started) {
 					listen();

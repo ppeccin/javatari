@@ -26,17 +26,34 @@ public class SocketRemoteReceiver implements RemoteReceiver {
 	}
 	
 	public void stop() throws IOException {
-		if (socket != null && !socket.isClosed()) socket.close();	// Will stop the receiver loop and disconnect
+		if (socket == null || socket.isClosed()) return; 
+		socket.close();	// Will stop the receiver loop and disconnect
+		try {
+			updatesReceiver.join();
+		} catch (InterruptedException e) {
+			// No problem
+		}
 	}
 
+	public boolean isConnected() {
+		return updatesReceiver != null;
+	}
+	
+	public String serverAddress() {
+		return serverAddress;
+	}
+	
 	@Override
 	public void clientConsole(ClientConsole console) {
 		this.console = console;
 	}
 	
-	private void connect(String server) throws IOException {
+	private void connect(String serverAddress) throws IOException {
+		this.serverAddress = serverAddress;
 		try {
-			socket = new Socket(server, SocketRemoteTransmitter.SERVICE_PORT);
+			String addr = getHost(serverAddress);
+			int port = getPort(serverAddress);
+			socket = new Socket(addr, port);
 			socket.setTcpNoDelay(true);
 			socketOutputStream = socket.getOutputStream();
 			outputStream = new ObjectOutputStream(socketOutputStream);
@@ -54,6 +71,18 @@ public class SocketRemoteReceiver implements RemoteReceiver {
 		console.connected();
 	}
 	
+	private String getHost(String serverAddress) {
+		int divider = serverAddress.indexOf(":");
+		if (divider < 0) return serverAddress;
+		else return serverAddress.substring(0, divider).trim();
+	}
+
+	private int getPort(String serverAddress) {
+		int divider = serverAddress.indexOf(":");
+		if (divider < 0) return Parameters.SERVER_SERVICE_PORT;
+		else return Integer.valueOf(serverAddress.substring(divider + 1).trim());
+	}
+
 	private void disconnect() {
 		boolean wasConnected = inputStream != null;
 		cleanStreamsSilently();
@@ -93,6 +122,7 @@ public class SocketRemoteReceiver implements RemoteReceiver {
 	private ClientConsole console;
 	
 	private Socket socket;
+	private String serverAddress;
 
 	private ConcurrentLinkedQueue<ServerUpdate> updates;
 	private UpdatesConsumer updatesConsumer;

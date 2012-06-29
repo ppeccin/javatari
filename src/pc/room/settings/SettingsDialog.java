@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -32,8 +33,15 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
+import atari.network.socket.SocketRemoteReceiver;
+import atari.network.socket.SocketRemoteTransmitter;
+
 import parameters.Parameters;
+import pc.room.ClientRoom;
+import pc.room.Room;
 import pc.room.RoomManager;
+import pc.room.ServerRoom;
+import pc.room.StandaloneRoom;
 
 public class SettingsDialog extends JDialog {
 
@@ -52,12 +60,14 @@ public class SettingsDialog extends JDialog {
 		buildGUI();
 		buildKeyFieldsList();
 		setControlsKeyListener();
+		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));	// TODO Melhorar
 	}
 		
 	@Override
 	public void setVisible(boolean state) {
 		initNewKeys();
 		refreshKeyNames();
+		refreshMultiplayer();
 		super.setVisible(state);
 	}
 	
@@ -78,6 +88,40 @@ public class SettingsDialog extends JDialog {
 			field.setBackground(field.getText().trim().isEmpty() ? Color.YELLOW : Color.WHITE);
 	}
 	
+	private void refreshMultiplayer() {
+		Room room = RoomManager.currentRoom();
+		if (room == null) return;
+		if (room instanceof StandaloneRoom) {
+			serverStartB.setText("START");
+			serverStartB.setEnabled(true);
+			serverPortTf.setEnabled(true);
+			clientConnectB.setText("CONNECT");
+			clientConnectB.setEnabled(true);
+			clientServerAddressTf.setEditable(true);
+			return;
+		}
+		if (room instanceof ServerRoom) {
+			clientConnectB.setText("CONNECT");
+			clientConnectB.setEnabled(false);
+			clientServerAddressTf.setEditable(false);
+			boolean started = ((ServerRoom)room).remoteTransmitter().isStarted();
+			serverStartB.setText(started ? "STOP" : "START");
+			serverStartB.setEnabled(true);
+			serverPortTf.setText(String.valueOf(((ServerRoom)room).remoteTransmitter().port()));
+			serverPortTf.setEditable(!started);
+			return;
+		}
+		// ClientRoom
+		serverStartB.setText("START");
+		serverStartB.setEnabled(false);
+		serverPortTf.setEditable(false);
+		boolean connected = ((ClientRoom)room).remoteReceiver().isConnected();
+		clientConnectB.setText(connected ? "DISCONNECT" : "CONNECT");
+		clientConnectB.setEnabled(true);
+		clientServerAddressTf.setText(((ClientRoom)room).remoteReceiver().serverAddress());
+		clientServerAddressTf.setEditable(!connected);
+	}
+
 	private void setControlsKeyListener() {
 		KeyAdapter lis = new KeyAdapter() {
 			@Override
@@ -175,6 +219,41 @@ public class SettingsDialog extends JDialog {
 		}
 	}
 	
+	private void serverStartAction() {
+		if (!(RoomManager.currentRoom() instanceof ServerRoom))
+			RoomManager.morphToServerRoom();
+		ServerRoom serverRoom = (ServerRoom)RoomManager.currentRoom();
+		SocketRemoteTransmitter transmitter = serverRoom.remoteTransmitter();
+		try {
+			if (!transmitter.isStarted()) { 
+				String portString = serverPortTf.getText().trim();
+				if (portString.isEmpty()) transmitter.start();
+				else transmitter.start(Integer.valueOf(portString));
+			} else 
+				transmitter.stop();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		refreshMultiplayer();
+	}
+	
+	private void clientConnectAction() {
+		if (!(RoomManager.currentRoom() instanceof ClientRoom))
+			RoomManager.morphToClientRoom();
+		ClientRoom clientRoom = (ClientRoom)RoomManager.currentRoom();
+		SocketRemoteReceiver receiver = clientRoom.remoteReceiver();
+		try {
+			if (!receiver.isConnected()) { 
+				String serverAddress = clientServerAddressTf.getText().trim();
+				receiver.start(serverAddress);
+			} else 
+				receiver.stop();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		refreshMultiplayer();
+	}
+	
 	private void defaultsAction() {
 		newKEY_P0_UP      = Parameters.DEFAULT_KEY_P0_UP; 
 		newKEY_P0_DOWN    = Parameters.DEFAULT_KEY_P0_DOWN;
@@ -216,71 +295,63 @@ public class SettingsDialog extends JDialog {
 			tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 13));
 			tabbedPane.setBackground(UIManager.getColor("TabbedPane.background"));
 			contentPanel.add(tabbedPane, BorderLayout.CENTER);
-			{
-				JPanel panel = new JPanel();
-				panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				panel.setBackground(UIManager.getColor("Panel.background"));
-				tabbedPane.addTab("About", null, panel, null);
-				panel.setLayout(null);
-				{
-					JLabel lblNewButton = new JLabel("");
-					lblNewButton.setBounds(19, 19, 162, 158);
-					panel.add(lblNewButton);
-					lblNewButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/LogoAbout.png")));
-					lblNewButton.setPreferredSize(new Dimension(200, 250));
-					lblNewButton.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+			
+			JPanel panel_1 = new JPanel();
+			tabbedPane.addTab("Multiplayer", null, panel_1, null);
+			panel_1.setLayout(null);
+			
+			JLabel lblNewLabel_1 = new JLabel("P1 Server");
+			lblNewLabel_1.setFont(new Font("Dialog", Font.BOLD, 17));
+			lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
+			lblNewLabel_1.setBounds(29, 28, 100, 28);
+			panel_1.add(lblNewLabel_1);
+			
+			serverStartB = new JButton("START");
+			serverStartB.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					serverStartAction();
 				}
-				
-				JLabel lblVerion = new JLabel(Parameters.VERSION);
-				lblVerion.setHorizontalAlignment(SwingConstants.CENTER);
-				lblVerion.setFont(new Font("Tahoma", Font.PLAIN, 13));
-				lblVerion.setBounds(58, 183, 85, 14);
-				panel.add(lblVerion);
-				
-				JLabel lblCreate = new JLabel("Paulo Augusto Peccin");
-				lblCreate.setHorizontalAlignment(SwingConstants.CENTER);
-				lblCreate.setFont(new Font("Tahoma", Font.PLAIN, 14));
-				lblCreate.setBounds(254, 52, 137, 21);
-				panel.add(lblCreate);
-				
-				JLabel lblCreated = new JLabel("created by");
-				lblCreated.setHorizontalAlignment(SwingConstants.CENTER);
-				lblCreated.setFont(new Font("Tahoma", Font.PLAIN, 13));
-				lblCreated.setBounds(254, 29, 137, 21);
-				panel.add(lblCreated);
-				{
-					JLabel lblOfficialHomepage = new JLabel("official homepage:");
-					lblOfficialHomepage.setHorizontalAlignment(SwingConstants.CENTER);
-					lblOfficialHomepage.setFont(new Font("Tahoma", Font.PLAIN, 13));
-					lblOfficialHomepage.setBounds(254, 115, 137, 21);
-					panel.add(lblOfficialHomepage);
+			});
+			serverStartB.setBounds(25, 59, 108, 26);
+			panel_1.add(serverStartB);
+			
+			clientConnectB = new JButton("CONNECT");
+			clientConnectB.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					clientConnectAction();
 				}
-				{
-					JButton lblHttpjavatariotg = new JButton("http://javatari.org");
-					lblHttpjavatariotg.setFocusPainted(false);
-					lblHttpjavatariotg.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							officialWebPageAction();
-						}
-					});
-					lblHttpjavatariotg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-					lblHttpjavatariotg.setBorder(null);
-					lblHttpjavatariotg.setContentAreaFilled(false);
-					lblHttpjavatariotg.setBorderPainted(false);
-					lblHttpjavatariotg.setHorizontalAlignment(SwingConstants.CENTER);
-					lblHttpjavatariotg.setForeground(Color.BLUE);
-					lblHttpjavatariotg.setFont(new Font("Tahoma", Font.PLAIN, 14));
-					lblHttpjavatariotg.setBounds(267, 139, 111, 17);
-					panel.add(lblHttpjavatariotg);
-				}
-				{
-					JLabel lblppeccin = new JLabel("@ppeccin");
-					lblppeccin.setHorizontalAlignment(SwingConstants.CENTER);
-					lblppeccin.setFont(new Font("Tahoma", Font.PLAIN, 13));
-					lblppeccin.setBounds(254, 74, 137, 14);
-					panel.add(lblppeccin);
-				}
-			}
+			});
+			clientConnectB.setBounds(325, 59, 108, 26);
+			panel_1.add(clientConnectB);
+			
+			clientServerAddressTf = new JTextField();
+			clientServerAddressTf.setBounds(316, 116, 126, 20);
+			panel_1.add(clientServerAddressTf);
+			clientServerAddressTf.setColumns(10);
+			
+			JLabel lblServerAddressport = new JLabel("Server Address [:port]");
+			lblServerAddressport.setHorizontalAlignment(SwingConstants.CENTER);
+			lblServerAddressport.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			lblServerAddressport.setBounds(316, 97, 126, 19);
+			panel_1.add(lblServerAddressport);
+			
+			serverPortTf = new JTextField();
+			serverPortTf.setHorizontalAlignment(SwingConstants.RIGHT);
+			serverPortTf.setColumns(10);
+			serverPortTf.setBounds(48, 116, 62, 20);
+			panel_1.add(serverPortTf);
+			
+			JLabel lblPort = new JLabel("Server Port");
+			lblPort.setHorizontalAlignment(SwingConstants.CENTER);
+			lblPort.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			lblPort.setBounds(48, 99, 62, 15);
+			panel_1.add(lblPort);
+			
+			JLabel lblPClient = new JLabel("P2 Client");
+			lblPClient.setHorizontalAlignment(SwingConstants.CENTER);
+			lblPClient.setFont(new Font("Dialog", Font.BOLD, 17));
+			lblPClient.setBounds(329, 28, 100, 28);
+			panel_1.add(lblPClient);
 			{
 				controlsPanel = new JPanel();
 				tabbedPane.addTab("Controls", null, controlsPanel, null);
@@ -522,11 +593,8 @@ public class SettingsDialog extends JDialog {
 				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
-			JPanel panel_1 = new JPanel();
-			tabbedPane.addTab("Network", null, panel_1, null);
-			
 			JPanel panel = new JPanel();
-			tabbedPane.addTab("Help", null, panel, null);
+			tabbedPane.addTab("Help ", null, panel, null);
 			panel.setLayout(null);
 			
 			JTextPane txtpnAltJ = new JTextPane();
@@ -584,6 +652,72 @@ public class SettingsDialog extends JDialog {
 			txtpnDisplayOriginDisplay.setFont(new Font("Tahoma", Font.PLAIN, 12));
 			txtpnDisplayOriginDisplay.setBounds(343, 130, 100, 81);
 			panel.add(txtpnDisplayOriginDisplay);
+			{
+				JPanel panel_2 = new JPanel();
+				panel_2.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				panel_2.setBackground(UIManager.getColor("Panel.background"));
+				tabbedPane.addTab("About", null, panel_2, null);
+				panel_2.setLayout(null);
+				{
+					JLabel lblNewButton = new JLabel("");
+					lblNewButton.setBounds(19, 19, 162, 158);
+					panel_2.add(lblNewButton);
+					lblNewButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/LogoAbout.png")));
+					lblNewButton.setPreferredSize(new Dimension(200, 250));
+					lblNewButton.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+				}
+				
+				JLabel lblVerion = new JLabel(Parameters.VERSION);
+				lblVerion.setHorizontalAlignment(SwingConstants.CENTER);
+				lblVerion.setFont(new Font("Tahoma", Font.PLAIN, 13));
+				lblVerion.setBounds(58, 183, 85, 14);
+				panel_2.add(lblVerion);
+				
+				JLabel lblCreate = new JLabel("Paulo Augusto Peccin");
+				lblCreate.setHorizontalAlignment(SwingConstants.CENTER);
+				lblCreate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+				lblCreate.setBounds(254, 52, 137, 21);
+				panel_2.add(lblCreate);
+				
+				JLabel lblCreated = new JLabel("created by");
+				lblCreated.setHorizontalAlignment(SwingConstants.CENTER);
+				lblCreated.setFont(new Font("Tahoma", Font.PLAIN, 13));
+				lblCreated.setBounds(254, 29, 137, 21);
+				panel_2.add(lblCreated);
+				{
+					JLabel lblOfficialHomepage = new JLabel("official homepage:");
+					lblOfficialHomepage.setHorizontalAlignment(SwingConstants.CENTER);
+					lblOfficialHomepage.setFont(new Font("Tahoma", Font.PLAIN, 13));
+					lblOfficialHomepage.setBounds(254, 115, 137, 21);
+					panel_2.add(lblOfficialHomepage);
+				}
+				{
+					JButton lblHttpjavatariotg = new JButton("http://javatari.org");
+					lblHttpjavatariotg.setFocusPainted(false);
+					lblHttpjavatariotg.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							officialWebPageAction();
+						}
+					});
+					lblHttpjavatariotg.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					lblHttpjavatariotg.setBorder(null);
+					lblHttpjavatariotg.setContentAreaFilled(false);
+					lblHttpjavatariotg.setBorderPainted(false);
+					lblHttpjavatariotg.setHorizontalAlignment(SwingConstants.CENTER);
+					lblHttpjavatariotg.setForeground(Color.BLUE);
+					lblHttpjavatariotg.setFont(new Font("Tahoma", Font.PLAIN, 14));
+					lblHttpjavatariotg.setBounds(267, 139, 111, 17);
+					panel_2.add(lblHttpjavatariotg);
+				}
+				{
+					JLabel lblppeccin = new JLabel("@ppeccin");
+					lblppeccin.setHorizontalAlignment(SwingConstants.CENTER);
+					lblppeccin.setFont(new Font("Tahoma", Font.PLAIN, 13));
+					lblppeccin.setBounds(254, 74, 137, 14);
+					panel_2.add(lblppeccin);
+				}
+			}
+			tabbedPane.setSelectedIndex(3);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -596,13 +730,13 @@ public class SettingsDialog extends JDialog {
 				flowLayout.setAlignment(FlowLayout.LEFT);
 				buttonPane.add(panel, BorderLayout.WEST);
 				
-				JButton btnNewButton = new JButton("Defaults");
-				btnNewButton.addActionListener(new ActionListener() {
+				JButton defaultsButton = new JButton("Defaults");
+				defaultsButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						defaultsAction();
 					}
 				});
-				panel.add(btnNewButton);
+				panel.add(defaultsButton);
 				
 				JPanel panel_1 = new JPanel();
 				buttonPane.add(panel_1, BorderLayout.EAST);
@@ -645,4 +779,8 @@ public class SettingsDialog extends JDialog {
 
 	
 	private static final long serialVersionUID = 1L;
+	private JTextField clientServerAddressTf;
+	private JTextField serverPortTf;
+	private JButton serverStartB;
+	private JButton clientConnectB;
 }

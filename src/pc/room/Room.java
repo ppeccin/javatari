@@ -15,11 +15,6 @@ import atari.console.Console;
 
 public abstract class Room {
 
-	Room() {
-		super();
-		setup();
-	}
-	
 	public void powerOn() {
 		screen.powerOn();
 	 	speaker.powerOn();
@@ -48,11 +43,8 @@ public abstract class Room {
 		return controls;
 	}
 	
-	protected void setup() {
-		buildPeripherals();
-		buildConsole();
-		connectConsole();
-		insertCartridgeProvided();
+	public FileSaveStateMedia stateMedia() {
+		return stateMedia;
 	}
 
 	protected abstract void buildConsole();
@@ -64,6 +56,14 @@ public abstract class Room {
 		controls = new AWTConsoleControls(screen.monitor());
 		controls.addInputComponents(screen.controlsInputComponents());
 		stateMedia = new FileSaveStateMedia();
+	}
+
+	protected void copyPeripherals(Room room) {
+		// Copy peripherals from another Room
+		screen = room.screen();
+		speaker = room.speaker();
+		controls = room.controls();
+		stateMedia = room.stateMedia();
 	}
 
 	protected void connectConsole() {

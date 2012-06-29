@@ -6,6 +6,21 @@ import atari.console.Console;
 
 public class StandaloneRoom extends Room {
 
+	public StandaloneRoom() {
+		super();
+		buildPeripherals();
+		buildConsole();
+		connectConsole();
+		insertCartridgeProvided();
+	}
+
+	StandaloneRoom(Room room) {
+		super();
+		copyPeripherals(room);
+		buildConsole();
+		connectConsole();
+	}
+
 	@Override
 	protected void buildConsole() {
 		console = new Console();

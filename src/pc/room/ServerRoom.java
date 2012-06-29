@@ -9,12 +9,35 @@ import atari.network.socket.SocketRemoteTransmitter;
 
 public class ServerRoom extends Room {
 	
+	public ServerRoom() {
+		super();
+		buildPeripherals();
+		buildConsole();
+		connectConsole();
+		insertCartridgeProvided();
+	}
+
+	ServerRoom(Room room) {
+		super();
+		copyPeripherals(room);
+		buildConsole();
+		connectConsole();
+	}
+	
 	public void startServer() throws IOException {
 		remoteTransmitter.start();
 	}
 
+	public void startServer(int port) throws IOException {
+		remoteTransmitter.start(port);
+	}
+
 	public void stopServer() throws IOException {
 		remoteTransmitter.stop();
+	}
+
+	public SocketRemoteTransmitter remoteTransmitter() {
+		return remoteTransmitter;
 	}
 
 	@Override
@@ -25,5 +48,7 @@ public class ServerRoom extends Room {
 
 
 	private SocketRemoteTransmitter remoteTransmitter;
+
+
 
 }
