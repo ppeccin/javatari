@@ -22,6 +22,10 @@ public class ServerConsole extends Console implements ClockDriven {
 		setupTransmitter(transmitter);
 	}
 
+	public RemoteTransmitter remoteTransmitter() {
+		return remoteTransmitter;
+	}
+	
 	@Override
 	public void powerOff() {
 		// The server clock is always running
@@ -77,16 +81,16 @@ public class ServerConsole extends Console implements ClockDriven {
 	}
 
 
-	public synchronized void clientConnected() {
+	synchronized void clientConnected() {
 		showOSD("Player 2 Client Connected");
 		sendStateUpdate();
 	}
 
-	public void clientDisconnected() {
+	void clientDisconnected() {
 		showOSD("Player 2 Client Disconnected");
 	}
 
-	public void receiveClientControlChanges(List<ControlChange> clientControlChages) {
+	void receiveClientControlChanges(List<ControlChange> clientControlChages) {
 		for (ControlChange change : clientControlChages)
 			if (change instanceof ControlChangeForPaddle)
 				controlsSocket.controlStateChanged(change.control, ((ControlChangeForPaddle)change).position);

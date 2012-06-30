@@ -5,6 +5,7 @@ package pc.room;
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
 import pc.controls.AWTConsoleControls;
+import pc.room.settings.SettingsDialog;
 import pc.savestate.FileSaveStateMedia;
 import pc.screen.DesktopScreenWindow;
 import pc.screen.Screen;
@@ -12,23 +13,46 @@ import pc.speaker.Speaker;
 import utils.Terminator;
 import atari.cartridge.Cartridge;
 import atari.console.Console;
+import atari.network.ClientConsole;
+import atari.network.RemoteReceiver;
+import atari.network.RemoteTransmitter;
+import atari.network.ServerConsole;
 
-public abstract class Room {
+public class Room {
+	
+	private Room() {
+		super();
+	}
 
 	public void powerOn() {
 		screen.powerOn();
 	 	speaker.powerOn();
-	 	if (console.cartridgeSocket().inserted() != null) console.powerOn();
+	 	if (currentConsole.cartridgeSocket().inserted() != null) currentConsole.powerOn();
 	}
 
 	public void powerOff() {
-	 	console.powerOff();
+	 	currentConsole.powerOff();
 	 	speaker.powerOff();
 		screen.powerOff();
 	}
 
-	public Console console() {
-		return console;
+	public Console currentConsole() {
+		return currentConsole;
+	}
+
+	public Console standaloneCurrentConsole() {
+		if (currentConsole != standaloneConsole) throw new IllegalStateException();
+		return standaloneConsole;
+	}
+
+	public ServerConsole serverCurrentConsole() {
+		if (currentConsole != serverConsole) throw new IllegalStateException();
+		return serverConsole;
+	}
+
+	public ClientConsole clientCurrentConsole() {
+		if (currentConsole != clientConsole) throw new IllegalStateException();
+		return clientConsole;
 	}
 
 	public Screen screen() {
@@ -47,10 +71,49 @@ public abstract class Room {
 		return stateMedia;
 	}
 
-	protected abstract void buildConsole();
+	public boolean isStandaloneMode() {
+		return currentConsole == standaloneConsole;
+	}
+
+	public boolean isServerMode() {
+		return currentConsole == serverConsole;
+	}
 	
-	protected void buildPeripherals() {
+	public boolean isClientMode() {
+		return currentConsole == clientConsole;
+	}
+	
+	public void morphToStandaloneMode() {
+		if (isStandaloneMode()) return;
+		powerOff();
+		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
+		if (standaloneConsole == null) buildAndPlugStandaloneConsole();
+		else plugConsole(standaloneConsole);
+		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
+		powerOn();
+	}
+
+	public void morphToServerMode() {
+		if (isServerMode()) return;
+		powerOff();
+		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
+		if (serverConsole == null) buildAndPlugServerConsole();
+		else plugConsole(serverConsole);
+		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
+		powerOn();
+	}
+
+	public void morphToClientMode() {
+		if (isClientMode()) return;
+		powerOff();
+		if (clientConsole == null) buildAndPlugClientConsole();
+		else plugConsole(clientConsole);
+		powerOn();
+	}
+
+	private void buildPeripherals() {
 		// PC interfaces for Video, Audio, Controls, Cartridge and SaveState
+		if (screen != null) throw new IllegalStateException();
 		screen = new DesktopScreenWindow();
 		speaker = new Speaker();
 		controls = new AWTConsoleControls(screen.monitor());
@@ -58,34 +121,96 @@ public abstract class Room {
 		stateMedia = new FileSaveStateMedia();
 	}
 
-	protected void copyPeripherals(Room room) {
-		// Copy peripherals from another Room
-		screen = room.screen();
-		speaker = room.speaker();
-		controls = room.controls();
-		stateMedia = room.stateMedia();
-	}
-
-	protected void connectConsole() {
-		screen.connect(console.videoOutput(), console.controlsSocket(), console.cartridgeSocket());
-		speaker.connect(console.audioOutput());
-		controls.connect(console.controlsSocket());
-		stateMedia.connect(console.saveStateSocket());
+	private void plugConsole(Console console) {
+		if (currentConsole == console) return;
+		currentConsole = console;
+		screen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
+		speaker.connect(currentConsole.audioOutput());
+		controls.connect(currentConsole.controlsSocket());
+		stateMedia.connect(currentConsole.saveStateSocket());
 	}
 	
-	protected void insertCartridgeProvided() {
+	private void insertCartridgeProvided() {
 		if (Parameters.mainArg == null) return;
 		Cartridge cart = ROMLoader.load(Parameters.mainArg);
-		if (cart != null) console.cartridgeSocket().insert(cart, false);
+		if (cart != null) currentConsole.cartridgeSocket().insert(cart, false);
 		else Terminator.terminate();	// Error loading Cartridge
 	}
 
+	private Console buildAndPlugStandaloneConsole() {
+		if (standaloneConsole != null) throw new IllegalStateException();
+		standaloneConsole = new Console();
+		plugConsole(standaloneConsole);
+		return standaloneConsole;
+	}
 
-	protected Console console;
+	private ServerConsole buildAndPlugServerConsole() {
+		if (serverConsole != null) throw new IllegalStateException();
+		RemoteTransmitter remoteTransmitter = new RemoteTransmitter();
+		serverConsole = new ServerConsole(remoteTransmitter);
+		plugConsole(serverConsole);
+		return serverConsole;
+	}
+	
+	private ClientConsole buildAndPlugClientConsole() {
+		RemoteReceiver remoteReceiver = new RemoteReceiver();
+		clientConsole = new ClientConsole(remoteReceiver);
+		plugConsole(clientConsole);
+		return clientConsole;
+	}	
 
-	protected Screen screen;
-	protected Speaker speaker;
-	protected AWTConsoleControls controls;
-	protected FileSaveStateMedia stateMedia;
+	
+	public static Room currentRoom() {
+		return currentRoom;
+	}
+
+	public static Room buildStandaloneRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new Room();
+		currentRoom.buildPeripherals();
+		currentRoom.buildAndPlugStandaloneConsole();
+		currentRoom.insertCartridgeProvided();
+		return currentRoom;
+	}
+
+	public static Room buildServerRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new Room();
+		currentRoom.buildPeripherals();
+		currentRoom.buildAndPlugServerConsole();
+		currentRoom.insertCartridgeProvided();
+		return currentRoom;
+	}
+
+	public static Room buildClientRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new Room();
+		currentRoom.buildPeripherals();
+		// Automatically adjust interface for Multiplayer Client operation
+		currentRoom.controls().p1ControlsMode(true);
+		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
+		currentRoom.buildAndPlugClientConsole();
+		// Insert no Cartridge
+		return currentRoom;
+	}
+
+	public static void openCurrentRoomSettings() {
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(currentRoom);
+		settingsDialog.setVisible(true);
+	}
+
+	
+	private Console currentConsole;
+	private Console	standaloneConsole;
+	private ServerConsole serverConsole;
+	private ClientConsole clientConsole;
+
+	private Screen screen;
+	private Speaker speaker;
+	private AWTConsoleControls controls;
+	private FileSaveStateMedia stateMedia;
+	
+	private static Room currentRoom;
+	private static SettingsDialog settingsDialog;
 		
 }

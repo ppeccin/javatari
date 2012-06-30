@@ -7,8 +7,7 @@ import java.io.IOException;
 import javax.swing.JOptionPane;
 
 import parameters.Parameters;
-import pc.room.RoomManager;
-import pc.room.ServerRoom;
+import pc.room.Room;
 import utils.Terminator;
 
 public class MultiplayerServer {
@@ -19,12 +18,12 @@ public class MultiplayerServer {
 		Parameters.init(args);
 
 		// Build a ServerRoom for P1 Server play and turn everything on
-		ServerRoom serverRoom = RoomManager.buildServerRoom();
+		Room serverRoom = Room.buildServerRoom();
 		serverRoom.powerOn();
 		
 		// Start listening for P2 Client connections
 		try {
-			serverRoom.startServer();
+			serverRoom.serverCurrentConsole().remoteTransmitter().start();
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Server start failed:\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
 			Terminator.terminate();

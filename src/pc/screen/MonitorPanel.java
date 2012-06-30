@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import parameters.Parameters;
-import pc.room.RoomManager;
+import pc.room.Room;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import utils.slickframe.HotspotManager;
@@ -267,7 +267,7 @@ public class MonitorPanel extends JPanel implements MonitorDisplay {
 		hotspots.addHotspot(
 			new Rectangle(-28, -24, 17, 19),
 			new Runnable() { @Override public void run() {
-				RoomManager.openSettings();
+				Room.openCurrentRoomSettings();
 			}});
 	}
 

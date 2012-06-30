@@ -21,6 +21,10 @@ public class ClientConsole extends Console implements ClockDriven {
 		setupReceiver(receiver);
 	}
 
+	public RemoteReceiver remoteReceiver() {
+		return remoteReceiver;
+	}
+
 	@Override
 	protected void mainClockCreate() {
 		// Ignore, the clock is controlled remotely
@@ -66,15 +70,15 @@ public class ClientConsole extends Console implements ClockDriven {
 		tia.clockPulse();
 	}
 
-	public void connected() {
+	void connected() {
 		showOSD("Connected to Player 1 Server");
 	}
 
-	public void disconnected(){
+	void disconnected(){
 		showOSD("Disconnected from Player 1 Server");
 	}
 
-	public void receiveServerUpdate(ServerUpdate update) {
+	void receiveServerUpdate(ServerUpdate update) {
 		if (update.powerOn != null)
 			receiveServerPower(update.powerOn);
 		if (update.consoleState != null)
@@ -85,7 +89,7 @@ public class ClientConsole extends Console implements ClockDriven {
 			clockPulse();
 	}
 
-	public List<ControlChange> controlChangesToSend() {
+	List<ControlChange> controlChangesToSend() {
 		return ((ClientConsoleControlsSocketAdapter) controlsSocket).getChangesToSend();
 	}
 	

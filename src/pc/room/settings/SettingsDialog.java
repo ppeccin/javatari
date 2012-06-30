@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +22,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -33,21 +33,16 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import atari.network.socket.SocketRemoteReceiver;
-import atari.network.socket.SocketRemoteTransmitter;
-
 import parameters.Parameters;
-import pc.room.ClientRoom;
 import pc.room.Room;
-import pc.room.RoomManager;
-import pc.room.ServerRoom;
-import pc.room.StandaloneRoom;
+import atari.network.RemoteReceiver;
+import atari.network.RemoteTransmitter;
 
 public class SettingsDialog extends JDialog {
 
 	public static void main(String[] args) {
 		try {
-			SettingsDialog dialog = new SettingsDialog();
+			SettingsDialog dialog = new SettingsDialog(null);
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setLocationRelativeTo(null);
 			dialog.setVisible(true);
@@ -56,7 +51,8 @@ public class SettingsDialog extends JDialog {
 		}
 	}
 
-	public SettingsDialog() {
+	public SettingsDialog(Room room) {
+		this.room = room;
 		buildGUI();
 		buildKeyFieldsList();
 		setControlsKeyListener();
@@ -89,37 +85,23 @@ public class SettingsDialog extends JDialog {
 	}
 	
 	private void refreshMultiplayer() {
-		Room room = RoomManager.currentRoom();
-		if (room == null) return;
-		if (room instanceof StandaloneRoom) {
-			serverStartB.setText("START");
-			serverStartB.setEnabled(true);
-			serverPortTf.setEnabled(true);
-			clientConnectB.setText("CONNECT");
-			clientConnectB.setEnabled(true);
-			clientServerAddressTf.setEditable(true);
-			return;
-		}
-		if (room instanceof ServerRoom) {
-			clientConnectB.setText("CONNECT");
+		if (room == null) {
+			serverStartB.setText("?????");
+			serverStartB.setEnabled(false);
+			serverPortTf.setEditable(false);
+			clientConnectB.setText("?????");
 			clientConnectB.setEnabled(false);
 			clientServerAddressTf.setEditable(false);
-			boolean started = ((ServerRoom)room).remoteTransmitter().isStarted();
-			serverStartB.setText(started ? "STOP" : "START");
-			serverStartB.setEnabled(true);
-			serverPortTf.setText(String.valueOf(((ServerRoom)room).remoteTransmitter().port()));
-			serverPortTf.setEditable(!started);
 			return;
 		}
-		// ClientRoom
-		serverStartB.setText("START");
-		serverStartB.setEnabled(false);
-		serverPortTf.setEditable(false);
-		boolean connected = ((ClientRoom)room).remoteReceiver().isConnected();
-		clientConnectB.setText(connected ? "DISCONNECT" : "CONNECT");
-		clientConnectB.setEnabled(true);
-		clientServerAddressTf.setText(((ClientRoom)room).remoteReceiver().serverAddress());
-		clientServerAddressTf.setEditable(!connected);
+		boolean serverMode = room.isServerMode();
+		boolean clientMode = room.isClientMode();
+		serverStartB.setText(serverMode ? "STOP" : "START");
+		serverStartB.setEnabled(!clientMode);
+		serverPortTf.setEditable(!serverMode && !clientMode);
+		clientConnectB.setText(clientMode ? "DISCONNECT" : "CONNECT");
+		clientConnectB.setEnabled(!serverMode);
+		clientServerAddressTf.setEditable(!serverMode && !clientMode);
 	}
 
 	private void setControlsKeyListener() {
@@ -181,7 +163,7 @@ public class SettingsDialog extends JDialog {
 		Parameters.KEY_P1_BUTTON  = newKEY_P1_BUTTON;
 		Parameters.KEY_P1_BUTTON2 = newKEY_P1_BUTTON2;	
 		Parameters.savePreferences();
-		RoomManager.currentRoom().controls().initJoystickKeys();
+		room.controls().initJoystickKeys();
 	}
 
 	private void buildKeyFieldsList() {
@@ -220,36 +202,55 @@ public class SettingsDialog extends JDialog {
 	}
 	
 	private void serverStartAction() {
-		if (!(RoomManager.currentRoom() instanceof ServerRoom))
-			RoomManager.morphToServerRoom();
-		ServerRoom serverRoom = (ServerRoom)RoomManager.currentRoom();
-		SocketRemoteTransmitter transmitter = serverRoom.remoteTransmitter();
-		try {
-			if (!transmitter.isStarted()) { 
+		if (!room.isServerMode()) {		// Will try to START
+			room.morphToServerMode();
+			try {
+				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
 				String portString = serverPortTf.getText().trim();
-				if (portString.isEmpty()) transmitter.start();
-				else transmitter.start(Integer.valueOf(portString));
-			} else 
+				try {
+					if (portString.isEmpty()) transmitter.start();
+					else transmitter.start(Integer.valueOf(portString));
+					setVisible(false);
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Invalid port number: " + portString);
+				}
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Could not start Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
+				room.morphToStandaloneMode();
+			}
+		} else {	// Will try to STOP
+			try {
+				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
 				transmitter.stop();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+				room.morphToStandaloneMode();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Error stopping Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
+			}
+		}			
 		refreshMultiplayer();
 	}
 	
 	private void clientConnectAction() {
-		if (!(RoomManager.currentRoom() instanceof ClientRoom))
-			RoomManager.morphToClientRoom();
-		ClientRoom clientRoom = (ClientRoom)RoomManager.currentRoom();
-		SocketRemoteReceiver receiver = clientRoom.remoteReceiver();
-		try {
-			if (!receiver.isConnected()) { 
-				String serverAddress = clientServerAddressTf.getText().trim();
-				receiver.start(serverAddress);
-			} else 
-				receiver.stop();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (!room.isClientMode()) {		// Will try to CONNECT
+			room.morphToClientMode();
+			String serverAddress = "";
+			try {
+				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
+				serverAddress = clientServerAddressTf.getText().trim();
+				receiver.connect(serverAddress);
+				setVisible(false);
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Connection failed: " + serverAddress + "\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
+				room.morphToStandaloneMode();
+			}
+		} else {	// Will try to DISCONNECT 
+			try {
+				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
+				receiver.disconnect();
+				room.morphToStandaloneMode();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Error disconnecting from Server:\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 		refreshMultiplayer();
 	}
@@ -764,6 +765,8 @@ public class SettingsDialog extends JDialog {
 		setLocationRelativeTo(null);
 	}
 
+	
+	private final Room room;
 
 	private final JPanel contentPanel = new JPanel();
 	private JPanel controlsPanel;

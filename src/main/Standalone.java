@@ -3,7 +3,7 @@
 package main;
 
 import parameters.Parameters;
-import pc.room.RoomManager;
+import pc.room.Room;
 
 public class Standalone {
 
@@ -13,7 +13,7 @@ public class Standalone {
 		Parameters.init(args);
 
 		// Build a Room for Standalone play and turn everything on
-		RoomManager.buildStandaloneRoom().powerOn();
+		Room.buildStandaloneRoom().powerOn();
 
 	}
 				

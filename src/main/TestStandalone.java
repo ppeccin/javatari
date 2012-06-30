@@ -5,7 +5,6 @@ package main;
 import parameters.Parameters;
 import pc.cartridge.ROMLoader;
 import pc.room.Room;
-import pc.room.RoomManager;
 import atari.cartridge.Cartridge;
 
 public class TestStandalone {
@@ -16,11 +15,11 @@ public class TestStandalone {
 		Parameters.init(args);
 		
 		// Build a Room for Standalone play
-		final Room room = RoomManager.buildStandaloneRoom();
+		final Room room = Room.buildStandaloneRoom();
 
 	 	// Insert test Cartridge
 		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/hero.bin");
-		if (cart != null) room.console().cartridgeSocket().insert(cart, false);
+		if (cart != null) room.currentConsole().cartridgeSocket().insert(cart, false);
 
 		// Turn everything on
 		room.powerOn();
@@ -28,7 +27,7 @@ public class TestStandalone {
 	 	// Keep logging info about clocks speeds achieved 
 	 	(new Thread() { @Override public void run() {
 		 	while(true) {
-				System.out.println(room.console().mainClock() + ", " + room.screen().monitor().clock + ", " + room.speaker().clock);
+				System.out.println(room.currentConsole().mainClock() + ", " + room.screen().monitor().clock + ", " + room.speaker().clock);
 				try { Thread.sleep(1000); } catch (InterruptedException e) {}
 			}
 	 	}}).start();

@@ -37,7 +37,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import parameters.Parameters;
-import pc.room.RoomManager;
+import pc.room.Room;
 import utils.GraphicsDeviceHelper;
 import utils.Terminator;
 import utils.slickframe.HotspotManager;
@@ -246,6 +246,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		addHotspots();
 		addKeyListener(new DesktopScreenControlKeyListener());
 		monitor.setDisplay(this);
+		displayCenter();
 	}
 
 	private void fullScreen(boolean state) {
@@ -257,8 +258,9 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 	}
 
 	private void openWindow() {
+		if (isVisible()) return;
 		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (dev.isFullScreenSupported()) dev.setFullScreenWindow(null);
+		if (dev.isFullScreenSupported() && dev.getFullScreenWindow() != null) dev.setFullScreenWindow(null);
 		fullWindow.setVisible(false);
 		setVisible(true);
 		fullScreen = false;
@@ -266,6 +268,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 	}
 
 	private boolean openFullWindow() {
+		if (fullWindow.isVisible()) return true;
 		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
 		if (!dev.isFullScreenSupported()) return false;
 		setVisible(false);
@@ -370,7 +373,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		hotspots.addHotspot(
 			new Rectangle(-41, -24, 17, 19),
 			new Runnable() { @Override public void run() {
-				RoomManager.openSettings();
+				Room.openCurrentRoomSettings();
 			}});
 	}
 

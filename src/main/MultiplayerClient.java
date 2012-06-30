@@ -4,9 +4,12 @@ package main;
 
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
+import atari.network.RemoteReceiver;
+
 import parameters.Parameters;
-import pc.room.ClientRoom;
-import pc.room.RoomManager;
+import pc.room.Room;
 import utils.Terminator;
 
 public class MultiplayerClient {
@@ -17,13 +20,38 @@ public class MultiplayerClient {
 		Parameters.init(args);
 
 		// Build a ClientRoom for P2 Client play and turn everything on
-		ClientRoom clientRoom = RoomManager.buildClientRoom();
+		Room clientRoom = Room.buildClientRoom();
 		clientRoom.powerOn();
 		
 		// Start connection to P1 Server
-		boolean success = clientRoom.askUserForConnection(Parameters.mainArg);
+		boolean success = askUserForConnection(clientRoom.clientCurrentConsole().remoteReceiver(), Parameters.mainArg);
 		if (!success) Terminator.terminate();
 		
+	}
+
+	private static boolean askUserForConnection(RemoteReceiver remoteReceiver, String defaultServer) {
+		String server = defaultServer;
+ 		while(true) {
+			// Try connecting to server
+ 			if (server != null && !server.isEmpty()) {
+ 				try {
+ 					remoteReceiver.connect(server);
+ 					return true;
+ 				} catch(Exception ex) {
+ 					JOptionPane.showMessageDialog(null, "Unnable to connect to: " + server + "\n" + ex, "Atari Player 2 Client", JOptionPane.ERROR_MESSAGE);
+ 				}
+ 			}
+			// If unsuccessful, ask for another address
+	 		do {
+				server = (String) JOptionPane.showInputDialog(
+					null, "Atari Player 1 Server address:", "Atari Player 2 Client",
+					JOptionPane.PLAIN_MESSAGE, null, null,
+					server
+				);
+		 		if (server == null) return false;	// User chose cancel
+		 		server = server.trim();
+	 		} while(server.isEmpty());
+ 		}
 	}
 
 }
