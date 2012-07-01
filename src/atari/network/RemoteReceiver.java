@@ -26,7 +26,7 @@ public class RemoteReceiver {
 		if (socket == null || socket.isClosed()) return; 
 		socket.close();	// Will stop the receiver loop and disconnect
 		try {
-			updatesReceiver.join();		// TODO Ver parada direito
+			if (updatesReceiver != null) updatesReceiver.join();	// Wait for disconnection to complete
 		} catch (InterruptedException e) {
 			// No problem
 		}

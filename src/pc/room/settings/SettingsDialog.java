@@ -31,12 +31,14 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
+import javax.swing.border.EtchedBorder;
 
 import parameters.Parameters;
 import pc.room.Room;
 import atari.network.RemoteReceiver;
 import atari.network.RemoteTransmitter;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class SettingsDialog extends JDialog {
 
@@ -56,18 +58,20 @@ public class SettingsDialog extends JDialog {
 		buildGUI();
 		buildKeyFieldsList();
 		setControlsKeyListener();
-		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));	// TODO Melhorar
+		setMultiplayerDefaults();
+		mainTabbedPane.setSelectedIndex(3);
 	}
 		
 	@Override
 	public void setVisible(boolean state) {
 		initNewKeys();
-		refreshKeyNames();
+		refreshContols();
 		refreshMultiplayer();
+		mainTabbedPaneChanged();
 		super.setVisible(state);
 	}
 	
-	private void refreshKeyNames() {
+	private void refreshContols() {
 		keyP0Up.setText(KeyNames.get(newKEY_P0_UP));
 		keyP0Down.setText(KeyNames.get(newKEY_P0_DOWN));
 		keyP0Left.setText(KeyNames.get(newKEY_P0_LEFT));
@@ -82,10 +86,14 @@ public class SettingsDialog extends JDialog {
 		keyP1Button2.setText(KeyNames.get(newKEY_P1_BUTTON2));	
 		for (JTextField field : keyFieldsList)
 			field.setBackground(field.getText().trim().isEmpty() ? Color.YELLOW : Color.WHITE);
+		defaultsB.setVisible(true);
+		okB.setVisible(true);
+		cancelB.setText("Cancel");
 	}
 	
 	private void refreshMultiplayer() {
 		if (room == null) {
+			modeL.setText("?????");
 			serverStartB.setText("?????");
 			serverStartB.setEnabled(false);
 			serverPortTf.setEditable(false);
@@ -96,12 +104,17 @@ public class SettingsDialog extends JDialog {
 		}
 		boolean serverMode = room.isServerMode();
 		boolean clientMode = room.isClientMode();
+		modeL.setText(serverMode ? "P1 SERVER MODE" : clientMode ? "P2 CLIENT MODE" : "STANDALONE MODE");
+		modeL.setForeground(serverMode ? Color.BLUE : clientMode ? Color.RED : new Color(0, 127, 0));
 		serverStartB.setText(serverMode ? "STOP" : "START");
 		serverStartB.setEnabled(!clientMode);
 		serverPortTf.setEditable(!serverMode && !clientMode);
 		clientConnectB.setText(clientMode ? "DISCONNECT" : "CONNECT");
 		clientConnectB.setEnabled(!serverMode);
 		clientServerAddressTf.setEditable(!serverMode && !clientMode);
+		defaultsB.setVisible(!serverMode && !clientMode);
+		okB.setVisible(false);
+		cancelB.setText("Close");
 	}
 
 	private void setControlsKeyListener() {
@@ -131,7 +144,7 @@ public class SettingsDialog extends JDialog {
 		if (comp == keyP1Right) newKEY_P1_RIGHT = code;
 		if (comp == keyP1Button) newKEY_P1_BUTTON = code;
 		if (comp == keyP1Button2) newKEY_P1_BUTTON2 = code;
-		refreshKeyNames();
+		refreshContols();
 	}
 
 	private void unsetControlKey(int code) {
@@ -256,6 +269,15 @@ public class SettingsDialog extends JDialog {
 	}
 	
 	private void defaultsAction() {
+		switch(mainTabbedPane.getSelectedIndex()) {
+			case 0:
+				setMultiplayerDefaults(); break;
+			case 1:
+				setControlsKeysDefaults();
+		}
+	}
+
+	private void setControlsKeysDefaults() {
 		newKEY_P0_UP      = Parameters.DEFAULT_KEY_P0_UP; 
 		newKEY_P0_DOWN    = Parameters.DEFAULT_KEY_P0_DOWN;
 		newKEY_P0_LEFT    = Parameters.DEFAULT_KEY_P0_LEFT;
@@ -268,7 +290,25 @@ public class SettingsDialog extends JDialog {
 		newKEY_P1_RIGHT   = Parameters.DEFAULT_KEY_P1_RIGHT;
 		newKEY_P1_BUTTON  = Parameters.DEFAULT_KEY_P1_BUTTON;
 		newKEY_P1_BUTTON2 = Parameters.DEFAULT_KEY_P1_BUTTON2;
-		refreshKeyNames();
+		refreshContols();
+	}
+
+	private void setMultiplayerDefaults() {
+		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));
+	}
+	
+	private void mainTabbedPaneChanged() {
+		if (!buildFinished) return;
+		switch (mainTabbedPane.getSelectedIndex()) {
+			case 0:
+				refreshMultiplayer(); break;
+			case 1:
+				refreshContols(); break;
+			default:
+				defaultsB.setVisible(false);
+				okB.setVisible(false);
+				cancelB.setText("Close");
+		}
 	}
 
 	private void okAction() {
@@ -292,19 +332,24 @@ public class SettingsDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(new BorderLayout(0, 0));
 		{
-			JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-			tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 13));
-			tabbedPane.setBackground(UIManager.getColor("TabbedPane.background"));
-			contentPanel.add(tabbedPane, BorderLayout.CENTER);
+			mainTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+			mainTabbedPane.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					mainTabbedPaneChanged();
+				}
+			});
+			mainTabbedPane.setFont(new Font("Arial", Font.PLAIN, 13));
+			mainTabbedPane.setBackground(UIManager.getColor("TabbedPane.background"));
+			contentPanel.add(mainTabbedPane, BorderLayout.CENTER);
 			
 			JPanel panel_1 = new JPanel();
-			tabbedPane.addTab("Multiplayer", null, panel_1, null);
+			mainTabbedPane.addTab("Multiplayer", null, panel_1, null);
 			panel_1.setLayout(null);
 			
 			JLabel lblNewLabel_1 = new JLabel("P1 Server");
-			lblNewLabel_1.setFont(new Font("Dialog", Font.BOLD, 17));
+			lblNewLabel_1.setFont(new Font("Arial", Font.BOLD, 16));
 			lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-			lblNewLabel_1.setBounds(29, 28, 100, 28);
+			lblNewLabel_1.setBounds(29, 16, 100, 20);
 			panel_1.add(lblNewLabel_1);
 			
 			serverStartB = new JButton("START");
@@ -313,7 +358,7 @@ public class SettingsDialog extends JDialog {
 					serverStartAction();
 				}
 			});
-			serverStartB.setBounds(25, 59, 108, 26);
+			serverStartB.setBounds(25, 39, 108, 26);
 			panel_1.add(serverStartB);
 			
 			clientConnectB = new JButton("CONNECT");
@@ -322,44 +367,64 @@ public class SettingsDialog extends JDialog {
 					clientConnectAction();
 				}
 			});
-			clientConnectB.setBounds(325, 59, 108, 26);
+			clientConnectB.setBounds(334, 39, 108, 26);
 			panel_1.add(clientConnectB);
 			
 			clientServerAddressTf = new JTextField();
-			clientServerAddressTf.setBounds(316, 116, 126, 20);
+			clientServerAddressTf.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					clientConnectAction();
+				}
+			});
+			clientServerAddressTf.setFont(new Font("Arial", Font.PLAIN, 12));
+			clientServerAddressTf.setBounds(330, 90, 117, 22);
 			panel_1.add(clientServerAddressTf);
 			clientServerAddressTf.setColumns(10);
 			
 			JLabel lblServerAddressport = new JLabel("Server Address [:port]");
 			lblServerAddressport.setHorizontalAlignment(SwingConstants.CENTER);
-			lblServerAddressport.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			lblServerAddressport.setBounds(316, 97, 126, 19);
+			lblServerAddressport.setFont(new Font("Arial", Font.PLAIN, 12));
+			lblServerAddressport.setBounds(330, 73, 117, 15);
 			panel_1.add(lblServerAddressport);
 			
 			serverPortTf = new JTextField();
+			serverPortTf.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					serverStartAction();
+				}
+			});
+			serverPortTf.setFont(new Font("Arial", Font.PLAIN, 12));
 			serverPortTf.setHorizontalAlignment(SwingConstants.RIGHT);
 			serverPortTf.setColumns(10);
-			serverPortTf.setBounds(48, 116, 62, 20);
+			serverPortTf.setBounds(48, 90, 62, 22);
 			panel_1.add(serverPortTf);
 			
 			JLabel lblPort = new JLabel("Server Port");
 			lblPort.setHorizontalAlignment(SwingConstants.CENTER);
-			lblPort.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			lblPort.setBounds(48, 99, 62, 15);
+			lblPort.setFont(new Font("Arial", Font.PLAIN, 12));
+			lblPort.setBounds(48, 73, 62, 15);
 			panel_1.add(lblPort);
 			
 			JLabel lblPClient = new JLabel("P2 Client");
 			lblPClient.setHorizontalAlignment(SwingConstants.CENTER);
-			lblPClient.setFont(new Font("Dialog", Font.BOLD, 17));
-			lblPClient.setBounds(329, 28, 100, 28);
+			lblPClient.setFont(new Font("Arial", Font.BOLD, 16));
+			lblPClient.setBounds(338, 16, 100, 20);
 			panel_1.add(lblPClient);
+			
+			modeL = new JLabel("P1 SERVER MODE");
+			modeL.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			modeL.setFont(new Font("Arial", Font.BOLD, 13));
+			modeL.setOpaque(true);
+			modeL.setHorizontalAlignment(SwingConstants.CENTER);
+			modeL.setBounds(160, 39, 149, 26);
+			panel_1.add(modeL);
 			{
 				controlsPanel = new JPanel();
-				tabbedPane.addTab("Controls", null, controlsPanel, null);
+				mainTabbedPane.addTab("Controls", null, controlsPanel, null);
 				controlsPanel.setLayout(null);
 				{
 					JLabel lblNewLabel = new JLabel("");
-					lblNewLabel.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
+					lblNewLabel.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Joystick.png")));
 					lblNewLabel.setBounds(63, 72, 75, 90);
 					controlsPanel.add(lblNewLabel);
 				}
@@ -367,8 +432,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Up = new JTextField();
 				keyP0Up.setBackground(Color.WHITE);
 				keyP0Up.setEditable(false);
-				keyP0Up.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Up.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Up.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Up.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Up.setText("UP");
 				keyP0Up.setBounds(80, 50, 40, 20);
@@ -378,8 +442,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Right = new JTextField();
 				keyP0Right.setBackground(Color.WHITE);
 				keyP0Right.setEditable(false);
-				keyP0Right.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Right.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Right.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Right.setText("RIGHT");
 				keyP0Right.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Right.setColumns(10);
@@ -389,8 +452,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Left = new JTextField();
 				keyP0Left.setBackground(Color.WHITE);
 				keyP0Left.setEditable(false);
-				keyP0Left.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Left.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Left.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Left.setText("LEFT");
 				keyP0Left.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Left.setColumns(10);
@@ -400,8 +462,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Down = new JTextField();
 				keyP0Down.setBackground(Color.WHITE);
 				keyP0Down.setEditable(false);
-				keyP0Down.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Down.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Down.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Down.setText("DOWN");
 				keyP0Down.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Down.setColumns(10);
@@ -409,25 +470,25 @@ public class SettingsDialog extends JDialog {
 				controlsPanel.add(keyP0Down);
 				
 				JLabel lblRight = new JLabel("Right");
-				lblRight.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblRight.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblRight.setHorizontalAlignment(SwingConstants.CENTER);
 				lblRight.setBounds(138, 95, 38, 14);
 				controlsPanel.add(lblRight);
 				
 				JLabel lblLeft = new JLabel("Left");
-				lblLeft.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblLeft.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblLeft.setHorizontalAlignment(SwingConstants.CENTER);
 				lblLeft.setBounds(24, 95, 36, 14);
 				controlsPanel.add(lblLeft);
 				
 				JLabel lblDown = new JLabel("Down");
-				lblDown.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblDown.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblDown.setHorizontalAlignment(SwingConstants.CENTER);
 				lblDown.setBounds(81, 185, 38, 14);
 				controlsPanel.add(lblDown);
 				
 				JLabel lblUp = new JLabel("Up");
-				lblUp.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblUp.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblUp.setHorizontalAlignment(SwingConstants.CENTER);
 				lblUp.setBounds(81, 34, 38, 14);
 				controlsPanel.add(lblUp);
@@ -435,8 +496,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Button = new JTextField();
 				keyP0Button.setBackground(Color.WHITE);
 				keyP0Button.setEditable(false);
-				keyP0Button.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Button.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Button.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Button.setText("SPC");
 				keyP0Button.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Button.setColumns(10);
@@ -444,19 +504,19 @@ public class SettingsDialog extends JDialog {
 				controlsPanel.add(keyP0Button);
 				
 				JLabel lblFire = new JLabel("Fire 1");
-				lblFire.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblFire.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblFire.setHorizontalAlignment(SwingConstants.CENTER);
 				lblFire.setBounds(23, 46, 38, 14);
 				controlsPanel.add(lblFire);
 				
 				JLabel lblPlayer = new JLabel("Player 1");
-				lblPlayer.setFont(new Font("Tahoma", Font.BOLD, 14));
+				lblPlayer.setFont(new Font("Arial", Font.BOLD, 16));
 				lblPlayer.setHorizontalAlignment(SwingConstants.CENTER);
 				lblPlayer.setBounds(63, 9, 74, 20);
 				controlsPanel.add(lblPlayer);
 				
 				JLabel lblFire_1 = new JLabel("Fire 2");
-				lblFire_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lblFire_1.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblFire_1.setHorizontalAlignment(SwingConstants.CENTER);
 				lblFire_1.setBounds(138, 46, 38, 14);
 				controlsPanel.add(lblFire_1);
@@ -464,8 +524,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Button2 = new JTextField();
 				keyP0Button2.setBackground(Color.WHITE);
 				keyP0Button2.setEditable(false);
-				keyP0Button2.setBorder(new LineBorder(Color.LIGHT_GRAY));
-				keyP0Button2.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP0Button2.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Button2.setText("DEL");
 				keyP0Button2.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Button2.setColumns(10);
@@ -475,20 +534,20 @@ public class SettingsDialog extends JDialog {
 				JTextPane txtpnAltJ_1 = new JTextPane();
 				txtpnAltJ_1.setOpaque(false);
 				txtpnAltJ_1.setEditable(false);
-				txtpnAltJ_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				txtpnAltJ_1.setFont(new Font("Arial", Font.PLAIN, 12));
 				txtpnAltJ_1.setText("ALT + J : Swap P1<>P2\r\nALT + L : Toggle Paddles");
 				txtpnAltJ_1.setBounds(162, 167, 145, 36);
 				controlsPanel.add(txtpnAltJ_1);
 				
 				JLabel label = new JLabel("");
-				label.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/Joystick.png")));
+				label.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Joystick.png")));
 				label.setBounds(333, 72, 75, 90);
 				controlsPanel.add(label);
 				
 				keyP1Up = new JTextField();
 				keyP1Up.setText("T");
 				keyP1Up.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Up.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Up.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Up.setEditable(false);
 				keyP1Up.setColumns(10);
 				keyP1Up.setBackground(Color.WHITE);
@@ -498,7 +557,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Right = new JTextField();
 				keyP1Right.setText("H");
 				keyP1Right.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Right.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Right.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Right.setEditable(false);
 				keyP1Right.setColumns(10);
 				keyP1Right.setBackground(Color.WHITE);
@@ -508,7 +567,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Left = new JTextField();
 				keyP1Left.setText("F");
 				keyP1Left.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Left.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Left.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Left.setEditable(false);
 				keyP1Left.setColumns(10);
 				keyP1Left.setBackground(Color.WHITE);
@@ -518,7 +577,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Down = new JTextField();
 				keyP1Down.setText("G");
 				keyP1Down.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Down.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Down.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Down.setEditable(false);
 				keyP1Down.setColumns(10);
 				keyP1Down.setBackground(Color.WHITE);
@@ -527,32 +586,32 @@ public class SettingsDialog extends JDialog {
 				
 				JLabel label_1 = new JLabel("Right");
 				label_1.setHorizontalAlignment(SwingConstants.CENTER);
-				label_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_1.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_1.setBounds(408, 95, 38, 14);
 				controlsPanel.add(label_1);
 				
 				JLabel label_2 = new JLabel("Left");
 				label_2.setHorizontalAlignment(SwingConstants.CENTER);
-				label_2.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_2.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_2.setBounds(294, 95, 36, 14);
 				controlsPanel.add(label_2);
 				
 				JLabel label_3 = new JLabel("Down");
 				label_3.setHorizontalAlignment(SwingConstants.CENTER);
-				label_3.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_3.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_3.setBounds(351, 185, 38, 14);
 				controlsPanel.add(label_3);
 				
 				JLabel label_4 = new JLabel("Up");
 				label_4.setHorizontalAlignment(SwingConstants.CENTER);
-				label_4.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_4.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_4.setBounds(351, 34, 38, 14);
 				controlsPanel.add(label_4);
 				
 				keyP1Button = new JTextField();
 				keyP1Button.setText("A");
 				keyP1Button.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Button.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Button.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Button.setEditable(false);
 				keyP1Button.setColumns(10);
 				keyP1Button.setBackground(Color.WHITE);
@@ -561,25 +620,25 @@ public class SettingsDialog extends JDialog {
 				
 				JLabel label_5 = new JLabel("Fire 1");
 				label_5.setHorizontalAlignment(SwingConstants.CENTER);
-				label_5.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_5.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_5.setBounds(293, 46, 38, 14);
 				controlsPanel.add(label_5);
 				
 				JLabel lblPlayer_1 = new JLabel("Player 2");
 				lblPlayer_1.setHorizontalAlignment(SwingConstants.CENTER);
-				lblPlayer_1.setFont(new Font("Tahoma", Font.BOLD, 14));
+				lblPlayer_1.setFont(new Font("Arial", Font.BOLD, 16));
 				lblPlayer_1.setBounds(333, 9, 74, 20);
 				controlsPanel.add(lblPlayer_1);
 				
 				JLabel label_7 = new JLabel("Fire 2");
 				label_7.setHorizontalAlignment(SwingConstants.CENTER);
-				label_7.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				label_7.setFont(new Font("Arial", Font.PLAIN, 12));
 				label_7.setBounds(408, 46, 38, 14);
 				controlsPanel.add(label_7);
 				
 				keyP1Button2 = new JTextField();
 				keyP1Button2.setHorizontalAlignment(SwingConstants.CENTER);
-				keyP1Button2.setFont(new Font("Tahoma", Font.PLAIN, 11));
+				keyP1Button2.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP1Button2.setEditable(false);
 				keyP1Button2.setColumns(10);
 				keyP1Button2.setBackground(Color.WHITE);
@@ -589,19 +648,19 @@ public class SettingsDialog extends JDialog {
 				JLabel lbldoubleclickToChange = new JLabel("(double-click to change)");
 				lbldoubleclickToChange.setToolTipText("");
 				lbldoubleclickToChange.setHorizontalAlignment(SwingConstants.CENTER);
-				lbldoubleclickToChange.setFont(new Font("Tahoma", Font.PLAIN, 12));
+				lbldoubleclickToChange.setFont(new Font("Arial", Font.PLAIN, 12));
 				lbldoubleclickToChange.setBounds(168, 12, 133, 15);
 				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
 			JPanel panel = new JPanel();
-			tabbedPane.addTab("Help ", null, panel, null);
+			mainTabbedPane.addTab("Help", null, panel, null);
 			panel.setLayout(null);
 			
 			JTextPane txtpnAltJ = new JTextPane();
 			txtpnAltJ.setOpaque(false);
 			txtpnAltJ.setEditable(false);
-			txtpnAltJ.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnAltJ.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAltJ.setBounds(18, 10, 78, 203);
 			panel.add(txtpnAltJ);
 			txtpnAltJ.setText("CTR + 1-0 :\r\nALT + 1-0 :\r\n\r\nALT + ENT :\r\nALT + V :\r\nALT + R :\r\nALT + Q :\r\n\r\nALT + D :\r\nALT + C :\r\nALT + P :\r\nALT + F :\r\nTAB :");
@@ -610,15 +669,15 @@ public class SettingsDialog extends JDialog {
 			txtpnFullscreenNtsc.setOpaque(false);
 			txtpnFullscreenNtsc.setEditable(false);
 			txtpnFullscreenNtsc.setText("Save State\r\nLoad State\r\n\r\nFullscreen\r\nNTSC / PAL\r\nCRT Modes\r\nFilter\r\n\r\nDebug Modes\r\nCollisions\r\nPause\r\nNext Frame\r\nFast Speed");
-			txtpnFullscreenNtsc.setFont(new Font("Tahoma", Font.PLAIN, 12));
-			txtpnFullscreenNtsc.setBounds(95, 10, 82, 203);
+			txtpnFullscreenNtsc.setFont(new Font("Arial", Font.PLAIN, 12));
+			txtpnFullscreenNtsc.setBounds(95, 10, 92, 203);
 			panel.add(txtpnFullscreenNtsc);
 			
 			JTextPane txtpnAltF = new JTextPane();
 			txtpnAltF.setOpaque(false);
 			txtpnAltF.setEditable(false);
 			txtpnAltF.setText("ALT + F1 :\r\n\r\nALT + F5 :\r\nALT + F6 :\r\nF7 :\r\n");
-			txtpnAltF.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnAltF.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAltF.setBounds(218, 10, 71, 81);
 			panel.add(txtpnAltF);
 			
@@ -626,7 +685,7 @@ public class SettingsDialog extends JDialog {
 			txtpnFryConsoleLoad.setOpaque(false);
 			txtpnFryConsoleLoad.setEditable(false);
 			txtpnFryConsoleLoad.setText("Fry Console\r\n\r\nLoad Cartridge\r\nwith no Power Cycle\r\nRemove Cartridge");
-			txtpnFryConsoleLoad.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnFryConsoleLoad.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnFryConsoleLoad.setBounds(287, 10, 127, 81);
 			panel.add(txtpnFryConsoleLoad);
 			
@@ -634,7 +693,7 @@ public class SettingsDialog extends JDialog {
 			txtpnCtraltArrows.setOpaque(false);
 			txtpnCtraltArrows.setEditable(false);
 			txtpnCtraltArrows.setText("CTR-ALT + Arrows :\r\nCTR-SHT + Arrows :\r\nALT-SHT + Arrows :\r\n\r\nBACKSPACE :\r\n");
-			txtpnCtraltArrows.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnCtraltArrows.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnCtraltArrows.setBounds(218, 130, 121, 81);
 			panel.add(txtpnCtraltArrows);
 			
@@ -642,7 +701,7 @@ public class SettingsDialog extends JDialog {
 			txtpnAlsoPossibleDo.setOpaque(false);
 			txtpnAlsoPossibleDo.setEditable(false);
 			txtpnAlsoPossibleDo.setText("Drag/Drop or Copy/Paste of files and URLs");
-			txtpnAlsoPossibleDo.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnAlsoPossibleDo.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAlsoPossibleDo.setBounds(218, 100, 240, 21);
 			panel.add(txtpnAlsoPossibleDo);
 			
@@ -650,46 +709,46 @@ public class SettingsDialog extends JDialog {
 			txtpnDisplayOriginDisplay.setOpaque(false);
 			txtpnDisplayOriginDisplay.setEditable(false);
 			txtpnDisplayOriginDisplay.setText("Display Origin\r\nDisplay Size\r\nDisplay Scale\r\n\r\nDisplay Defaults");
-			txtpnDisplayOriginDisplay.setFont(new Font("Tahoma", Font.PLAIN, 12));
+			txtpnDisplayOriginDisplay.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnDisplayOriginDisplay.setBounds(343, 130, 100, 81);
 			panel.add(txtpnDisplayOriginDisplay);
 			{
 				JPanel panel_2 = new JPanel();
 				panel_2.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				panel_2.setBackground(UIManager.getColor("Panel.background"));
-				tabbedPane.addTab("About", null, panel_2, null);
+				mainTabbedPane.addTab("About", null, panel_2, null);
 				panel_2.setLayout(null);
 				{
 					JLabel lblNewButton = new JLabel("");
-					lblNewButton.setBounds(19, 19, 162, 158);
+					lblNewButton.setBounds(29, 23, 162, 158);
 					panel_2.add(lblNewButton);
-					lblNewButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/screen/images/LogoAbout.png")));
+					lblNewButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/LogoAbout.png")));
 					lblNewButton.setPreferredSize(new Dimension(200, 250));
 					lblNewButton.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 				}
 				
 				JLabel lblVerion = new JLabel(Parameters.VERSION);
 				lblVerion.setHorizontalAlignment(SwingConstants.CENTER);
-				lblVerion.setFont(new Font("Tahoma", Font.PLAIN, 13));
-				lblVerion.setBounds(58, 183, 85, 14);
+				lblVerion.setFont(new Font("Arial", Font.PLAIN, 13));
+				lblVerion.setBounds(68, 187, 85, 14);
 				panel_2.add(lblVerion);
 				
 				JLabel lblCreate = new JLabel("Paulo Augusto Peccin");
 				lblCreate.setHorizontalAlignment(SwingConstants.CENTER);
-				lblCreate.setFont(new Font("Tahoma", Font.PLAIN, 14));
-				lblCreate.setBounds(254, 52, 137, 21);
+				lblCreate.setFont(new Font("Arial", Font.PLAIN, 15));
+				lblCreate.setBounds(256, 62, 143, 18);
 				panel_2.add(lblCreate);
 				
 				JLabel lblCreated = new JLabel("created by");
 				lblCreated.setHorizontalAlignment(SwingConstants.CENTER);
-				lblCreated.setFont(new Font("Tahoma", Font.PLAIN, 13));
-				lblCreated.setBounds(254, 29, 137, 21);
+				lblCreated.setFont(new Font("Arial", Font.PLAIN, 13));
+				lblCreated.setBounds(259, 39, 137, 21);
 				panel_2.add(lblCreated);
 				{
 					JLabel lblOfficialHomepage = new JLabel("official homepage:");
 					lblOfficialHomepage.setHorizontalAlignment(SwingConstants.CENTER);
-					lblOfficialHomepage.setFont(new Font("Tahoma", Font.PLAIN, 13));
-					lblOfficialHomepage.setBounds(254, 115, 137, 21);
+					lblOfficialHomepage.setFont(new Font("Arial", Font.PLAIN, 13));
+					lblOfficialHomepage.setBounds(259, 125, 137, 21);
 					panel_2.add(lblOfficialHomepage);
 				}
 				{
@@ -706,19 +765,18 @@ public class SettingsDialog extends JDialog {
 					lblHttpjavatariotg.setBorderPainted(false);
 					lblHttpjavatariotg.setHorizontalAlignment(SwingConstants.CENTER);
 					lblHttpjavatariotg.setForeground(Color.BLUE);
-					lblHttpjavatariotg.setFont(new Font("Tahoma", Font.PLAIN, 14));
-					lblHttpjavatariotg.setBounds(267, 139, 111, 17);
+					lblHttpjavatariotg.setFont(new Font("Arial", Font.PLAIN, 15));
+					lblHttpjavatariotg.setBounds(274, 149, 107, 18);
 					panel_2.add(lblHttpjavatariotg);
 				}
 				{
 					JLabel lblppeccin = new JLabel("@ppeccin");
 					lblppeccin.setHorizontalAlignment(SwingConstants.CENTER);
-					lblppeccin.setFont(new Font("Tahoma", Font.PLAIN, 13));
-					lblppeccin.setBounds(254, 74, 137, 14);
+					lblppeccin.setFont(new Font("Arial", Font.PLAIN, 13));
+					lblppeccin.setBounds(259, 82, 137, 19);
 					panel_2.add(lblppeccin);
 				}
 			}
-			tabbedPane.setSelectedIndex(3);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -731,38 +789,39 @@ public class SettingsDialog extends JDialog {
 				flowLayout.setAlignment(FlowLayout.LEFT);
 				buttonPane.add(panel, BorderLayout.WEST);
 				
-				JButton defaultsButton = new JButton("Defaults");
-				defaultsButton.addActionListener(new ActionListener() {
+				defaultsB = new JButton("Defaults");
+				defaultsB.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						defaultsAction();
 					}
 				});
-				panel.add(defaultsButton);
+				panel.add(defaultsB);
 				
 				JPanel panel_1 = new JPanel();
 				buttonPane.add(panel_1, BorderLayout.EAST);
-				JButton okButton = new JButton("  OK  ");
-				panel_1.add(okButton);
-				okButton.addActionListener(new ActionListener() {
+				okB = new JButton("  OK  ");
+				panel_1.add(okB);
+				okB.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						okAction();
 					}
 				});
-				okButton.setActionCommand("OK");
+				okB.setActionCommand("OK");
 				{
-					JButton cancelButton = new JButton("Cancel");
-					panel_1.add(cancelButton);
-					cancelButton.addActionListener(new ActionListener() {
+					cancelB = new JButton("Cancel");
+					panel_1.add(cancelB);
+					cancelB.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
 							cancelAction();
 						}
 					});
-					cancelButton.setActionCommand("Cancel");
+					cancelB.setActionCommand("Cancel");
 				}
 				// getRootPane().setDefaultButton(okButton);
 			}
 		}
 		setLocationRelativeTo(null);
+		buildFinished = true;
 	}
 
 	
@@ -780,10 +839,16 @@ public class SettingsDialog extends JDialog {
 		newKEY_P0_UP, newKEY_P0_DOWN, newKEY_P0_LEFT, newKEY_P0_RIGHT, newKEY_P0_BUTTON, newKEY_P0_BUTTON2,
 		newKEY_P1_UP, newKEY_P1_DOWN, newKEY_P1_LEFT, newKEY_P1_RIGHT, newKEY_P1_BUTTON, newKEY_P1_BUTTON2;
 
+	private boolean buildFinished = false;
 	
 	private static final long serialVersionUID = 1L;
 	private JTextField clientServerAddressTf;
 	private JTextField serverPortTf;
 	private JButton serverStartB;
 	private JButton clientConnectB;
+	private JLabel modeL;
+	private JTabbedPane mainTabbedPane;
+	private JButton defaultsB;
+	private JButton okB;
+	private JButton cancelB;
 }

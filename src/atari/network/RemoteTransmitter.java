@@ -40,7 +40,7 @@ public class RemoteTransmitter {
 		if (updatesSender == null) return;
 		updatesSender.interrupt();	// Will stop the sender loop
 		try {
-			updatesSender.join();		// TODO Ver parada direito
+			if (updatesSender != null) updatesSender.join();		// Wait for stop to complete
 		} catch (InterruptedException e) {
 			// No problem
 		}
