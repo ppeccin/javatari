@@ -8,6 +8,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import parameters.Parameters;
@@ -24,16 +26,19 @@ public class RemoteReceiver {
 	
 	public void disconnect() throws IOException {
 		if (socket == null || socket.isClosed()) return; 
+		UpdatesReceiver rec = updatesReceiver;
+		UpdatesConsumer cons = updatesConsumer;
 		socket.close();	// Will stop the receiver loop and disconnect
 		try {
-			if (updatesReceiver != null) updatesReceiver.join();	// Wait for disconnection to complete
+			if (rec != null) rec.join();	// Wait for disconnection to complete
+			if (cons != null) cons.join();
 		} catch (InterruptedException e) {
 			// No problem
 		}
 	}
 
 	public boolean isConnected() {
-		return updatesReceiver != null;
+		return inputStream != null;
 	}
 	
 	public String serverAddress() {
@@ -44,6 +49,10 @@ public class RemoteReceiver {
 		this.console = console;
 	}
 	
+	public void addConnectionStatusListener(ConnectionStatusListener lis) {
+		if (!connectionListeners.contains(lis)) connectionListeners.add(lis);
+	}
+
 	private void tryConnection(String serverAddress) throws IOException, IllegalArgumentException {
 		this.serverAddress = serverAddress;
 		try {
@@ -65,6 +74,7 @@ public class RemoteReceiver {
 		updatesConsumer = new UpdatesConsumer();
 		updatesConsumer.start();
 		console.connected();
+		notifyConnectionStatusListeners();	
 	}
 	
 	private String getHost(String serverAddress) {
@@ -91,7 +101,10 @@ public class RemoteReceiver {
 		boolean wasConnected = inputStream != null;
 		cleanStreamsSilently();
 		if (updatesConsumer != null) updatesConsumer.interrupt();	// Will stop the consumer loop
-		if (wasConnected) console.disconnected();
+		if (wasConnected) {
+			console.disconnected();
+			notifyConnectionStatusListeners();
+		}
 	}
 
 	private void cleanStreamsSilently() {
@@ -122,6 +135,12 @@ public class RemoteReceiver {
 		}
 	}
 
+	private void notifyConnectionStatusListeners() {
+		for (ConnectionStatusListener lis : connectionListeners)
+			lis.connectionStatusChanged();
+	}
+
+
 	
 	private ClientConsole console;
 	
@@ -135,6 +154,8 @@ public class RemoteReceiver {
 	private InputStream socketInputStream;
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
+	
+	private List<ConnectionStatusListener> connectionListeners = new ArrayList<ConnectionStatusListener>();
 
 	private static final int MAX_UPDATES_PENDING = Parameters.CLIENT_MAX_UPDATES_PENDING;
 

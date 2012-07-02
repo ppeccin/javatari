@@ -18,8 +18,11 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -27,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
@@ -35,12 +39,13 @@ import javax.swing.border.EtchedBorder;
 
 import parameters.Parameters;
 import pc.room.Room;
+import atari.network.ConnectionStatusListener;
 import atari.network.RemoteReceiver;
 import atari.network.RemoteTransmitter;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
-public class SettingsDialog extends JDialog {
+public class SettingsDialog extends JDialog implements ConnectionStatusListener {
 
 	public static void main(String[] args) {
 		try {
@@ -56,14 +61,21 @@ public class SettingsDialog extends JDialog {
 	public SettingsDialog(Room room) {
 		this.room = room;
 		buildGUI();
+		setEscActionListener();
 		buildKeyFieldsList();
 		setControlsKeyListener();
 		setMultiplayerDefaults();
 		mainTabbedPane.setSelectedIndex(3);
 	}
+
+	@Override
+	public void connectionStatusChanged() {
+		refreshMultiplayerImages();
+	}
 		
 	@Override
 	public void setVisible(boolean state) {
+		setupConnectionStatulsListeners();
 		initNewKeys();
 		refreshContols();
 		refreshMultiplayer();
@@ -100,6 +112,13 @@ public class SettingsDialog extends JDialog {
 			clientConnectB.setText("?????");
 			clientConnectB.setEnabled(false);
 			clientServerAddressTf.setEditable(false);
+			standaloneConsoleL.setVisible(true);
+			networkL.setVisible(false);
+			serverConsoleL.setVisible(false);
+			clientConsoleL.setVisible(false);
+			defaultsB.setVisible(false);
+			okB.setVisible(false);
+			cancelB.setText("Close");
 			return;
 		}
 		boolean serverMode = room.isServerMode();
@@ -112,9 +131,22 @@ public class SettingsDialog extends JDialog {
 		clientConnectB.setText(clientMode ? "DISCONNECT" : "CONNECT");
 		clientConnectB.setEnabled(!serverMode);
 		clientServerAddressTf.setEditable(!serverMode && !clientMode);
+		refreshMultiplayerImages();
 		defaultsB.setVisible(!serverMode && !clientMode);
 		okB.setVisible(false);
 		cancelB.setText("Close");
+	}
+
+	private void refreshMultiplayerImages() {
+		if (!isVisible()) return;
+		boolean serverMode = room.isServerMode();
+		boolean clientMode = room.isClientMode();
+		boolean clientConnected = serverMode && room.serverCurrentConsole().remoteTransmitter().isClientConnected();
+		boolean connectedToServer = clientMode && room.clientCurrentConsole().remoteReceiver().isConnected();
+		standaloneConsoleL.setVisible(!serverMode && !clientMode);
+		networkL.setVisible(serverMode || clientMode);
+		serverConsoleL.setVisible(serverMode || connectedToServer);
+		clientConsoleL.setVisible(clientMode || clientConnected);
 	}
 
 	private void setControlsKeyListener() {
@@ -202,6 +234,59 @@ public class SettingsDialog extends JDialog {
 		newKEY_P1_BUTTON2 = Parameters.KEY_P1_BUTTON2;
 	}
 
+	private void setControlsKeysDefaults() {
+		newKEY_P0_UP      = Parameters.DEFAULT_KEY_P0_UP; 
+		newKEY_P0_DOWN    = Parameters.DEFAULT_KEY_P0_DOWN;
+		newKEY_P0_LEFT    = Parameters.DEFAULT_KEY_P0_LEFT;
+		newKEY_P0_RIGHT   = Parameters.DEFAULT_KEY_P0_RIGHT;
+		newKEY_P0_BUTTON  = Parameters.DEFAULT_KEY_P0_BUTTON;
+		newKEY_P0_BUTTON2 = Parameters.DEFAULT_KEY_P0_BUTTON2;
+		newKEY_P1_UP      = Parameters.DEFAULT_KEY_P1_UP;
+		newKEY_P1_DOWN    = Parameters.DEFAULT_KEY_P1_DOWN;
+		newKEY_P1_LEFT    = Parameters.DEFAULT_KEY_P1_LEFT;
+		newKEY_P1_RIGHT   = Parameters.DEFAULT_KEY_P1_RIGHT;
+		newKEY_P1_BUTTON  = Parameters.DEFAULT_KEY_P1_BUTTON;
+		newKEY_P1_BUTTON2 = Parameters.DEFAULT_KEY_P1_BUTTON2;
+		refreshContols();
+	}
+
+	private void setMultiplayerDefaults() {
+		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));
+	}
+
+	private void setupConnectionStatulsListeners() {
+		if (room == null) return;
+		if (room.isServerMode()) room.serverCurrentConsole().remoteTransmitter().addConnectionStatusListener(this);
+		if (room.isClientMode()) room.clientCurrentConsole().remoteReceiver().addConnectionStatusListener(this);
+	}
+	
+	private void setEscActionListener() {
+		KeyStroke escKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+		Action escapeAction = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cancelAction();
+			}
+ 			private static final long serialVersionUID = 1L;
+		};
+		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escKeyStroke, "ESC");
+		getRootPane().getActionMap().put("ESC", escapeAction);		
+	}
+
+	private void mainTabbedPaneChanged() {
+		if (!buildFinished) return;
+		switch (mainTabbedPane.getSelectedIndex()) {
+			case 0:
+				refreshMultiplayer(); break;
+			case 1:
+				refreshContols(); break;
+			default:
+				defaultsB.setVisible(false);
+				okB.setVisible(false);
+				cancelB.setText("Close");
+		}
+	}
+
 	private void officialWebPageAction() {
 		if (!Desktop.isDesktopSupported()) return;
 		try {
@@ -217,13 +302,13 @@ public class SettingsDialog extends JDialog {
 	private void serverStartAction() {
 		if (!room.isServerMode()) {		// Will try to START
 			room.morphToServerMode();
+			setupConnectionStatulsListeners();
 			try {
 				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
 				String portString = serverPortTf.getText().trim();
 				try {
 					if (portString.isEmpty()) transmitter.start();
 					else transmitter.start(Integer.valueOf(portString));
-					setVisible(false);
 				} catch (NumberFormatException e) {
 					throw new IllegalArgumentException("Invalid port number: " + portString);
 				}
@@ -246,12 +331,13 @@ public class SettingsDialog extends JDialog {
 	private void clientConnectAction() {
 		if (!room.isClientMode()) {		// Will try to CONNECT
 			room.morphToClientMode();
+			setupConnectionStatulsListeners();
 			String serverAddress = "";
 			try {
 				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
 				serverAddress = clientServerAddressTf.getText().trim();
 				receiver.connect(serverAddress);
-				setVisible(false);
+				cancelAction();
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(null, "Connection failed: " + serverAddress + "\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
 				room.morphToStandaloneMode();
@@ -274,40 +360,6 @@ public class SettingsDialog extends JDialog {
 				setMultiplayerDefaults(); break;
 			case 1:
 				setControlsKeysDefaults();
-		}
-	}
-
-	private void setControlsKeysDefaults() {
-		newKEY_P0_UP      = Parameters.DEFAULT_KEY_P0_UP; 
-		newKEY_P0_DOWN    = Parameters.DEFAULT_KEY_P0_DOWN;
-		newKEY_P0_LEFT    = Parameters.DEFAULT_KEY_P0_LEFT;
-		newKEY_P0_RIGHT   = Parameters.DEFAULT_KEY_P0_RIGHT;
-		newKEY_P0_BUTTON  = Parameters.DEFAULT_KEY_P0_BUTTON;
-		newKEY_P0_BUTTON2 = Parameters.DEFAULT_KEY_P0_BUTTON2;
-		newKEY_P1_UP      = Parameters.DEFAULT_KEY_P1_UP;
-		newKEY_P1_DOWN    = Parameters.DEFAULT_KEY_P1_DOWN;
-		newKEY_P1_LEFT    = Parameters.DEFAULT_KEY_P1_LEFT;
-		newKEY_P1_RIGHT   = Parameters.DEFAULT_KEY_P1_RIGHT;
-		newKEY_P1_BUTTON  = Parameters.DEFAULT_KEY_P1_BUTTON;
-		newKEY_P1_BUTTON2 = Parameters.DEFAULT_KEY_P1_BUTTON2;
-		refreshContols();
-	}
-
-	private void setMultiplayerDefaults() {
-		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));
-	}
-	
-	private void mainTabbedPaneChanged() {
-		if (!buildFinished) return;
-		switch (mainTabbedPane.getSelectedIndex()) {
-			case 0:
-				refreshMultiplayer(); break;
-			case 1:
-				refreshContols(); break;
-			default:
-				defaultsB.setVisible(false);
-				okB.setVisible(false);
-				cancelB.setText("Close");
 		}
 	}
 
@@ -346,10 +398,25 @@ public class SettingsDialog extends JDialog {
 			mainTabbedPane.addTab("Multiplayer", null, panel_1, null);
 			panel_1.setLayout(null);
 			
+			clientConsoleL = new JLabel("");
+			clientConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/ServerClientConsole.png")));
+			clientConsoleL.setBounds(316, 124, 139, 94);
+			panel_1.add(clientConsoleL);
+			
+			serverConsoleL = new JLabel("");
+			serverConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/ServerClientConsole.png")));
+			serverConsoleL.setBounds(12, 124, 139, 94);
+			panel_1.add(serverConsoleL);
+			
+			networkL = new JLabel("");
+			networkL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Network.png")));
+			networkL.setBounds(116, 73, 237, 98);
+			panel_1.add(networkL);
+			
 			JLabel lblNewLabel_1 = new JLabel("P1 Server");
 			lblNewLabel_1.setFont(new Font("Arial", Font.BOLD, 16));
 			lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
-			lblNewLabel_1.setBounds(29, 16, 100, 20);
+			lblNewLabel_1.setBounds(24, 13, 100, 20);
 			panel_1.add(lblNewLabel_1);
 			
 			serverStartB = new JButton("START");
@@ -358,7 +425,7 @@ public class SettingsDialog extends JDialog {
 					serverStartAction();
 				}
 			});
-			serverStartB.setBounds(25, 39, 108, 26);
+			serverStartB.setBounds(20, 36, 108, 26);
 			panel_1.add(serverStartB);
 			
 			clientConnectB = new JButton("CONNECT");
@@ -367,7 +434,7 @@ public class SettingsDialog extends JDialog {
 					clientConnectAction();
 				}
 			});
-			clientConnectB.setBounds(334, 39, 108, 26);
+			clientConnectB.setBounds(341, 36, 108, 26);
 			panel_1.add(clientConnectB);
 			
 			clientServerAddressTf = new JTextField();
@@ -377,14 +444,14 @@ public class SettingsDialog extends JDialog {
 				}
 			});
 			clientServerAddressTf.setFont(new Font("Arial", Font.PLAIN, 12));
-			clientServerAddressTf.setBounds(330, 90, 117, 22);
+			clientServerAddressTf.setBounds(337, 87, 117, 22);
 			panel_1.add(clientServerAddressTf);
 			clientServerAddressTf.setColumns(10);
 			
-			JLabel lblServerAddressport = new JLabel("Server Address [:port]");
+			JLabel lblServerAddressport = new JLabel("Server address [:port]");
 			lblServerAddressport.setHorizontalAlignment(SwingConstants.CENTER);
 			lblServerAddressport.setFont(new Font("Arial", Font.PLAIN, 12));
-			lblServerAddressport.setBounds(330, 73, 117, 15);
+			lblServerAddressport.setBounds(337, 70, 117, 15);
 			panel_1.add(lblServerAddressport);
 			
 			serverPortTf = new JTextField();
@@ -396,19 +463,19 @@ public class SettingsDialog extends JDialog {
 			serverPortTf.setFont(new Font("Arial", Font.PLAIN, 12));
 			serverPortTf.setHorizontalAlignment(SwingConstants.RIGHT);
 			serverPortTf.setColumns(10);
-			serverPortTf.setBounds(48, 90, 62, 22);
+			serverPortTf.setBounds(43, 87, 62, 22);
 			panel_1.add(serverPortTf);
 			
-			JLabel lblPort = new JLabel("Server Port");
+			JLabel lblPort = new JLabel("Server port");
 			lblPort.setHorizontalAlignment(SwingConstants.CENTER);
 			lblPort.setFont(new Font("Arial", Font.PLAIN, 12));
-			lblPort.setBounds(48, 73, 62, 15);
+			lblPort.setBounds(43, 70, 62, 15);
 			panel_1.add(lblPort);
 			
 			JLabel lblPClient = new JLabel("P2 Client");
 			lblPClient.setHorizontalAlignment(SwingConstants.CENTER);
 			lblPClient.setFont(new Font("Arial", Font.BOLD, 16));
-			lblPClient.setBounds(338, 16, 100, 20);
+			lblPClient.setBounds(345, 13, 100, 20);
 			panel_1.add(lblPClient);
 			
 			modeL = new JLabel("P1 SERVER MODE");
@@ -416,8 +483,13 @@ public class SettingsDialog extends JDialog {
 			modeL.setFont(new Font("Arial", Font.BOLD, 13));
 			modeL.setOpaque(true);
 			modeL.setHorizontalAlignment(SwingConstants.CENTER);
-			modeL.setBounds(160, 39, 149, 26);
+			modeL.setBounds(160, 36, 149, 26);
 			panel_1.add(modeL);
+			
+			standaloneConsoleL = new JLabel("");
+			standaloneConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/StandaloneConsole.png")));
+			standaloneConsoleL.setBounds(118, 74, 202, 146);
+			panel_1.add(standaloneConsoleL);
 			{
 				controlsPanel = new JPanel();
 				mainTabbedPane.addTab("Controls", null, controlsPanel, null);
@@ -425,7 +497,7 @@ public class SettingsDialog extends JDialog {
 				{
 					JLabel lblNewLabel = new JLabel("");
 					lblNewLabel.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Joystick.png")));
-					lblNewLabel.setBounds(63, 72, 75, 90);
+					lblNewLabel.setBounds(64, 76, 75, 90);
 					controlsPanel.add(lblNewLabel);
 				}
 				
@@ -435,7 +507,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Up.setFont(new Font("Arial", Font.PLAIN, 11));
 				keyP0Up.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Up.setText("UP");
-				keyP0Up.setBounds(80, 50, 40, 20);
+				keyP0Up.setBounds(81, 54, 40, 20);
 				controlsPanel.add(keyP0Up);
 				keyP0Up.setColumns(10);
 				
@@ -446,7 +518,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Right.setText("RIGHT");
 				keyP0Right.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Right.setColumns(10);
-				keyP0Right.setBounds(137, 111, 40, 20);
+				keyP0Right.setBounds(138, 115, 40, 20);
 				controlsPanel.add(keyP0Right);
 				
 				keyP0Left = new JTextField();
@@ -456,7 +528,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Left.setText("LEFT");
 				keyP0Left.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Left.setColumns(10);
-				keyP0Left.setBounds(22, 111, 40, 20);
+				keyP0Left.setBounds(23, 115, 40, 20);
 				controlsPanel.add(keyP0Left);
 				
 				keyP0Down = new JTextField();
@@ -466,31 +538,31 @@ public class SettingsDialog extends JDialog {
 				keyP0Down.setText("DOWN");
 				keyP0Down.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Down.setColumns(10);
-				keyP0Down.setBounds(80, 164, 40, 20);
+				keyP0Down.setBounds(81, 168, 40, 20);
 				controlsPanel.add(keyP0Down);
 				
 				JLabel lblRight = new JLabel("Right");
 				lblRight.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblRight.setHorizontalAlignment(SwingConstants.CENTER);
-				lblRight.setBounds(138, 95, 38, 14);
+				lblRight.setBounds(139, 99, 38, 14);
 				controlsPanel.add(lblRight);
 				
 				JLabel lblLeft = new JLabel("Left");
 				lblLeft.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblLeft.setHorizontalAlignment(SwingConstants.CENTER);
-				lblLeft.setBounds(24, 95, 36, 14);
+				lblLeft.setBounds(25, 99, 36, 14);
 				controlsPanel.add(lblLeft);
 				
 				JLabel lblDown = new JLabel("Down");
 				lblDown.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblDown.setHorizontalAlignment(SwingConstants.CENTER);
-				lblDown.setBounds(81, 185, 38, 14);
+				lblDown.setBounds(82, 189, 38, 14);
 				controlsPanel.add(lblDown);
 				
 				JLabel lblUp = new JLabel("Up");
 				lblUp.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblUp.setHorizontalAlignment(SwingConstants.CENTER);
-				lblUp.setBounds(81, 34, 38, 14);
+				lblUp.setBounds(82, 38, 38, 14);
 				controlsPanel.add(lblUp);
 				
 				keyP0Button = new JTextField();
@@ -500,25 +572,25 @@ public class SettingsDialog extends JDialog {
 				keyP0Button.setText("SPC");
 				keyP0Button.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Button.setColumns(10);
-				keyP0Button.setBounds(22, 62, 40, 20);
+				keyP0Button.setBounds(23, 66, 40, 20);
 				controlsPanel.add(keyP0Button);
 				
 				JLabel lblFire = new JLabel("Fire 1");
 				lblFire.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblFire.setHorizontalAlignment(SwingConstants.CENTER);
-				lblFire.setBounds(23, 46, 38, 14);
+				lblFire.setBounds(24, 50, 38, 14);
 				controlsPanel.add(lblFire);
 				
 				JLabel lblPlayer = new JLabel("Player 1");
 				lblPlayer.setFont(new Font("Arial", Font.BOLD, 16));
 				lblPlayer.setHorizontalAlignment(SwingConstants.CENTER);
-				lblPlayer.setBounds(63, 9, 74, 20);
+				lblPlayer.setBounds(64, 13, 74, 20);
 				controlsPanel.add(lblPlayer);
 				
 				JLabel lblFire_1 = new JLabel("Fire 2");
 				lblFire_1.setFont(new Font("Arial", Font.PLAIN, 12));
 				lblFire_1.setHorizontalAlignment(SwingConstants.CENTER);
-				lblFire_1.setBounds(138, 46, 38, 14);
+				lblFire_1.setBounds(139, 50, 38, 14);
 				controlsPanel.add(lblFire_1);
 				
 				keyP0Button2 = new JTextField();
@@ -528,7 +600,7 @@ public class SettingsDialog extends JDialog {
 				keyP0Button2.setText("DEL");
 				keyP0Button2.setHorizontalAlignment(SwingConstants.CENTER);
 				keyP0Button2.setColumns(10);
-				keyP0Button2.setBounds(137, 62, 40, 20);
+				keyP0Button2.setBounds(138, 66, 40, 20);
 				controlsPanel.add(keyP0Button2);
 				
 				JTextPane txtpnAltJ_1 = new JTextPane();
@@ -536,12 +608,12 @@ public class SettingsDialog extends JDialog {
 				txtpnAltJ_1.setEditable(false);
 				txtpnAltJ_1.setFont(new Font("Arial", Font.PLAIN, 12));
 				txtpnAltJ_1.setText("ALT + J : Swap P1<>P2\r\nALT + L : Toggle Paddles");
-				txtpnAltJ_1.setBounds(162, 167, 145, 36);
+				txtpnAltJ_1.setBounds(163, 171, 145, 36);
 				controlsPanel.add(txtpnAltJ_1);
 				
 				JLabel label = new JLabel("");
 				label.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Joystick.png")));
-				label.setBounds(333, 72, 75, 90);
+				label.setBounds(334, 76, 75, 90);
 				controlsPanel.add(label);
 				
 				keyP1Up = new JTextField();
@@ -551,7 +623,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Up.setEditable(false);
 				keyP1Up.setColumns(10);
 				keyP1Up.setBackground(Color.WHITE);
-				keyP1Up.setBounds(350, 50, 40, 20);
+				keyP1Up.setBounds(351, 54, 40, 20);
 				controlsPanel.add(keyP1Up);
 				
 				keyP1Right = new JTextField();
@@ -561,7 +633,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Right.setEditable(false);
 				keyP1Right.setColumns(10);
 				keyP1Right.setBackground(Color.WHITE);
-				keyP1Right.setBounds(407, 111, 40, 20);
+				keyP1Right.setBounds(408, 115, 40, 20);
 				controlsPanel.add(keyP1Right);
 				
 				keyP1Left = new JTextField();
@@ -571,7 +643,7 @@ public class SettingsDialog extends JDialog {
 				keyP1Left.setEditable(false);
 				keyP1Left.setColumns(10);
 				keyP1Left.setBackground(Color.WHITE);
-				keyP1Left.setBounds(292, 111, 40, 20);
+				keyP1Left.setBounds(293, 115, 40, 20);
 				controlsPanel.add(keyP1Left);
 				
 				keyP1Down = new JTextField();
@@ -581,31 +653,31 @@ public class SettingsDialog extends JDialog {
 				keyP1Down.setEditable(false);
 				keyP1Down.setColumns(10);
 				keyP1Down.setBackground(Color.WHITE);
-				keyP1Down.setBounds(350, 164, 40, 20);
+				keyP1Down.setBounds(351, 168, 40, 20);
 				controlsPanel.add(keyP1Down);
 				
 				JLabel label_1 = new JLabel("Right");
 				label_1.setHorizontalAlignment(SwingConstants.CENTER);
 				label_1.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_1.setBounds(408, 95, 38, 14);
+				label_1.setBounds(409, 99, 38, 14);
 				controlsPanel.add(label_1);
 				
 				JLabel label_2 = new JLabel("Left");
 				label_2.setHorizontalAlignment(SwingConstants.CENTER);
 				label_2.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_2.setBounds(294, 95, 36, 14);
+				label_2.setBounds(295, 99, 36, 14);
 				controlsPanel.add(label_2);
 				
 				JLabel label_3 = new JLabel("Down");
 				label_3.setHorizontalAlignment(SwingConstants.CENTER);
 				label_3.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_3.setBounds(351, 185, 38, 14);
+				label_3.setBounds(352, 189, 38, 14);
 				controlsPanel.add(label_3);
 				
 				JLabel label_4 = new JLabel("Up");
 				label_4.setHorizontalAlignment(SwingConstants.CENTER);
 				label_4.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_4.setBounds(351, 34, 38, 14);
+				label_4.setBounds(352, 38, 38, 14);
 				controlsPanel.add(label_4);
 				
 				keyP1Button = new JTextField();
@@ -615,25 +687,25 @@ public class SettingsDialog extends JDialog {
 				keyP1Button.setEditable(false);
 				keyP1Button.setColumns(10);
 				keyP1Button.setBackground(Color.WHITE);
-				keyP1Button.setBounds(292, 62, 40, 20);
+				keyP1Button.setBounds(293, 66, 40, 20);
 				controlsPanel.add(keyP1Button);
 				
 				JLabel label_5 = new JLabel("Fire 1");
 				label_5.setHorizontalAlignment(SwingConstants.CENTER);
 				label_5.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_5.setBounds(293, 46, 38, 14);
+				label_5.setBounds(294, 50, 38, 14);
 				controlsPanel.add(label_5);
 				
 				JLabel lblPlayer_1 = new JLabel("Player 2");
 				lblPlayer_1.setHorizontalAlignment(SwingConstants.CENTER);
 				lblPlayer_1.setFont(new Font("Arial", Font.BOLD, 16));
-				lblPlayer_1.setBounds(333, 9, 74, 20);
+				lblPlayer_1.setBounds(334, 13, 74, 20);
 				controlsPanel.add(lblPlayer_1);
 				
 				JLabel label_7 = new JLabel("Fire 2");
 				label_7.setHorizontalAlignment(SwingConstants.CENTER);
 				label_7.setFont(new Font("Arial", Font.PLAIN, 12));
-				label_7.setBounds(408, 46, 38, 14);
+				label_7.setBounds(409, 50, 38, 14);
 				controlsPanel.add(label_7);
 				
 				keyP1Button2 = new JTextField();
@@ -642,14 +714,14 @@ public class SettingsDialog extends JDialog {
 				keyP1Button2.setEditable(false);
 				keyP1Button2.setColumns(10);
 				keyP1Button2.setBackground(Color.WHITE);
-				keyP1Button2.setBounds(407, 62, 40, 20);
+				keyP1Button2.setBounds(408, 66, 40, 20);
 				controlsPanel.add(keyP1Button2);
 				
 				JLabel lbldoubleclickToChange = new JLabel("(double-click to change)");
 				lbldoubleclickToChange.setToolTipText("");
 				lbldoubleclickToChange.setHorizontalAlignment(SwingConstants.CENTER);
 				lbldoubleclickToChange.setFont(new Font("Arial", Font.PLAIN, 12));
-				lbldoubleclickToChange.setBounds(168, 12, 133, 15);
+				lbldoubleclickToChange.setBounds(169, 16, 133, 15);
 				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
@@ -851,4 +923,9 @@ public class SettingsDialog extends JDialog {
 	private JButton defaultsB;
 	private JButton okB;
 	private JButton cancelB;
+	private JLabel standaloneConsoleL;
+	private JLabel serverConsoleL;
+	private JLabel clientConsoleL;
+	private JLabel networkL;
+
 }

@@ -20,7 +20,7 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 	public Speaker() {
 		super();
 		fps = DEFAULT_FPS;
-		clock = new Clock(this, fps);
+		clock = new Clock("Speaker", this, fps);
 	}
 	
 	public void connect(AudioSignal signal) {	// Must be powered off to connect a signal

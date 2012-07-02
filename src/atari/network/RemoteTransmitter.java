@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -37,10 +38,11 @@ public class RemoteTransmitter {
 		started = false;
 		// Stop listening serverSocket if needed
 		if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
-		if (updatesSender == null) return;
-		updatesSender.interrupt();	// Will stop the sender loop
+		UpdatesSender sender = updatesSender;
+		if (sender == null) return;
+		sender.interrupt();	// Will stop the sender loop
 		try {
-			if (updatesSender != null) updatesSender.join();		// Wait for stop to complete
+			sender.join();		// Wait for stop to complete
 		} catch (InterruptedException e) {
 			// No problem
 		}
@@ -74,6 +76,10 @@ public class RemoteTransmitter {
 	public boolean isClientConnected() {
 		return outputStream != null;
 	}
+	
+	public void addConnectionStatusListener(ConnectionStatusListener lis) {
+		if (!connectionListeners.contains(lis)) connectionListeners.add(lis);
+	}
 
 	private void listen() throws IOException {
 		// Reopen the serverSocked if needed (2nd client connection and so on)
@@ -93,13 +99,17 @@ public class RemoteTransmitter {
 		inputStream = new ObjectInputStream(socketInputStream);
 		resetUpdatesPending();
 		console.clientConnected();
+		notifyConnectionStatusListeners();
 	}
 
 	private void disconnect() {
 		boolean wasConnected = outputStream != null;
 		cleanStreamsSilently();
 		resetUpdatesPending();
-		if (wasConnected) console.clientDisconnected();
+		if (wasConnected) {
+			console.clientDisconnected();
+			notifyConnectionStatusListeners();
+		}
 	}
 
 	private void cleanStreamsSilently() {
@@ -117,6 +127,11 @@ public class RemoteTransmitter {
 			updates.notifyAll();
 		}
 	}
+
+	private void notifyConnectionStatusListeners() {
+		for (ConnectionStatusListener lis : connectionListeners)
+			lis.connectionStatusChanged();
+	}
 	
 
 	private boolean started = false;
@@ -133,6 +148,7 @@ public class RemoteTransmitter {
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
 
+	private List<ConnectionStatusListener> connectionListeners = new ArrayList<ConnectionStatusListener>();
 	
 	private static final int MAX_UPDATES_PENDING = Parameters.SERVER_MAX_UPDATES_PENDING;
 	

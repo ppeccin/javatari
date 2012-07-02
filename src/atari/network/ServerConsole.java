@@ -36,7 +36,7 @@ public class ServerConsole extends Console implements ClockDriven {
 	@Override
 	protected void mainClockCreate() {
 		// The server clock is always running
-		mainClock = new Clock(this, TIA.DEFAUL_CLOCK_NTSC);
+		mainClock = new Clock("Server Console", this, TIA.DEFAUL_CLOCK_NTSC);
 		mainClock.go();
 	}
 

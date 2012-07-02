@@ -65,6 +65,7 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 		mainClockGo();
 		videoStandardAutoDetectionStart();
+		if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!");
 	}
 
 	public void powerOff() {
@@ -159,7 +160,7 @@ public class Console {
 	}
 
 	protected void mainClockCreate() {
-		mainClock = new Clock(tia, 0);
+		mainClock = new Clock("Console(TIA)", tia, 0);
 	}
 
 	protected void mainClockAdjustToNormal() {

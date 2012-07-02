@@ -101,13 +101,13 @@ public class Monitor implements ClockDriven, VideoMonitor {
 
 	@Override
 	public boolean nextLine(final int[] pixels, boolean vSynchSignal) {
-		// Adjusts to the new signal state (on or off) as necessary
-		if (!signalState(pixels != null))		// If signal is off, we are done
-			return false;
-		// Process new line received
-		boolean vSynced = false;
 		// Synchronize to avoid changing the standard while receiving lines / refreshing frame 
 		synchronized (newDataMonitor) {
+			// Adjusts to the new signal state (on or off) as necessary
+			if (!signalState(pixels != null))		// If signal is off, we are done
+				return false;
+			// Process new line received
+			boolean vSynced = false;
 			if (line < signalHeight)
 				System.arraycopy(pixels, 0, backBuffer, line * signalWidth, signalWidth);
 			else 
@@ -121,8 +121,8 @@ public class Monitor implements ClockDriven, VideoMonitor {
 				}
 			} else
 				VSYNCDetectionCount = VSYNC_DETECTION;
+			return vSynced;
 		}
-		return vSynced;
 	}
 
 	@Override
@@ -250,7 +250,7 @@ public class Monitor implements ClockDriven, VideoMonitor {
 		prepareImages();	 	
 		adjustToVideoStandard(VideoStandard.NTSC);
 		setDisplayDefaultSize();	
-		clock = new Clock(this, fps);
+		clock = new Clock("Video Monitor", this, fps);
 		cleanBackBuffer();
 		paintLogo();
 	}

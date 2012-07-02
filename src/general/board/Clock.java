@@ -6,14 +6,15 @@ import java.util.Locale;
 
 public class Clock extends Thread {
 
-	public Clock(ClockDriven driven, double hertz) {
-		this();
+	public Clock(String name, ClockDriven driven, double hertz) {
+		this(name);
 		this.driven = driven;
 		speed(hertz);
 		start();
 	}
 
-	protected Clock() {
+	protected Clock(String name) {
+		super(name);
 		running = false;
 		alive = true; 
 	}
@@ -31,9 +32,14 @@ public class Clock extends Thread {
 	}
 	
 	public void terminate() {
-		alive = running = false;
+		alive = false;
+		running = false;
 		interrupt();
-		synchronized (this) { /* Just wait for the running loop to end */ }
+		try {
+			join();		/* Just wait for the running loop to end */
+		} catch (InterruptedException e) {
+			// No problem
+		}
 	}
 
 	public void speed(double hertz) {
@@ -48,7 +54,7 @@ public class Clock extends Thread {
 	@Override
 	public synchronized void run() {
 		while(alive) {
-			while(!running)
+			while(alive && !running)
 				try { 
 					wait(); 
 				} catch (InterruptedException e) {}
