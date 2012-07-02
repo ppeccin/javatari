@@ -176,6 +176,7 @@ public class Parameters {
 			val = props.getProperty("SCREEN_INTERM_FRAME_ACCELERATION"); if (val != null) SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_SCANLINES_ACCELERATION"); if (val != null) SCREEN_SCANLINES_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_CONSOLE_PANEL"); if (val != null) SCREEN_CONSOLE_PANEL = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FIXED_SIZE"); if (val != null) SCREEN_FIXED_SIZE = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FULLSCREEN"); if (val != null) SCREEN_FULLSCREEN = Boolean.valueOf(val);
 
@@ -190,10 +191,11 @@ public class Parameters {
 
 			val = props.getProperty("BUS_DATA_RETENTION"); if (val != null) BUS_DATA_RETENTION = Boolean.valueOf(val);
 
-			val = props.getProperty("SERVER_SERVICE_NAME"); if (val != null) SERVER_SERVICE_NAME = String.valueOf(val);
 			val = props.getProperty("SERVER_SERVICE_PORT"); if (val != null) SERVER_SERVICE_PORT = Integer.valueOf(val);
 			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
 			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
+
+			val = props.getProperty("MULTIPLAYER_UI_ENABLED"); if (val != null) MULTIPLAYER_UI_ENABLED = Boolean.valueOf(val);
 		} catch(Exception ex) {
 			System.out.println("Error processing properties:\n" + ex);
 			Terminator.terminate();
@@ -246,6 +248,7 @@ public class Parameters {
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
 	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
+	public static boolean 	SCREEN_CONSOLE_PANEL = true;
 	public static boolean 	SCREEN_FIXED_SIZE = false;
 	public static boolean 	SCREEN_FULLSCREEN = false;
 	
@@ -260,10 +263,11 @@ public class Parameters {
 
 	public static boolean 	BUS_DATA_RETENTION = true;
 
-	public static String	SERVER_SERVICE_NAME = "AtariP1Server";
 	public static int 		SERVER_SERVICE_PORT = 9998;
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
+
+	public static boolean 	MULTIPLAYER_UI_ENABLED = true;
 
 	public static String 	OFFICIAL_WEBSITE = "http://javatari.org";
 	

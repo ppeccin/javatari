@@ -12,17 +12,19 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JPanel;
 
+import parameters.Parameters;
+
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
 public class PanelScreen extends JPanel implements Screen {
 
-	public PanelScreen(boolean screenFixedSize, boolean showConsolePanel) {
+	public PanelScreen(boolean screenFixedSize) {
 		super();
 		monitorPanel = new MonitorPanel();
 		monitorPanel.monitor().setFixedSize(screenFixedSize);
 		monitorPanel.monitor().addControlInputComponents(this);
-		if (showConsolePanel) consolePanel = new ConsolePanel(monitorPanel.monitor(), null);
+		if (CONSOLE_PANEL) consolePanel = new ConsolePanel(monitorPanel.monitor(), null);
 		setup();
 	}
 
@@ -87,6 +89,7 @@ public class PanelScreen extends JPanel implements Screen {
 	public MonitorPanel monitorPanel;
 	public ConsolePanel consolePanel;
 
+	private static final boolean CONSOLE_PANEL = Parameters.SCREEN_CONSOLE_PANEL;
 
 	private static final long serialVersionUID = 1L;
 

@@ -20,7 +20,7 @@ import atari.network.ServerConsole;
 
 public class Room {
 	
-	private Room() {
+	Room() {
 		super();
 	}
 
@@ -111,14 +111,28 @@ public class Room {
 		powerOn();
 	}
 
-	private void buildPeripherals() {
+	public void destroy() {
+		powerOff();
+		if (standaloneConsole != null) standaloneConsole.destroy();
+		if (serverConsole != null) serverConsole.destroy();
+		if (clientConsole != null) clientConsole.destroy();
+		screen.destroy();
+		speaker.destroy();
+		currentRoom = null;
+	}
+	
+	protected void buildPeripherals() {
 		// PC interfaces for Video, Audio, Controls, Cartridge and SaveState
 		if (screen != null) throw new IllegalStateException();
-		screen = new DesktopScreenWindow();
+		screen = buildScreenPeripheral();
 		speaker = new Speaker();
 		controls = new AWTConsoleControls(screen.monitor());
 		controls.addInputComponents(screen.controlsInputComponents());
 		stateMedia = new FileSaveStateMedia();
+	}
+
+	protected Screen buildScreenPeripheral() {
+		return new DesktopScreenWindow();
 	}
 
 	private void plugConsole(Console console) {
@@ -191,6 +205,15 @@ public class Room {
 		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
 		currentRoom.buildAndPlugClientConsole();
 		// Insert no Cartridge
+		return currentRoom;
+	}
+
+	public static Room buildAppletRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new AppletRoom();
+		currentRoom.buildPeripherals();
+		currentRoom.buildAndPlugStandaloneConsole();
+		currentRoom.insertCartridgeProvided();
 		return currentRoom;
 	}
 

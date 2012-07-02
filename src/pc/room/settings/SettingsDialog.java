@@ -66,11 +66,12 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		setControlsKeyListener();
 		setMultiplayerDefaults();
 		mainTabbedPane.setSelectedIndex(3);
+		mainTabbedPane.setEnabledAt(0, Parameters.MULTIPLAYER_UI_ENABLED);
 	}
 
 	@Override
 	public void connectionStatusChanged() {
-		refreshMultiplayerImages();
+		if (isVisible()) refreshMultiplayerImages();
 	}
 		
 	@Override
@@ -105,11 +106,13 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 	
 	private void refreshMultiplayer() {
 		if (room == null) {
-			modeL.setText("?????");
-			serverStartB.setText("?????");
+			modeL.setText("STANDALONE MODE");
+			modeL.setForeground(new Color(0, 127, 0));
+			serverStartB.setText("");
 			serverStartB.setEnabled(false);
 			serverPortTf.setEditable(false);
-			clientConnectB.setText("?????");
+			serverPortTf.setText("");
+			clientConnectB.setText("");
 			clientConnectB.setEnabled(false);
 			clientServerAddressTf.setEditable(false);
 			standaloneConsoleL.setVisible(true);
@@ -138,7 +141,6 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 	}
 
 	private void refreshMultiplayerImages() {
-		if (!isVisible()) return;
 		boolean serverMode = room.isServerMode();
 		boolean clientMode = room.isClientMode();
 		boolean clientConnected = serverMode && room.serverCurrentConsole().remoteTransmitter().isClientConnected();

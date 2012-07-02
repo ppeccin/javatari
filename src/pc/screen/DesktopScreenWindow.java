@@ -51,7 +51,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 	public DesktopScreenWindow() {
 		super();
 		monitor = new Monitor();
-		consolePanelWindow = new DesktopConsolePanel(this, monitor);
+		if (CONSOLE_PANEL) consolePanelWindow = new DesktopConsolePanel(this, monitor);
 		fullWindow = new DesktopScreenFullWindow(this);
 		monitor.addControlInputComponents(this.controlsInputComponents());
 		setup();
@@ -60,7 +60,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 	@Override
 	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		monitor.connect(videoSignal, cartridgeSocket);
-		consolePanelWindow.connect(controlsSocket);
+		if (consolePanelWindow != null) consolePanelWindow.connect(controlsSocket);
 	}
 
 	@Override
@@ -115,13 +115,13 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 			Insets ins = getInsets();
 			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
 			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
-			consolePanelWindow.setVisible(true);
+			if (consolePanelWindow != null) consolePanelWindow.setVisible(true);
 			canvasSetRenderingMode();
 			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
 				repaint();
 			}});
 		} else
-			consolePanelWindow.setVisible(false);
+			if (consolePanelWindow != null) consolePanelWindow.setVisible(false);
 	}
 	
 	@Override
@@ -134,14 +134,14 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		super.addKeyListener(l);
 		canvas.addKeyListener(l);
 		fullWindow.addKeyListener(l);
-		consolePanelWindow.addKeyListener(l);
+		if (consolePanelWindow != null) consolePanelWindow.addKeyListener(l);
 	}
 	@Override
 	public synchronized void removeKeyListener(KeyListener l) {
 		super.removeKeyListener(l);
 		canvas.removeKeyListener(l);
 		fullWindow.removeKeyListener(l);
-		consolePanelWindow.removeKeyListener(l);
+		if (consolePanelWindow != null) consolePanelWindow.removeKeyListener(l);
 	}
 	@Override
 	public synchronized void addMouseListener(MouseListener l) {
@@ -348,7 +348,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		hotspots.addHotspot(
 			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
 			new Runnable() { @Override public void run() { 
-				consolePanelWindow.toggle();
+				if (consolePanelWindow != null) consolePanelWindow.toggle();
 			}});
 		hotspots.addHotspot(
 			new Rectangle(-74 -44, -20, 13, 15), 
@@ -452,6 +452,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 	public static final String BASE_TITLE = "javatari";
 	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
 	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
+	public static final boolean CONSOLE_PANEL = Parameters.SCREEN_CONSOLE_PANEL;
 
 	public static final long serialVersionUID = 1L;
 
@@ -469,7 +470,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 			case KeyEvent.ALT_DOWN_MASK:
 				switch (code) {
 					case KEY_FULL_SCR: fullScreen(!fullScreen); return;
-					case KEY_HELP: if (!fullScreen)	consolePanelWindow.toggle(); return;
+					case KEY_HELP: if (!fullScreen && consolePanelWindow != null) consolePanelWindow.toggle(); return;
 				}
 			}
 		}
