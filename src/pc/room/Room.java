@@ -89,6 +89,7 @@ public class Room {
 		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
 		if (standaloneConsole == null) buildAndPlugStandaloneConsole();
 		else plugConsole(standaloneConsole);
+		adjustPeripheralsToStandaloneOrServerOperation();
 		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
 		powerOn();
 	}
@@ -99,6 +100,7 @@ public class Room {
 		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
 		if (serverConsole == null) buildAndPlugServerConsole();
 		else plugConsole(serverConsole);
+		adjustPeripheralsToStandaloneOrServerOperation();
 		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
 		powerOn();
 	}
@@ -108,6 +110,7 @@ public class Room {
 		powerOff();
 		if (clientConsole == null) buildAndPlugClientConsole();
 		else plugConsole(clientConsole);
+		adjustPeripheralsToClientOperation();
 		powerOn();
 	}
 
@@ -182,6 +185,7 @@ public class Room {
 		if (currentRoom != null) throw new IllegalStateException("Room already built");
 		currentRoom = new Room();
 		currentRoom.buildPeripherals();
+		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugStandaloneConsole();
 		currentRoom.insertCartridgeProvided();
 		return currentRoom;
@@ -191,6 +195,7 @@ public class Room {
 		if (currentRoom != null) throw new IllegalStateException("Room already built");
 		currentRoom = new Room();
 		currentRoom.buildPeripherals();
+		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugServerConsole();
 		currentRoom.insertCartridgeProvided();
 		return currentRoom;
@@ -200,21 +205,30 @@ public class Room {
 		if (currentRoom != null) throw new IllegalStateException("Room already built");
 		currentRoom = new Room();
 		currentRoom.buildPeripherals();
-		// Automatically adjust interface for Multiplayer Client operation
-		currentRoom.controls().p1ControlsMode(true);
-		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
+		currentRoom.adjustPeripheralsToClientOperation();
 		currentRoom.buildAndPlugClientConsole();
 		// Insert no Cartridge
 		return currentRoom;
 	}
 
-	public static Room buildAppletRoom() {
+	public static Room buildAppletStandaloneRoom() {
 		if (currentRoom != null) throw new IllegalStateException("Room already built");
 		currentRoom = new AppletRoom();
 		currentRoom.buildPeripherals();
+		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugStandaloneConsole();
 		currentRoom.insertCartridgeProvided();
 		return currentRoom;
+	}
+
+	private void adjustPeripheralsToStandaloneOrServerOperation() {
+		currentRoom.controls().p1ControlsMode(false);
+		currentRoom.screen().monitor().setCartridgeChangeEnabled(Parameters.SCREEN_CARTRIDGE_CHANGE);
+	}
+
+	private void adjustPeripheralsToClientOperation() {
+		currentRoom.controls().p1ControlsMode(true);
+		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
 	}
 
 	public static void openCurrentRoomSettings() {

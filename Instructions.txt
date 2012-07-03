@@ -36,11 +36,12 @@ To run the emulator in Standalone (single player) mode,
 simply double-click the executable javatari.jar file, or:
 $ java -jar javatari.jar
 
-To run the emulator in Multiplayer Server mode:
-$ java -cp javatari.jar main.MultiplayerServer
+Multiplayer Server and Client modes can be controlled in the emulator UI.
+But you can start the emulator directly in Multiplayer modes with:
 
-To run the emulator in Multiplayer Client mode:
-$ java -cp javatari.jar main.MultiplayerClient
+$ java -cp javatari.jar main.MultiplayerServer
+or
+$ java -cp javatari.jar main.MultiplayerClient serverAddress
 
 
 Visit http://javatari.org

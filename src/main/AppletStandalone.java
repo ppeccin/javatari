@@ -29,7 +29,7 @@ public class AppletStandalone extends JApplet {
 		Integer backColor = backgroundParam != null ? Integer.parseInt(backgroundParam) : null;
 
 		// Create an Applet Room
-		room = Room.buildAppletRoom();
+		room = Room.buildAppletStandaloneRoom();
 		
 		// Add the screen to the Applet and set the background color
 		setContentPane((PanelScreen)room.screen());

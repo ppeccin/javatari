@@ -374,6 +374,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 			new Rectangle(-41, -24, 17, 19),
 			new Runnable() { @Override public void run() {
 				Room.openCurrentRoomSettings();
+				requestFocus();
 			}});
 	}
 

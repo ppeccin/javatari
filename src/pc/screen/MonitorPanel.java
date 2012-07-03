@@ -268,6 +268,7 @@ public class MonitorPanel extends JPanel implements MonitorDisplay {
 			new Rectangle(-28, -24, 17, 19),
 			new Runnable() { @Override public void run() {
 				Room.openCurrentRoomSettings();
+				requestFocus();
 			}});
 	}
 
