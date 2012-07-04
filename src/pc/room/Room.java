@@ -27,6 +27,7 @@ public class Room {
 	public void powerOn() {
 		screen.powerOn();
 	 	speaker.powerOn();
+	 	if (!isClientMode()) insertCartridgeProvidedIfNoneInserted();
 	 	if (currentConsole.cartridgeSocket().inserted() != null) currentConsole.powerOn();
 	}
 
@@ -147,11 +148,18 @@ public class Room {
 		stateMedia.connect(currentConsole.saveStateSocket());
 	}
 	
-	private void insertCartridgeProvided() {
+	private void insertCartridgeProvidedIfNoneInserted() {
+		if (currentConsole.cartridgeSocket().inserted() != null) return;
+		loadCartridgeProvided();
+		if (cartridgeProvided != null) currentConsole.cartridgeSocket().insert(cartridgeProvided, false);
+	}
+
+	private void loadCartridgeProvided() {
+		if (triedToLoadCartridgeProvided) return;
+		triedToLoadCartridgeProvided = true;
 		if (Parameters.mainArg == null) return;
-		Cartridge cart = ROMLoader.load(Parameters.mainArg);
-		if (cart != null) currentConsole.cartridgeSocket().insert(cart, false);
-		else Terminator.terminate();	// Error loading Cartridge
+		cartridgeProvided = ROMLoader.load(Parameters.mainArg);
+		if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
 	}
 
 	private Console buildAndPlugStandaloneConsole() {
@@ -187,7 +195,6 @@ public class Room {
 		currentRoom.buildPeripherals();
 		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugStandaloneConsole();
-		currentRoom.insertCartridgeProvided();
 		return currentRoom;
 	}
 
@@ -197,7 +204,6 @@ public class Room {
 		currentRoom.buildPeripherals();
 		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugServerConsole();
-		currentRoom.insertCartridgeProvided();
 		return currentRoom;
 	}
 
@@ -207,7 +213,6 @@ public class Room {
 		currentRoom.buildPeripherals();
 		currentRoom.adjustPeripheralsToClientOperation();
 		currentRoom.buildAndPlugClientConsole();
-		// Insert no Cartridge
 		return currentRoom;
 	}
 
@@ -217,7 +222,6 @@ public class Room {
 		currentRoom.buildPeripherals();
 		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugStandaloneConsole();
-		currentRoom.insertCartridgeProvided();
 		return currentRoom;
 	}
 
@@ -246,6 +250,8 @@ public class Room {
 	private Speaker speaker;
 	private AWTConsoleControls controls;
 	private FileSaveStateMedia stateMedia;
+	private Cartridge cartridgeProvided;
+	private boolean triedToLoadCartridgeProvided = false;
 	
 	private static Room currentRoom;
 	private static SettingsDialog settingsDialog;
