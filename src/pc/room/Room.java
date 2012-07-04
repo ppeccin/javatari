@@ -27,7 +27,7 @@ public class Room {
 	public void powerOn() {
 		screen.powerOn();
 	 	speaker.powerOn();
-	 	if (!isClientMode()) insertCartridgeProvidedIfNoneInserted();
+	 	insertCartridgeProvidedIfNoneInserted();
 	 	if (currentConsole.cartridgeSocket().inserted() != null) currentConsole.powerOn();
 	}
 
@@ -157,7 +157,7 @@ public class Room {
 	private void loadCartridgeProvided() {
 		if (triedToLoadCartridgeProvided) return;
 		triedToLoadCartridgeProvided = true;
-		if (Parameters.mainArg == null) return;
+		if (isClientMode() || Parameters.mainArg == null) return;
 		cartridgeProvided = ROMLoader.load(Parameters.mainArg);
 		if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
 	}
