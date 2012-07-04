@@ -195,7 +195,7 @@ public class Parameters {
 			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
 			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
 
-			val = props.getProperty("MULTIPLAYER_UI_ENABLED"); if (val != null) MULTIPLAYER_UI_ENABLED = Boolean.valueOf(val);
+			val = props.getProperty("MULTIPLAYER_UI"); if (val != null) MULTIPLAYER_UI = Boolean.valueOf(val);
 		} catch(Exception ex) {
 			System.out.println("Error processing properties:\n" + ex);
 			Terminator.terminate();
@@ -267,7 +267,7 @@ public class Parameters {
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
 
-	public static boolean 	MULTIPLAYER_UI_ENABLED = true;
+	public static boolean 	MULTIPLAYER_UI = true;
 
 	public static String 	OFFICIAL_WEBSITE = "http://javatari.org";
 	

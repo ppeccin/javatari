@@ -66,7 +66,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		setControlsKeyListener();
 		setMultiplayerDefaults();
 		mainTabbedPane.setSelectedIndex(3);
-		mainTabbedPane.setEnabledAt(0, Parameters.MULTIPLAYER_UI_ENABLED);
+		mainTabbedPane.setEnabledAt(0, Parameters.MULTIPLAYER_UI);
 	}
 
 	@Override
