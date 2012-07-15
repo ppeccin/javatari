@@ -2,11 +2,8 @@
 
 package general.av.audio;
 
-import javax.sound.sampled.AudioFormat;
 
 public interface AudioSignal {
-
-	public AudioFormat getAudioFormat();
 
 	public void connectMonitor(AudioMonitor monitor);
 

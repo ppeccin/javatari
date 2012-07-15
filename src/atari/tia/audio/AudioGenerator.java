@@ -5,15 +5,9 @@ package atari.tia.audio;
 import general.av.audio.AudioMonitor;
 import general.av.audio.AudioSignal;
 import general.av.video.VideoStandard;
-
-import javax.sound.sampled.AudioFormat;
-
 import parameters.Parameters;
 
 public abstract class AudioGenerator implements AudioSignal {
-
-	@Override
-	public abstract AudioFormat getAudioFormat();
 
 	@Override
 	public void connectMonitor(AudioMonitor monitor) {

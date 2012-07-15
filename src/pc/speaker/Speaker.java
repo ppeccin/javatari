@@ -70,7 +70,7 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 
 	private void getLine() {
 		if (signal == null) return;
-		AudioFormat audioFormat = signal.getAudioFormat();
+		AudioFormat audioFormat = AUDIO_FORMAT;
 		try {
 			dataLine = AudioSystem.getSourceDataLine(audioFormat);
 			dataLine.open(audioFormat, OUTPUT_BUFFER_SIZE);
@@ -126,6 +126,8 @@ public class Speaker implements ClockDriven, AudioMonitor  {
 	private ByteBuffer inputBuffer;
 	private byte[] tempBuffer;		
 	
+	private final AudioFormat AUDIO_FORMAT = new AudioFormat(Parameters.TIA_AUDIO_SAMPLE_RATE, 8, 1, true, false);
+
 	public static final double DEFAULT_FPS = Parameters.SPEAKER_DEFAULT_FPS;	
 	public static final int INPUT_BUFFER_SIZE = Parameters.SPEAKER_INPUT_BUFFER_SIZE;					// In frames (samples)
 	public static final int OUTPUT_BUFFER_SIZE = Parameters.SPEAKER_OUTPUT_BUFFER_SIZE;					// In frames (samples)
