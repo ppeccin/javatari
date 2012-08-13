@@ -380,7 +380,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(SettingsDialog.class.getResource("/pc/screen/images/Favicon.png")));
 		setTitle("javatari");
 		setResizable(false);
-		setSize(491, 324);
+		setSize(492, 324);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 0, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -776,7 +776,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnAlsoPossibleDo.setEditable(false);
 			txtpnAlsoPossibleDo.setText("Drag/Drop or Copy/Paste of files and URLs");
 			txtpnAlsoPossibleDo.setFont(new Font("Arial", Font.PLAIN, 12));
-			txtpnAlsoPossibleDo.setBounds(218, 100, 240, 21);
+			txtpnAlsoPossibleDo.setBounds(218, 100, 246, 21);
 			panel.add(txtpnAlsoPossibleDo);
 			
 			JTextPane txtpnDisplayOriginDisplay = new JTextPane();
