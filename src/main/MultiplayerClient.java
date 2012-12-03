@@ -6,11 +6,10 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
-import atari.network.RemoteReceiver;
-
 import parameters.Parameters;
 import pc.room.Room;
 import utils.Terminator;
+import atari.network.RemoteReceiver;
 
 public class MultiplayerClient {
 
@@ -20,13 +19,13 @@ public class MultiplayerClient {
 		Parameters.init(args);
 
 		// Build a ClientRoom for P2 Client play and turn everything on
-		Room clientRoom = Room.buildClientRoom();
+		final Room clientRoom = Room.buildClientRoom();
 		clientRoom.powerOn();
 		
 		// Start connection to P1 Server
 		boolean success = askUserForConnection(clientRoom.clientCurrentConsole().remoteReceiver(), Parameters.mainArg);
 		if (!success) Terminator.terminate();
-		
+
 	}
 
 	private static boolean askUserForConnection(RemoteReceiver remoteReceiver, String defaultServer) {
@@ -44,7 +43,7 @@ public class MultiplayerClient {
 			// If unsuccessful, ask for another address
 	 		do {
 				server = (String) JOptionPane.showInputDialog(
-					null, "Atari Player 1 Server address:", "Atari Player 2 Client",
+					null, "Atari Player 1 Server address[:port]:", "Atari Player 2 Client",
 					JOptionPane.PLAIN_MESSAGE, null, null,
 					server
 				);

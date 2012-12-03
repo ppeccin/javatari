@@ -2,14 +2,18 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
+Version 2.02
+============
+- Support for Applets to auto-start in multiplayer modes
+
+
+Previous Versions:
+
 Version 2.01
 ============
 - Multiplayer mode controls in UI
 - Start Client/Server sessions directly in Settings window
 - Applet multiplayer mode support
-
-
-Previous Versions:
 
 Version 1.11
 ============

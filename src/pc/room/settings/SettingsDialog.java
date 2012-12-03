@@ -76,7 +76,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		
 	@Override
 	public void setVisible(boolean state) {
-		setupConnectionStatulsListeners();
+		setupConnectionStatusListeners();
 		initNewKeys();
 		refreshContols();
 		refreshMultiplayer();
@@ -256,7 +256,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));
 	}
 
-	private void setupConnectionStatulsListeners() {
+	private void setupConnectionStatusListeners() {
 		if (room == null) return;
 		if (room.isServerMode()) room.serverCurrentConsole().remoteTransmitter().addConnectionStatusListener(this);
 		if (room.isClientMode()) room.clientCurrentConsole().remoteReceiver().addConnectionStatusListener(this);
@@ -304,7 +304,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 	private void serverStartAction() {
 		if (!room.isServerMode()) {		// Will try to START
 			room.morphToServerMode();
-			setupConnectionStatulsListeners();
+			setupConnectionStatusListeners();
 			try {
 				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
 				String portString = serverPortTf.getText().trim();
@@ -333,7 +333,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 	private void clientConnectAction() {
 		if (!room.isClientMode()) {		// Will try to CONNECT
 			room.morphToClientMode();
-			setupConnectionStatulsListeners();
+			setupConnectionStatusListeners();
 			String serverAddress = "";
 			try {
 				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();

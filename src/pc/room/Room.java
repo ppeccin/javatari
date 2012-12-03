@@ -42,17 +42,17 @@ public class Room {
 	}
 
 	public Console standaloneCurrentConsole() {
-		if (currentConsole != standaloneConsole) throw new IllegalStateException();
+		if (currentConsole != standaloneConsole) throw new IllegalStateException("Not a Standalone Room");
 		return standaloneConsole;
 	}
 
 	public ServerConsole serverCurrentConsole() {
-		if (currentConsole != serverConsole) throw new IllegalStateException();
+		if (currentConsole != serverConsole) throw new IllegalStateException("Not a Server Room");
 		return serverConsole;
 	}
 
 	public ClientConsole clientCurrentConsole() {
-		if (currentConsole != clientConsole) throw new IllegalStateException();
+		if (currentConsole != clientConsole) throw new IllegalStateException("Not a Client Room");
 		return clientConsole;
 	}
 
@@ -222,6 +222,24 @@ public class Room {
 		currentRoom.buildPeripherals();
 		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
 		currentRoom.buildAndPlugStandaloneConsole();
+		return currentRoom;
+	}
+
+	public static Room buildAppletServerRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new AppletRoom();
+		currentRoom.buildPeripherals();
+		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
+		currentRoom.buildAndPlugServerConsole();
+		return currentRoom;
+	}
+
+	public static Room buildAppletClientRoom() {
+		if (currentRoom != null) throw new IllegalStateException("Room already built");
+		currentRoom = new AppletRoom();
+		currentRoom.buildPeripherals();
+		currentRoom.adjustPeripheralsToClientOperation();
+		currentRoom.buildAndPlugClientConsole();
 		return currentRoom;
 	}
 

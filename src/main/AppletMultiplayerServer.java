@@ -4,12 +4,15 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import javax.swing.JApplet;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import parameters.Parameters;
 import pc.room.Room;
 import pc.screen.PanelScreen;
+import utils.Terminator;
 
-public class AppletStandalone extends JApplet {
+public class AppletMultiplayerServer extends JApplet {
 
 	@Override
 	public void init() {
@@ -29,8 +32,8 @@ public class AppletStandalone extends JApplet {
 		System.out.println("Background color: " + backgroundParam);
 		Integer backColor = backgroundParam != null ? Integer.parseInt(backgroundParam) : null;
 
-		// Create an Applet Room
-		room = Room.buildAppletStandaloneRoom();
+		// Create an Applet Server Room
+		room = Room.buildAppletServerRoom();
 		
 		// Add the screen to the Applet and set the background color
 		setContentPane((PanelScreen)room.screen());
@@ -42,12 +45,29 @@ public class AppletStandalone extends JApplet {
 		// Turn everything on
 		room.powerOn();
 		((PanelScreen)room.screen()).requestFocus();
+		
+		SwingUtilities.invokeLater(new Runnable() { @Override public void run() {
+			// Start listening for P2 Client connections
+			try {
+				room.serverCurrentConsole().remoteTransmitter().start();
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(null, "Server start failed:\n" + ex, "Atari P1 Server", JOptionPane.ERROR_MESSAGE);
+				Terminator.terminate();
+			}
+		}});
 	}
 	
 	@Override
 	public void stop() {
 		// Turn everything off
 		room.powerOff();
+		
+		// Stop listening for P2 Client connections
+		try {
+			room.serverCurrentConsole().remoteTransmitter().stop();
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Error stopping Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
 	@Override
