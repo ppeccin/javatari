@@ -64,6 +64,11 @@ public  class Cartridge8KSliced extends Cartridge {
 	private int slice2AddressOffset = 0;
 	// Slice 3 is fixed at bank 7
 
+	
+	public static boolean accepts(byte[] content, Boolean superChip, boolean sliced) {
+		return content.length == SIZE && sliced && (superChip == null || !superChip);
+	}
+
 	public static final int SIZE = 8192;
 
 	public static final long serialVersionUID = 1L;

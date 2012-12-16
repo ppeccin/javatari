@@ -149,7 +149,7 @@ public class Monitor implements ClockDriven, VideoMonitor {
 	@Override
 	public void showOSD(String message) {
 		osdMessage = message;
-		osdFramesLeft = OSD_FRAMES;
+		osdFramesLeft = message == null ? 0 : OSD_FRAMES;
 	}
 	
 	@Override

@@ -20,7 +20,7 @@ import atari.network.ServerConsole;
 
 public class Room {
 	
-	Room() {
+	protected Room() {
 		super();
 	}
 
@@ -115,6 +115,11 @@ public class Room {
 		powerOn();
 	}
 
+	public void openSettings() {
+		if (settingsDialog == null) settingsDialog = new SettingsDialog(this);
+		settingsDialog.setVisible(true);
+	}
+
 	public void destroy() {
 		powerOff();
 		if (standaloneConsole != null) standaloneConsole.destroy();
@@ -122,6 +127,10 @@ public class Room {
 		if (clientConsole != null) clientConsole.destroy();
 		screen.destroy();
 		speaker.destroy();
+		if (settingsDialog != null) {
+			settingsDialog.setVisible(false);
+			settingsDialog.dispose();
+		}
 		currentRoom = null;
 	}
 	
@@ -184,7 +193,17 @@ public class Room {
 		return clientConsole;
 	}	
 
-	
+	private void adjustPeripheralsToStandaloneOrServerOperation() {
+		currentRoom.controls().p1ControlsMode(false);
+		currentRoom.screen().monitor().setCartridgeChangeEnabled(Parameters.SCREEN_CARTRIDGE_CHANGE);
+	}
+
+	private void adjustPeripheralsToClientOperation() {
+		currentRoom.controls().p1ControlsMode(true);
+		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
+	}
+
+
 	public static Room currentRoom() {
 		return currentRoom;
 	}
@@ -243,21 +262,6 @@ public class Room {
 		return currentRoom;
 	}
 
-	private void adjustPeripheralsToStandaloneOrServerOperation() {
-		currentRoom.controls().p1ControlsMode(false);
-		currentRoom.screen().monitor().setCartridgeChangeEnabled(Parameters.SCREEN_CARTRIDGE_CHANGE);
-	}
-
-	private void adjustPeripheralsToClientOperation() {
-		currentRoom.controls().p1ControlsMode(true);
-		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
-	}
-
-	public static void openCurrentRoomSettings() {
-		if (settingsDialog == null) settingsDialog = new SettingsDialog(currentRoom);
-		settingsDialog.setVisible(true);
-	}
-
 	
 	private Console currentConsole;
 	private Console	standaloneConsole;
@@ -270,8 +274,9 @@ public class Room {
 	private FileSaveStateMedia stateMedia;
 	private Cartridge cartridgeProvided;
 	private boolean triedToLoadCartridgeProvided = false;
+	private SettingsDialog settingsDialog;
+	
 	
 	private static Room currentRoom;
-	private static SettingsDialog settingsDialog;
 		
 }

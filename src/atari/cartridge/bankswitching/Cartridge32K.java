@@ -9,8 +9,6 @@ public final class Cartridge32K extends CartridgeBanked {
 
 	public Cartridge32K(byte[] content, Boolean superChip) {
 		super(content, superChip, 128);
-		if (content.length != SIZE)
-			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
 	}
 
 	@Override
@@ -43,6 +41,11 @@ public final class Cartridge32K extends CartridgeBanked {
 				bankAddressOffset = 16384 + 12288;
 		}
 		return add;
+	}
+
+	
+	public static boolean accepts(byte[] content, Boolean superChip, boolean sliced) {
+		return content.length == SIZE && !sliced;
 	}
 
 	public static final int SIZE = 32768;

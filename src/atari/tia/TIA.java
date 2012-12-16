@@ -159,7 +159,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			}
 			if (playfieldCurrentPixel) { 
 				FL = true;
-				if (color == -1) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
+				if (color == -1) color = playfieldColor;	// No Score Mode in priority mode
 			}
 		}
 		// Get the value for Player0

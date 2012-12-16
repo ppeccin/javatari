@@ -17,6 +17,7 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JOptionPane;
 
 import atari.cartridge.Cartridge;
+import atari.cartridge.bankswitching.Cartridge64K;
 
 public class ROMLoader {
 
@@ -119,14 +120,14 @@ public class ROMLoader {
 		if (tName.length() > 80) tName = tName.substring(0, 79);
 		JOptionPane.showMessageDialog(
 			null,
-			"Could not load Cartridge from:\n" + tName,
+			"Could not load Cartridge from:\n" + tName + "\n\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage(),
 			"Error loading Cartridge",
 			JOptionPane.ERROR_MESSAGE
 		);
 	}
 
 
-	private static final int MAX_ROM_SIZE = 32768;
+	private static final int MAX_ROM_SIZE = Cartridge64K.SIZE;
 	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1000;
 
 	public static final String   VALID_FILES_DESC = "ROM files (.bin .rom .a26 .zip)";

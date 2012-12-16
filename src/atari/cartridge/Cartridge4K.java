@@ -3,26 +3,25 @@
 package atari.cartridge;
 
 /**
- * Implements the 4K and 2K unbanked format
+ * Implements the 4K unbanked format. Smaller ROMs will be copied several times to fill the entire 4K
  */
 public final class Cartridge4K extends Cartridge {
 
 	public Cartridge4K(byte[] content) {
 		super();
-		if (content.length != SIZE && content.length != 2048 )		// Also accepts 2K ROMs, but duplicates the content to form 4K
-			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
-		if (content.length == 2048) {
-			byte[] newContent = new byte[4096];
-			System.arraycopy(content, 0, newContent, 0, 2048);
-			System.arraycopy(content, 0, newContent, 2048, 2048);
-			setContent(newContent);
-			return;
-		}
-		setContent(content);
+		int len = content.length;
+		byte[] newContent = new byte[SIZE];
+		for (int pos = 0; pos < SIZE; pos += len)
+			System.arraycopy(content, 0, newContent, pos, len);
+		setContent(newContent);
+	}
+
+
+	public static boolean accepts(byte[] content, Boolean superChip, boolean sliced) {
+		return content.length >= 4 && SIZE % content.length == 0 && (superChip == null || !superChip) && !sliced; 
 	}
 
 	public static final int SIZE = 4096;
-	public static final int HALF_SIZE = 2048;
 
 	public static final long serialVersionUID = 1L;
 

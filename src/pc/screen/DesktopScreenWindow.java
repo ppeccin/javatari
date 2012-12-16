@@ -373,7 +373,7 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		hotspots.addHotspot(
 			new Rectangle(-41, -24, 17, 19),
 			new Runnable() { @Override public void run() {
-				Room.openCurrentRoomSettings();
+				Room.currentRoom().openSettings();
 				requestFocus();
 			}});
 	}
@@ -494,7 +494,9 @@ public class DesktopScreenWindow extends SlickFrame implements MonitorDisplay, S
 		@Override
 		public boolean importData(TransferSupport support) {
 			if (!canImport(support)) return false;
+			monitor.showOSD("LOADING CARTRIDGE...");
 			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(support.getTransferable());
+			monitor.showOSD(null);
 			if (cart == null) return false;
 			// LINK Action means load Cartridge without auto power! :-)
 			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;

@@ -47,6 +47,10 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 		Arrays.fill(bytes, (byte)0x00);
 	}
 	
+	public static boolean accepts(byte[] content) {
+		return false;		// Should be overridden
+	}
+	
 	protected byte[] bytes;
 	
 	private VideoStandard suggestedVideoStandard = null;

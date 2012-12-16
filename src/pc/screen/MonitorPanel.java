@@ -267,7 +267,7 @@ public class MonitorPanel extends JPanel implements MonitorDisplay {
 		hotspots.addHotspot(
 			new Rectangle(-28, -24, 17, 19),
 			new Runnable() { @Override public void run() {
-				Room.openCurrentRoomSettings();
+				Room.currentRoom().openSettings();
 				requestFocus();
 			}});
 	}
@@ -376,7 +376,9 @@ public class MonitorPanel extends JPanel implements MonitorDisplay {
 		@Override
 		public boolean importData(TransferSupport support) {
 			if (!canImport(support)) return false;
+			monitor.showOSD("LOADING CARTRIDGE...");
 			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(support.getTransferable());
+			monitor.showOSD("");
 			if (cart == null) return false;
 			// LINK Action means load Cartridge without auto power! :-)
 			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;

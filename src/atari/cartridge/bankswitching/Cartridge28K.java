@@ -8,9 +8,7 @@ package atari.cartridge.bankswitching;
 public final class Cartridge28K extends CartridgeBanked {
 
 	public Cartridge28K(byte[] content) {
-		super(content, true, 256);
-		if (content.length != SIZE)
-			throw new IllegalStateException("Invalid size for " + this.getClass().getName() + ": " + content.length);
+		super(content, true, 256);			// SuperChip always ON
 	}
 
 	@Override
@@ -40,6 +38,11 @@ public final class Cartridge28K extends CartridgeBanked {
 				bankAddressOffset = 16384 + 8192;
 		}
 		return add;
+	}
+
+
+	public static boolean accepts(byte[] content, Boolean superChip, boolean sliced) {
+		return content.length == SIZE && (superChip == null || superChip) && !sliced;
 	}
 
 	public static final int SIZE = 32768 - 4096;
