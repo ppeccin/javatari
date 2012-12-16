@@ -203,7 +203,7 @@ public class Parameters {
 	}
 
 	// Main Emulator Version
-	public static final String VERSION = "version 2.02";
+	public static final String VERSION = "version 2.03";
 
 	
 	// Cartridge URL to load passed as argument

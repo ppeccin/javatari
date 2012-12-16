@@ -2,12 +2,17 @@ You can find executables in the downloads section.
 
 Visit http://javatari.org
 
-Version 2.02
+Version 2.03
 ============
-- Support for Applets to auto-start in multiplayer modes
+- Support for additional ROM formats
+- Better support for ROMs from the Demo Scene 
 
 
 Previous Versions:
+
+Version 2.02
+============
+- Support for Applets to auto-start in multiplayer modes
 
 Version 2.01
 ============
