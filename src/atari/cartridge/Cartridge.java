@@ -6,24 +6,47 @@ import general.av.video.VideoStandard;
 import general.board.BUS16Bits;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 
+	protected Cartridge(byte[] content, String contentName, CartridgeFormat format) {
+		this.bytes = content;
+		this.contentName = contentName;
+		this.format = format;
+	}
+	
+	public byte[] content() {
+		return bytes;
+	}
+
+	public String contentName() {
+		return contentName;
+	}
+
+	public CartridgeFormat format() {
+		return format;
+	}
+
 	@Override
-	public byte readByte(int address) {		
-		return bytes[maskAddress(address)];	
+	public byte readByte(int address) {
+		maskAddress(address);
+		return bytes[maskedAddress];	
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {	
+		maskAddress(address);
 		// Writing to ROMs is possible, but nothing is changed
 	}
 
-	@Override
-	public Cartridge clone() {
-		try { return (Cartridge)super.clone(); } catch (CloneNotSupportedException e) {}
-		return null;
+	public void monitorByteRead(int address, byte data) {
+	}
+
+	public void monitorByteWritten(int address, byte data) {
+	}
+
+	protected void maskAddress(int address) {
+		maskedAddress = address & 0x0fff;
 	}
 
 	public VideoStandard suggestedVideoStandard() {
@@ -34,27 +57,22 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 		this.suggestedVideoStandard = videoStandard;
 	}
 	
-	protected int maskAddress(int address) {
-		return address & 0x0fff;
+	@Override
+	public Cartridge clone() {
+		try { return (Cartridge)super.clone(); } catch (CloneNotSupportedException e) {}
+		return null;
 	}
-	
-	protected void setContent(byte[] content) {
-		bytes = content;
-	}
-	
-	protected void emptyContent(int size) {
-		bytes = new byte[size];
-		Arrays.fill(bytes, (byte)0x00);
-	}
-	
-	public static boolean accepts(byte[] content) {
-		return false;		// Should be overridden
-	}
-	
+
+
 	protected byte[] bytes;
-	
+	private final String contentName;
+	private final CartridgeFormat format;
+
+	protected int maskedAddress;
+
 	private VideoStandard suggestedVideoStandard = null;
 
+	
 	public static final long serialVersionUID = 1L;
 
 }

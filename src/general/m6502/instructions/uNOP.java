@@ -6,29 +6,21 @@ import general.m6502.M6502;
 import general.m6502.OperandType;
 import general.m6502.UndocumentedInstruction;
 
-public class uNOP extends UndocumentedInstruction {
+public final class uNOP extends UndocumentedInstruction {
 
-	public uNOP(M6502 cpu, OperandType type) {
+	public uNOP(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case IMM:
-				ea = cpu.fetchImmediateAddress(); return 2;		
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case Z_PAGE_X:
-				ea = cpu.fetchZeroPageXAddress(); return 4;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 4;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0);
-			default:
-				throw new IllegalStateException("uNOP Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.IMM) 		{ ea = cpu.fetchImmediateAddress(); return 2; }
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 4; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		if (type == OperandType.ABS_X) 		{ ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0); }
+		throw new IllegalStateException("uNOP Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -37,7 +29,7 @@ public class uNOP extends UndocumentedInstruction {
 		// No effects besides fetching and reading memory
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

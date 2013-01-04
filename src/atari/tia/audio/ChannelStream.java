@@ -28,45 +28,30 @@ public final class ChannelStream {
 	}
 	
 	private int nextSampleForControl() {
-		switch (control) {
-			case 0x00:						// Silence  ("set to 1" per specification)
-			case 0x0b:						// Set last 4 bits to 1	(same as silence)
-				return 1;
-			case 0x01:						// 4 bit poly
-				return nextPoly4();
-			case 0x02:						// div 15 > 4 bit poly
-				return currentTone31() != nextTone31()
-					? nextPoly4()
-					: currentPoly4();
-			case 0x03:						// 5 bit poly > 4 bit poly
-				return nextPoly5() == 1
-					? nextPoly4()
-					: currentPoly4();
-			case 0x04:						// div 2 pure tone
-			case 0x05:						// div 2 pure tone
-				return nextTone2();
-			case 0x06:						// div 31 pure tone (18 high, 13, low)
-			case 0x0a:						// div 31 pure tone (18 high, 13, low)
-				return nextTone31();
-			case 0x07:						// 5 bit poly > div 2 (same as 5 bit poly)
-			case 0x09:						// 5 bit poly
-				return nextPoly5();
-			case 0x08:						// 9 bit poly
-				return nextPoly9();
-			case 0x0c:						// div 6 pure tone (3 high, 3 low)
-			case 0x0d:						// div 6 pure tone (3 high, 3 low)
-				return nextTone6();
-			case 0x0e:						// div 93 pure tone	(31 tone each 3)
-				return currentTone31() != nextTone31()
-					? nextTone6()
-					: currentTone6();
-			case 0x0f:						// 5 bit poly div 6 (poly 5 each 3)		
-				return nextPoly5() == 1
-					? nextTone6()
-					: currentTone6();
-			default:	
-				throw new IllegalStateException("Invalid TIA Audio Channel Control: " + control);
-		}
+		if (control == 0x00 || control == 0x0b) 
+			return 1;																// Silence  ("set to 1" per specification)
+		if (control == 0x01) 
+			return nextPoly4();														// 4 bit poly
+		if (control == 0x02) 
+			return currentTone31() != nextTone31() ? nextPoly4() : currentPoly4();	// div 15 > 4 bit poly
+		if (control == 0x03)
+			return nextPoly5() == 1 ? nextPoly4(): currentPoly4();					// 5 bit poly > 4 bit poly
+		if (control == 0x04 || control == 0x05) 
+			return nextTone2();														// div 2 pure tone
+		if (control == 0x06 || control == 0x0a)
+			return nextTone31();													// div 31 pure tone (18 high, 13, low)
+		if (control == 0x07 || control == 0x09)
+			return nextPoly5();														// 5 bit poly
+		if (control == 0x08)
+			return nextPoly9();														// 9 bit poly
+		if (control == 0x0c || control == 0x0d)
+			return nextTone6();														// div 6 pure tone (3 high, 3 low)
+		if (control == 0x0e)
+			return currentTone31() != nextTone31() ? nextTone6() : currentTone6();	// div 93 pure tone	(31 tone each 3)
+		if (control == 0x0f)
+			return nextPoly5() == 1 ? nextTone6() : currentTone6();					// 5 bit poly div 6 (poly 5 each 3)
+
+		throw new IllegalStateException("Invalid TIA Audio Channel Control: " + control);
 	}
 
 	private int currentPoly4() {
@@ -74,10 +59,10 @@ public final class ChannelStream {
 	}
 
 	private int nextPoly4() {
-		int carry = poly4 & 0x01;					// bit 0
-		int push = ((poly4 >> 1) ^ carry) & 0x01;	// bit 1 XOR bit 0
-		poly4 = poly4 >>> 1;						// shift right
-		if (push == 0)								// set bit 3 = push
+		final int carry = poly4 & 0x01;					// bit 0
+		final int push = ((poly4 >> 1) ^ carry) & 0x01;	// bit 1 XOR bit 0
+		poly4 = poly4 >>> 1;							// shift right
+		if (push == 0)									// set bit 3 = push
 			poly4 &= 0x07;
 		else
 			poly4 |= 0x08;
@@ -85,10 +70,10 @@ public final class ChannelStream {
 	}
 
 	private int nextPoly5() {
-		int carry = poly5 & 0x01;					// bit 0
-		int push = ((poly5 >> 2) ^ carry) & 0x01;	// bit 2 XOR bit 0
-		poly5 = poly5 >>> 1;						// shift right
-		if (push == 0)								// set bit 4 = push
+		final int carry = poly5 & 0x01;					// bit 0
+		final int push = ((poly5 >> 2) ^ carry) & 0x01;	// bit 2 XOR bit 0
+		poly5 = poly5 >>> 1;							// shift right
+		if (push == 0)									// set bit 4 = push
 			poly5 &= 0x0f;
 		else
 			poly5 |= 0x10;
@@ -96,10 +81,10 @@ public final class ChannelStream {
 	}
 
 	private int nextPoly9() {
-		int carry = poly9 & 0x01;					// bit 0
-		int push = ((poly9 >> 4) ^ carry) & 0x01;	// bit 4 XOR bit 0
-		poly9 = poly9 >>> 1;						// shift right
-		if (push == 0)								// set bit 8 = push
+		final int carry = poly9 & 0x01;					// bit 0
+		final int push = ((poly9 >> 4) ^ carry) & 0x01;	// bit 4 XOR bit 0
+		poly9 = poly9 >>> 1;							// shift right
+		if (push == 0)									// set bit 8 = push
 			poly9 &= 0x0ff;
 		else
 			poly9 |= 0x100;

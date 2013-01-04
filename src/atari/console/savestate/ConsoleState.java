@@ -11,7 +11,7 @@ import atari.pia.PIA.PIAState;
 import atari.pia.RAM.RAMState;
 import atari.tia.TIA.TIAState;
 
-public class ConsoleState implements Serializable {
+public final class ConsoleState implements Serializable {
 
 	public ConsoleState(TIAState tia, PIAState pia, RAMState ram, M6502State cpu, Cartridge cartridge, VideoStandard videoStandard) {
 		this.tiaState = tia;

@@ -39,7 +39,7 @@ import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
-public class MonitorPanel extends JPanel implements MonitorDisplay {
+public final class MonitorPanel extends JPanel implements MonitorDisplay {
 
 	public MonitorPanel() {
 		super();
@@ -376,9 +376,9 @@ public class MonitorPanel extends JPanel implements MonitorDisplay {
 		@Override
 		public boolean importData(TransferSupport support) {
 			if (!canImport(support)) return false;
-			monitor.showOSD("LOADING CARTRIDGE...");
+			monitor.showOSD("LOADING CARTRIDGE...", true);
 			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(support.getTransferable());
-			monitor.showOSD("");
+			monitor.showOSD(null, true);
 			if (cart == null) return false;
 			// LINK Action means load Cartridge without auto power! :-)
 			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;

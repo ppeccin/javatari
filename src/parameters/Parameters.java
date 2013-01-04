@@ -13,7 +13,7 @@ import javax.swing.UIManager;
 
 import utils.Terminator;
 
-public class Parameters {
+public final class Parameters {
 	
 	static{
 		setLookAndFeel();
@@ -21,6 +21,7 @@ public class Parameters {
 
 	// Load Properties file and also process command line options, then load preferences. Order is relevant
 	public static void init(String[] args) {
+		System.out.println(System.getProperty("java.vm.name") + " ver: " + System.getProperty("java.version"));
 		parseMainArg(args);
 		loadPropertiesFile();
 		parseOptions(args);
@@ -203,7 +204,7 @@ public class Parameters {
 	}
 
 	// Main Emulator Version
-	public static final String VERSION = "version 2.03";
+	public static final String VERSION = "version 2.50";
 
 	
 	// Cartridge URL to load passed as argument

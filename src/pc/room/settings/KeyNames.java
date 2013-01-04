@@ -7,7 +7,7 @@ import static java.awt.event.KeyEvent.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KeyNames {
+public final class KeyNames {
 
 	public static String get(int code) {
 		String name = keyNames().get(code);

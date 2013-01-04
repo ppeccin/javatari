@@ -29,42 +29,37 @@ public final class BUS implements BUS16Bits {
 
 	@Override
 	public byte readByte(int address) {
-		// CART selected?
-		if ((address & CART_MASK) == CART_SEL) {
-			if (cartridge != null) data = cartridge.readByte(address);	// Cartridge might be disconnected
-			return data; 
-		}
-		// RAM selected?
-		if ((address & RAM_MASK) == RAM_SEL)
-			return data = ram.readByte(address);
-		// PIA selected?
-		if ((address & PIA_MASK) == PIA_SEL)
-			return data = pia.readByte(address);
-		// TIA selected...
-		// Only bit 7 and 6 are connected to TIA read registers.
-		if (DATA_RETENTION)
-			return data = (byte)(data & 0x3f | tia.readByte(address));  // Use the retained data for bits 5-0
-		else
-			return data = tia.readByte(address);	// As if all bits were provided by TIA
+		if ((address & CART_MASK) == CART_SEL) {					// CART selected?
+			if (cartridge != null) data = cartridge.readByte(address);
+		} else if ((address & RAM_MASK) == RAM_SEL)					// RAM selected?
+			data = ram.readByte(address);
+		else if ((address & PIA_MASK) == PIA_SEL)					// PIA selected?
+			data = pia.readByte(address);
+		else														// TIA selected...
+			// Only bit 7 and 6 are connected to TIA read registers.
+			if (DATA_RETENTION)
+				data = (byte)(data & 0x3f | tia.readByte(address));		// Use the retained data for bits 5-0
+			else
+				data = tia.readByte(address);							// As if all bits were provided by TIA
+
+		// CART Bus monitoring
+		if (cartridge != null)	cartridge.monitorByteRead(address, data);
+
+		return data;
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {
 		data = b;
-		// RAM selected?
-		if ((address & RAM_MASK) == RAM_SEL) {
-			ram.writeByte(address, b); return;
-		}
-		// TIA selected?
-		if ((address & TIA_MASK) == TIA_SEL) {
-			tia.writeByte(address, b); return;
-		}
-		// PIA selected?
-		if ((address & PIA_MASK) == PIA_SEL) {
-			pia.writeByte(address, b); return;
-		}
-		// CART selected...
-		if (cartridge != null) cartridge.writeByte(address, b);
+		
+		if ((address & RAM_MASK) == RAM_SEL) ram.writeByte(address, b);	// RAM selected?
+		else if	((address & TIA_MASK) == TIA_SEL) tia.writeByte(address, b);	// TIA selected?
+		else if	((address & PIA_MASK) == PIA_SEL) pia.writeByte(address, b);	// PIA selected?
+		else 																	// CART selected...
+			if	(cartridge != null) cartridge.writeByte(address, b);				
+
+		// CART Bus monitoring
+		if (cartridge != null) cartridge.monitorByteWritten(address, b);
 	}
 
 	public void cartridge(Cartridge cartridge) {

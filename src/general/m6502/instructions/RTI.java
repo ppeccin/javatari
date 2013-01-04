@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.Instruction;
 
-public class RTI extends Instruction {
+public final class RTI extends Instruction {
 
 	public RTI(M6502 cpu) {
 		super(cpu);
@@ -18,6 +18,8 @@ public class RTI extends Instruction {
 
 	@Override
 	public void execute() {
+		// Does not perform the dummy PC + 1 read
+		// Does not perform the dummy stack read
 		cpu.PS(cpu.pullByte());
 		cpu.PC = cpu.pullWord();
 	}

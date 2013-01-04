@@ -24,7 +24,7 @@ import atari.controls.ConsoleControlsInput;
 import atari.controls.ConsoleControlsRedefinitionListener;
 import atari.controls.ConsoleControlsSocket;
 
-public class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
+public final class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener {
 
 	public ConsolePanel(Monitor screen, MousePressAndMotionListener forwardListener) {
 		super();

@@ -6,35 +6,24 @@ import general.m6502.M6502;
 import general.m6502.Instruction;
 import general.m6502.OperandType;
 
-public class ADC extends Instruction {
+public final class ADC extends Instruction {
 
-	public ADC(M6502 cpu, OperandType type) {
+	public ADC(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case IMM:
-				ea = cpu.fetchImmediateAddress(); return 2;		
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case Z_PAGE_X:
-				ea = cpu.fetchZeroPageXAddress(); return 4;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 4;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0);
-			case ABS_Y:
-				ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0);
-			case IND_X:
-				ea = cpu.fetchIndirectXAddress(); return 6;
-			case IND_Y:
-				ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0);
-			default:
-				throw new IllegalStateException("ADC Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.IMM) 		{ ea = cpu.fetchImmediateAddress(); return 2; }
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 4; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		if (type == OperandType.ABS_X) 		{ ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0); }
+		if (type == OperandType.ABS_Y) 		{ ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0); }
+		if (type == OperandType.IND_X) 		{ ea = cpu.fetchIndirectXAddress(); return 6; }
+		if (type == OperandType.IND_Y)		{ ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0); }
+		throw new IllegalStateException("ADC Invalid Operand Type: " + type);
 	}
 	
 	@Override
@@ -73,7 +62,7 @@ public class ADC extends Instruction {
 		cpu.A = (byte) M6502.toUnsignedByte(uAux);
 	}
 		
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

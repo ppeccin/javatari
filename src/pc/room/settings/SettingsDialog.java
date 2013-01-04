@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,8 +26,10 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -36,16 +39,23 @@ import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import parameters.Parameters;
 import pc.room.Room;
+import atari.cartridge.Cartridge;
+import atari.cartridge.CartridgeFormat;
+import atari.cartridge.CartridgeFormatOption;
+import atari.cartridge.formats.CartridgeDatabase;
+import atari.console.Console;
 import atari.network.ConnectionStatusListener;
 import atari.network.RemoteReceiver;
 import atari.network.RemoteTransmitter;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
-public class SettingsDialog extends JDialog implements ConnectionStatusListener {
+public final class SettingsDialog extends JDialog implements ConnectionStatusListener {
 
 	public static void main(String[] args) {
 		try {
@@ -65,7 +75,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		buildKeyFieldsList();
 		setControlsKeyListener();
 		setMultiplayerDefaults();
-		mainTabbedPane.setSelectedIndex(3);
+		mainTabbedPane.setSelectedIndex(4);
 		mainTabbedPane.setEnabledAt(0, Parameters.MULTIPLAYER_UI);
 	}
 
@@ -99,11 +109,37 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		keyP1Button2.setText(KeyNames.get(newKEY_P1_BUTTON2));	
 		for (JTextField field : keyFieldsList)
 			field.setBackground(field.getText().trim().isEmpty() ? Color.YELLOW : Color.WHITE);
+		defaultsB.setText("Defaults");
 		defaultsB.setVisible(true);
 		okB.setVisible(true);
 		cancelB.setText("Cancel");
 	}
 	
+	private void refreshCartridge() {
+		okB.setVisible(false);
+		cancelB.setText("Close");
+		if (room == null || room.currentConsole().cartridgeSocket().inserted() == null) {
+			romNameTf.setText("<NO CARTRIDGE INSERTED>");
+			romFormatLb.setListData(new Object[0]);
+			romFormatLb.setEnabled(false);
+			defaultsB.setVisible(false);
+			return;
+		}
+		Cartridge cart = room.currentConsole().cartridgeSocket().inserted();
+		romNameTf.setText(cart.contentName());
+		romNameTf.setCaretPosition(0);
+		ArrayList<CartridgeFormatOption> formatOptions = CartridgeDatabase.getFormatOptionsUnhinted(cart);
+		ArrayList<CartridgeFormat> formats = new ArrayList<CartridgeFormat>();
+		for (CartridgeFormatOption option : formatOptions)
+			formats.add(option.format);
+		if (!formats.contains(cart.format())) formats.add(0, cart.format());
+		romFormatLb.setListData(formats.toArray());
+		romFormatLb.setSelectedValue(cart.format(), true);
+		romFormatLb.setEnabled(!formats.isEmpty() && !room.isClientMode());
+		defaultsB.setText("Auto Detect");
+		defaultsB.setVisible(!room.isClientMode());
+	}
+
 	private void refreshMultiplayer() {
 		if (room == null) {
 			modeL.setText("STANDALONE MODE");
@@ -135,6 +171,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		clientConnectB.setEnabled(!serverMode);
 		clientServerAddressTf.setEditable(!serverMode && !clientMode);
 		refreshMultiplayerImages();
+		defaultsB.setText("Defaults");
 		defaultsB.setVisible(!serverMode && !clientMode);
 		okB.setVisible(false);
 		cancelB.setText("Close");
@@ -256,6 +293,18 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		serverPortTf.setText(String.valueOf(Parameters.SERVER_SERVICE_PORT));
 	}
 
+	private void cartridgeAutoDetect() {
+		if (room == null) return;
+		Console console = room.currentConsole();
+		Cartridge cart = console.cartridgeSocket().inserted();
+		if (cart == null) return;
+		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cart);
+		if (options.isEmpty()) return;
+		Cartridge newCart = options.get(0).format.create(cart);
+		console.cartridgeSocket().insert(newCart, true);
+		refreshCartridge();
+	}
+
 	private void setupConnectionStatusListeners() {
 		if (room == null) return;
 		if (room.isServerMode()) room.serverCurrentConsole().remoteTransmitter().addConnectionStatusListener(this);
@@ -282,6 +331,8 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				refreshMultiplayer(); break;
 			case 1:
 				refreshContols(); break;
+			case 2:
+				refreshCartridge(); break;
 			default:
 				defaultsB.setVisible(false);
 				okB.setVisible(false);
@@ -362,6 +413,8 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				setMultiplayerDefaults(); break;
 			case 1:
 				setControlsKeysDefaults();
+			case 2:
+				cartridgeAutoDetect();
 		}
 	}
 
@@ -374,6 +427,18 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 		setVisible(false);
 	}
 
+	private void romFormatLbAction() {
+		Object sel = romFormatLb.getSelectedValue();
+		if (sel == null || !(sel instanceof CartridgeFormat)) return;
+		if (room == null) return;
+		CartridgeFormat format = (CartridgeFormat) sel;
+		Console console = room.currentConsole();
+		Cartridge cart = console.cartridgeSocket().inserted();
+		if (cart == null || cart.format().equals(format)) return;
+		Cartridge newCart = format.create(cart);
+		console.cartridgeSocket().insert(newCart, true);
+	}
+	
 	private void buildGUI() {
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setModal(true);
@@ -396,30 +461,30 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			mainTabbedPane.setBackground(UIManager.getColor("TabbedPane.background"));
 			contentPanel.add(mainTabbedPane, BorderLayout.CENTER);
 			
-			JPanel panel_1 = new JPanel();
-			mainTabbedPane.addTab("Multiplayer", null, panel_1, null);
-			panel_1.setLayout(null);
+			JPanel multiplayerPanel = new JPanel();
+			mainTabbedPane.addTab("Multiplayer", null, multiplayerPanel, null);
+			multiplayerPanel.setLayout(null);
 			
 			clientConsoleL = new JLabel("");
 			clientConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/ServerClientConsole.png")));
 			clientConsoleL.setBounds(316, 124, 139, 94);
-			panel_1.add(clientConsoleL);
+			multiplayerPanel.add(clientConsoleL);
 			
 			serverConsoleL = new JLabel("");
 			serverConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/ServerClientConsole.png")));
 			serverConsoleL.setBounds(12, 124, 139, 94);
-			panel_1.add(serverConsoleL);
+			multiplayerPanel.add(serverConsoleL);
 			
 			networkL = new JLabel("");
 			networkL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/Network.png")));
 			networkL.setBounds(116, 73, 237, 98);
-			panel_1.add(networkL);
+			multiplayerPanel.add(networkL);
 			
 			JLabel lblNewLabel_1 = new JLabel("P1 Server");
 			lblNewLabel_1.setFont(new Font("Arial", Font.BOLD, 16));
 			lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 			lblNewLabel_1.setBounds(24, 13, 100, 20);
-			panel_1.add(lblNewLabel_1);
+			multiplayerPanel.add(lblNewLabel_1);
 			
 			serverStartB = new JButton("START");
 			serverStartB.addActionListener(new ActionListener() {
@@ -428,7 +493,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				}
 			});
 			serverStartB.setBounds(20, 36, 108, 26);
-			panel_1.add(serverStartB);
+			multiplayerPanel.add(serverStartB);
 			
 			clientConnectB = new JButton("CONNECT");
 			clientConnectB.addActionListener(new ActionListener() {
@@ -437,7 +502,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				}
 			});
 			clientConnectB.setBounds(341, 36, 108, 26);
-			panel_1.add(clientConnectB);
+			multiplayerPanel.add(clientConnectB);
 			
 			clientServerAddressTf = new JTextField();
 			clientServerAddressTf.addActionListener(new ActionListener() {
@@ -447,14 +512,14 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			});
 			clientServerAddressTf.setFont(new Font("Arial", Font.PLAIN, 12));
 			clientServerAddressTf.setBounds(337, 87, 117, 22);
-			panel_1.add(clientServerAddressTf);
+			multiplayerPanel.add(clientServerAddressTf);
 			clientServerAddressTf.setColumns(10);
 			
 			JLabel lblServerAddressport = new JLabel("Server address [:port]");
 			lblServerAddressport.setHorizontalAlignment(SwingConstants.CENTER);
 			lblServerAddressport.setFont(new Font("Arial", Font.PLAIN, 12));
 			lblServerAddressport.setBounds(337, 70, 117, 15);
-			panel_1.add(lblServerAddressport);
+			multiplayerPanel.add(lblServerAddressport);
 			
 			serverPortTf = new JTextField();
 			serverPortTf.addActionListener(new ActionListener() {
@@ -466,19 +531,19 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			serverPortTf.setHorizontalAlignment(SwingConstants.RIGHT);
 			serverPortTf.setColumns(10);
 			serverPortTf.setBounds(43, 87, 62, 22);
-			panel_1.add(serverPortTf);
+			multiplayerPanel.add(serverPortTf);
 			
 			JLabel lblPort = new JLabel("Server port");
 			lblPort.setHorizontalAlignment(SwingConstants.CENTER);
 			lblPort.setFont(new Font("Arial", Font.PLAIN, 12));
 			lblPort.setBounds(43, 70, 62, 15);
-			panel_1.add(lblPort);
+			multiplayerPanel.add(lblPort);
 			
 			JLabel lblPClient = new JLabel("P2 Client");
 			lblPClient.setHorizontalAlignment(SwingConstants.CENTER);
 			lblPClient.setFont(new Font("Arial", Font.BOLD, 16));
 			lblPClient.setBounds(345, 13, 100, 20);
-			panel_1.add(lblPClient);
+			multiplayerPanel.add(lblPClient);
 			
 			modeL = new JLabel("P1 SERVER MODE");
 			modeL.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
@@ -486,12 +551,12 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			modeL.setOpaque(true);
 			modeL.setHorizontalAlignment(SwingConstants.CENTER);
 			modeL.setBounds(160, 36, 149, 26);
-			panel_1.add(modeL);
+			multiplayerPanel.add(modeL);
 			
 			standaloneConsoleL = new JLabel("");
 			standaloneConsoleL.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/StandaloneConsole.png")));
 			standaloneConsoleL.setBounds(118, 74, 202, 146);
-			panel_1.add(standaloneConsoleL);
+			multiplayerPanel.add(standaloneConsoleL);
 			{
 				controlsPanel = new JPanel();
 				mainTabbedPane.addTab("Controls", null, controlsPanel, null);
@@ -727,16 +792,71 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				controlsPanel.add(lbldoubleclickToChange);
 			}
 			
-			JPanel panel = new JPanel();
-			mainTabbedPane.addTab("Help", null, panel, null);
-			panel.setLayout(null);
+			JPanel cartridgePanel = new JPanel();
+			mainTabbedPane.addTab("Cartridge", null, cartridgePanel, null);
+			cartridgePanel.setLayout(null);
+			
+			JLabel txtpnRomName = new JLabel();
+			txtpnRomName.setBounds(16, 6, 446, 21);
+			txtpnRomName.setText("ROM Name");
+			txtpnRomName.setOpaque(false);
+			txtpnRomName.setFont(new Font("Arial", Font.BOLD, 12));
+			cartridgePanel.add(txtpnRomName);
+			
+			romNameTf = new JTextField();
+			romNameTf.setFont(new Font("Arial", Font.PLAIN, 12));
+			romNameTf.setEditable(false);
+			romNameTf.setBounds(16, 26, 437, 22);
+			cartridgePanel.add(romNameTf);
+			romNameTf.setColumns(10);
+			
+			JLabel txtpnRomFormat = new JLabel();
+			txtpnRomFormat.setText("ROM Format");
+			txtpnRomFormat.setOpaque(false);
+			txtpnRomFormat.setFont(new Font("Arial", Font.BOLD, 12));
+			txtpnRomFormat.setBounds(15, 53, 446, 21);
+			cartridgePanel.add(txtpnRomFormat);
+			
+			JScrollPane scrollPane = new JScrollPane();
+			scrollPane.setBounds(15, 73, 284, 142);
+			cartridgePanel.add(scrollPane);
+			
+			romFormatLb = new JList();
+			romFormatLb.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					romFormatLbAction();
+				}
+			});
+			romFormatLb.setFont(new Font("Arial", Font.PLAIN, 12));
+			scrollPane.setViewportView(romFormatLb);
+			
+			JTextPane txtpnYouCanPlace = new JTextPane();
+			txtpnYouCanPlace.setText("You can give Format Hints like (E0) or (3F) in ROMs filenames");
+			txtpnYouCanPlace.setOpaque(false);
+			txtpnYouCanPlace.setFont(new Font("Arial", Font.PLAIN, 12));
+			txtpnYouCanPlace.setEditable(false);
+			txtpnYouCanPlace.setBounds(317, 77, 137, 57);
+			cartridgePanel.add(txtpnYouCanPlace);
+			
+			JTextPane txtpnAltbCycle = new JTextPane();
+			txtpnAltbCycle.setText("ALT + B : Cycle through compatible Formats\r\n");
+			txtpnAltbCycle.setOpaque(false);
+			txtpnAltbCycle.setFont(new Font("Arial", Font.PLAIN, 12));
+			txtpnAltbCycle.setEditable(false);
+			txtpnAltbCycle.setBounds(317, 173, 137, 42);
+			cartridgePanel.add(txtpnAltbCycle);
+			
+			JPanel helpPanel = new JPanel();
+			mainTabbedPane.addTab("Help", null, helpPanel, null);
+			helpPanel.setLayout(null);
 			
 			JTextPane txtpnAltJ = new JTextPane();
 			txtpnAltJ.setOpaque(false);
 			txtpnAltJ.setEditable(false);
 			txtpnAltJ.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAltJ.setBounds(18, 10, 78, 203);
-			panel.add(txtpnAltJ);
+			helpPanel.add(txtpnAltJ);
 			txtpnAltJ.setText("CTR + 1-0 :\r\nALT + 1-0 :\r\n\r\nALT + ENT :\r\nALT + V :\r\nALT + R :\r\nALT + Q :\r\n\r\nALT + D :\r\nALT + C :\r\nALT + P :\r\nALT + F :\r\nTAB :");
 			
 			JTextPane txtpnFullscreenNtsc = new JTextPane();
@@ -745,7 +865,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnFullscreenNtsc.setText("Save State\r\nLoad State\r\n\r\nFullscreen\r\nNTSC / PAL\r\nCRT Modes\r\nFilter\r\n\r\nDebug Modes\r\nCollisions\r\nPause\r\nNext Frame\r\nFast Speed");
 			txtpnFullscreenNtsc.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnFullscreenNtsc.setBounds(95, 10, 92, 203);
-			panel.add(txtpnFullscreenNtsc);
+			helpPanel.add(txtpnFullscreenNtsc);
 			
 			JTextPane txtpnAltF = new JTextPane();
 			txtpnAltF.setOpaque(false);
@@ -753,7 +873,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnAltF.setText("ALT + F1 :\r\n\r\nALT + F5 :\r\nALT + F6 :\r\nF7 :\r\n");
 			txtpnAltF.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAltF.setBounds(218, 10, 71, 81);
-			panel.add(txtpnAltF);
+			helpPanel.add(txtpnAltF);
 			
 			JTextPane txtpnFryConsoleLoad = new JTextPane();
 			txtpnFryConsoleLoad.setOpaque(false);
@@ -761,7 +881,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnFryConsoleLoad.setText("Fry Console\r\n\r\nLoad Cartridge\r\nwith no Power Cycle\r\nRemove Cartridge");
 			txtpnFryConsoleLoad.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnFryConsoleLoad.setBounds(287, 10, 127, 81);
-			panel.add(txtpnFryConsoleLoad);
+			helpPanel.add(txtpnFryConsoleLoad);
 			
 			JTextPane txtpnCtraltArrows = new JTextPane();
 			txtpnCtraltArrows.setOpaque(false);
@@ -769,7 +889,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnCtraltArrows.setText("CTR-ALT + Arrows :\r\nCTR-SHT + Arrows :\r\nALT-SHT + Arrows :\r\n\r\nBACKSPACE :\r\n");
 			txtpnCtraltArrows.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnCtraltArrows.setBounds(218, 130, 121, 81);
-			panel.add(txtpnCtraltArrows);
+			helpPanel.add(txtpnCtraltArrows);
 			
 			JTextPane txtpnAlsoPossibleDo = new JTextPane();
 			txtpnAlsoPossibleDo.setOpaque(false);
@@ -777,7 +897,7 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnAlsoPossibleDo.setText("Drag/Drop or Copy/Paste of files and URLs");
 			txtpnAlsoPossibleDo.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnAlsoPossibleDo.setBounds(218, 100, 246, 21);
-			panel.add(txtpnAlsoPossibleDo);
+			helpPanel.add(txtpnAlsoPossibleDo);
 			
 			JTextPane txtpnDisplayOriginDisplay = new JTextPane();
 			txtpnDisplayOriginDisplay.setOpaque(false);
@@ -785,17 +905,17 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 			txtpnDisplayOriginDisplay.setText("Display Origin\r\nDisplay Size\r\nDisplay Scale\r\n\r\nDisplay Defaults");
 			txtpnDisplayOriginDisplay.setFont(new Font("Arial", Font.PLAIN, 12));
 			txtpnDisplayOriginDisplay.setBounds(343, 130, 100, 81);
-			panel.add(txtpnDisplayOriginDisplay);
+			helpPanel.add(txtpnDisplayOriginDisplay);
 			{
-				JPanel panel_2 = new JPanel();
-				panel_2.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				panel_2.setBackground(UIManager.getColor("Panel.background"));
-				mainTabbedPane.addTab("About", null, panel_2, null);
-				panel_2.setLayout(null);
+				JPanel aboutPanel = new JPanel();
+				aboutPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				aboutPanel.setBackground(UIManager.getColor("Panel.background"));
+				mainTabbedPane.addTab("About", null, aboutPanel, null);
+				aboutPanel.setLayout(null);
 				{
 					JLabel lblNewButton = new JLabel("");
 					lblNewButton.setBounds(29, 23, 162, 158);
-					panel_2.add(lblNewButton);
+					aboutPanel.add(lblNewButton);
 					lblNewButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("/pc/room/settings/images/LogoAbout.png")));
 					lblNewButton.setPreferredSize(new Dimension(200, 250));
 					lblNewButton.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -805,25 +925,25 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 				lblVerion.setHorizontalAlignment(SwingConstants.CENTER);
 				lblVerion.setFont(new Font("Arial", Font.PLAIN, 13));
 				lblVerion.setBounds(68, 187, 85, 14);
-				panel_2.add(lblVerion);
+				aboutPanel.add(lblVerion);
 				
 				JLabel lblCreate = new JLabel("Paulo Augusto Peccin");
 				lblCreate.setHorizontalAlignment(SwingConstants.CENTER);
 				lblCreate.setFont(new Font("Arial", Font.PLAIN, 15));
 				lblCreate.setBounds(256, 62, 143, 18);
-				panel_2.add(lblCreate);
+				aboutPanel.add(lblCreate);
 				
 				JLabel lblCreated = new JLabel("created by");
 				lblCreated.setHorizontalAlignment(SwingConstants.CENTER);
 				lblCreated.setFont(new Font("Arial", Font.PLAIN, 13));
 				lblCreated.setBounds(259, 39, 137, 21);
-				panel_2.add(lblCreated);
+				aboutPanel.add(lblCreated);
 				{
 					JLabel lblOfficialHomepage = new JLabel("official homepage:");
 					lblOfficialHomepage.setHorizontalAlignment(SwingConstants.CENTER);
 					lblOfficialHomepage.setFont(new Font("Arial", Font.PLAIN, 13));
 					lblOfficialHomepage.setBounds(259, 125, 137, 21);
-					panel_2.add(lblOfficialHomepage);
+					aboutPanel.add(lblOfficialHomepage);
 				}
 				{
 					JButton lblHttpjavatariotg = new JButton("http://javatari.org");
@@ -841,14 +961,14 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 					lblHttpjavatariotg.setForeground(Color.BLUE);
 					lblHttpjavatariotg.setFont(new Font("Arial", Font.PLAIN, 15));
 					lblHttpjavatariotg.setBounds(274, 149, 107, 18);
-					panel_2.add(lblHttpjavatariotg);
+					aboutPanel.add(lblHttpjavatariotg);
 				}
 				{
 					JLabel lblppeccin = new JLabel("@ppeccin");
 					lblppeccin.setHorizontalAlignment(SwingConstants.CENTER);
 					lblppeccin.setFont(new Font("Arial", Font.PLAIN, 13));
 					lblppeccin.setBounds(259, 82, 137, 19);
-					panel_2.add(lblppeccin);
+					aboutPanel.add(lblppeccin);
 				}
 			}
 		}
@@ -929,5 +1049,6 @@ public class SettingsDialog extends JDialog implements ConnectionStatusListener 
 	private JLabel serverConsoleL;
 	private JLabel clientConsoleL;
 	private JLabel networkL;
-
+	private JTextField romNameTf;
+	private JList romFormatLb;
 }

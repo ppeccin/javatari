@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import parameters.Parameters;
 
-public class RemoteReceiver {
+public final class RemoteReceiver {
 
 	public RemoteReceiver() {
 		updates = new ConcurrentLinkedQueue<ServerUpdate>();

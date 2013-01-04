@@ -39,7 +39,7 @@ import utils.GraphicsDeviceHelper;
 import atari.cartridge.Cartridge;
 import atari.cartridge.CartridgeSocket;
 
-public class Monitor implements ClockDriven, VideoMonitor {
+public final class Monitor implements ClockDriven, VideoMonitor {
 	
 	public Monitor() {
 		super();
@@ -147,7 +147,8 @@ public class Monitor implements ClockDriven, VideoMonitor {
 	}
 
 	@Override
-	public void showOSD(String message) {
+	public void showOSD(String message, boolean overlap) {
+		if (!overlap && osdFramesLeft > 0) return;
 		osdMessage = message;
 		osdFramesLeft = message == null ? 0 : OSD_FRAMES;
 	}
@@ -504,7 +505,7 @@ public class Monitor implements ClockDriven, VideoMonitor {
 
 	private boolean cartridgeChangeDisabledWarning() {
 		if (!isCartridgeChangeEnabled()) {
-			showOSD("Cartridge change is disabled");
+			showOSD("Cartridge change is disabled", true);
 			return true;
 		}
 		return false;
@@ -514,7 +515,7 @@ public class Monitor implements ClockDriven, VideoMonitor {
 		synchronized (refreshMonitor) {
 			crtMode++;
 			if (crtMode > 4) crtMode = 0;
-			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode);
+			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode, true);
 		}
 	}
 
@@ -536,7 +537,7 @@ public class Monitor implements ClockDriven, VideoMonitor {
 				loadCartridgePaste(); break;
 			case QUALITY:
 				qualityRendering = !qualityRendering;
-				showOSD(qualityRendering ? "Filter ON" : "Filter OFF");
+				showOSD(qualityRendering ? "Filter ON" : "Filter OFF", true);
 				break;
 			case CRT_MODES:
 				crtModeToggle(); break;

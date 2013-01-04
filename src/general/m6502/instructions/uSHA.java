@@ -6,23 +6,18 @@ import general.m6502.M6502;
 import general.m6502.OperandType;
 import general.m6502.UndocumentedInstruction;
 
-public class uSHA extends UndocumentedInstruction {
+public final class uSHA extends UndocumentedInstruction {
 
-	public uSHA(M6502 cpu, OperandType type) {
+	public uSHA(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case ABS_Y:
-				ea = cpu.fetchZeroPageXAddress(); return 5;
-			case IND_Y:
-				ea = cpu.fetchZeroPageXAddress(); return 6;
-			default:
-				throw new IllegalStateException("uAXA Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.ABS_Y) { ea = cpu.fetchZeroPageXAddress(); return 5; }
+		if (type == OperandType.IND_Y) { ea = cpu.fetchZeroPageXAddress(); return 6; }
+		throw new IllegalStateException("uAXA Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -31,7 +26,7 @@ public class uSHA extends UndocumentedInstruction {
 		cpu.memory.writeByte(ea, val);
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

@@ -2,7 +2,7 @@
 
 package atari.tia.video;
 
-public class NTSCPalette {
+public final class NTSCPalette {
 
 	public static int[] getPalette() {
 		int[] pal = new int[256];

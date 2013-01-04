@@ -2,14 +2,17 @@
 
 package general.m6502.instructions;
 
-import general.m6502.M6502;
+import static general.m6502.StatusBit.bCARRY;
+import static general.m6502.StatusBit.bNEGATIVE;
+import static general.m6502.StatusBit.bOVERFLOW;
+import static general.m6502.StatusBit.bZERO;
 import general.m6502.Instruction;
-import general.m6502.StatusBit;
+import general.m6502.M6502;
 
-public class Bxx extends Instruction {
+public final class Bxx extends Instruction {
 
 
-	public Bxx(M6502 cpu, StatusBit bit, boolean cond) {
+	public Bxx(M6502 cpu, int bit, boolean cond) {
 		super(cpu);
 		this.bit = bit;
 		this.cond = cond;
@@ -18,18 +21,12 @@ public class Bxx extends Instruction {
 	@Override
 	public int fetch() {
 		newPC = (char) cpu.fetchRelativeAddress();		// Reads operand regardless of the branch being taken or not
-		switch (bit) {
-			case bZERO:
-				branch = cpu.ZERO == cond; break;
-			case bNEGATIVE:
-				branch = cpu.NEGATIVE == cond; break;
-			case bCARRY:
-				branch = cpu.CARRY == cond; break;
-			case bOVERFLOW:
-				branch = cpu.OVERFLOW == cond; break;
-			default:
-				throw new IllegalStateException("Bxx Invalid StatusBit: " + bit);
-		}
+		if (bit == bZERO) 			{ branch = cpu.ZERO == cond; }
+		else if (bit == bNEGATIVE)	{ branch = cpu.NEGATIVE == cond; }
+		else if (bit == bCARRY)		{ branch = cpu.CARRY == cond; }
+		else if (bit == bOVERFLOW)	{ branch = cpu.OVERFLOW == cond; }
+		else throw new IllegalStateException("Bxx Invalid StatusBit: " + bit);
+
 		return branch ? (cpu.pageCrossed ? 4:3) : 2; 
 	}
 
@@ -38,7 +35,7 @@ public class Bxx extends Instruction {
 		if (branch) cpu.PC = newPC;	
 	}
 
-	private final StatusBit bit;
+	private final int bit;
 	private final boolean cond;
 	
 	private char newPC;

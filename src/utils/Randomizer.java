@@ -4,7 +4,7 @@ package utils;
 
 import java.util.Random;
 
-public class Randomizer {
+public final class Randomizer {
 
 	public static final Random instance = new Random(System.currentTimeMillis());
 

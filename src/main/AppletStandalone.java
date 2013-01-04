@@ -9,7 +9,7 @@ import parameters.Parameters;
 import pc.room.Room;
 import pc.screen.PanelScreen;
 
-public class AppletStandalone extends JApplet {
+public final class AppletStandalone extends JApplet {
 
 	@Override
 	public void init() {

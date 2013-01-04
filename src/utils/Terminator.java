@@ -4,7 +4,7 @@ package utils;
 
 import java.security.AccessControlException;
 
-public class Terminator {
+public final class Terminator {
 
 	public static void terminate() {
 		System.out.println("<<<<<<<<<<<<  EXIT   >>>>>>>>>>>>>");

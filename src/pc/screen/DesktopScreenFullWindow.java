@@ -17,7 +17,7 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-public class DesktopScreenFullWindow extends JFrame implements MonitorDisplay {
+public final class DesktopScreenFullWindow extends JFrame implements MonitorDisplay {
 
 	public DesktopScreenFullWindow(DesktopScreenWindow window) {
 		super();

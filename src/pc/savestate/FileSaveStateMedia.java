@@ -14,7 +14,7 @@ import atari.console.savestate.ConsoleState;
 import atari.console.savestate.SaveStateMedia;
 import atari.console.savestate.SaveStateSocket;
 
-public class FileSaveStateMedia implements SaveStateMedia {
+public final class FileSaveStateMedia implements SaveStateMedia {
 
 	public void connect(SaveStateSocket socket) {
 		socket.connectMedia(this);
@@ -40,6 +40,7 @@ public class FileSaveStateMedia implements SaveStateMedia {
 			return true;
 		} catch (Exception ex) {
 			// No permissions or any other IO error
+			ex.printStackTrace();
 		}
 		return false;
 	}
@@ -59,6 +60,7 @@ public class FileSaveStateMedia implements SaveStateMedia {
 			}
 		} catch (Exception ex) {
 			// No permissions or any other IO error
+			ex.printStackTrace();
 		}
 		return null;
 	}

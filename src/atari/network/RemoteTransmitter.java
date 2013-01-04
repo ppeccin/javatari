@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import parameters.Parameters;
 
-public class RemoteTransmitter {
+public final class RemoteTransmitter {
 
 	public RemoteTransmitter() {
 		updates = new ConcurrentLinkedQueue<ServerUpdate>();

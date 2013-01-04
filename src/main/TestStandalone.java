@@ -7,7 +7,7 @@ import pc.cartridge.ROMLoader;
 import pc.room.Room;
 import atari.cartridge.Cartridge;
 
-public class TestStandalone {
+public final class TestStandalone {
 
 	public static void main(String[] args) {
 

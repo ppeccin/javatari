@@ -9,17 +9,18 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.jnlp.FileContents;
 import javax.swing.JOptionPane;
 
 import atari.cartridge.Cartridge;
-import atari.cartridge.bankswitching.Cartridge64K;
 
-public class ROMLoader {
+public final class ROMLoader {
 
 	public static Cartridge load(String url) {
 		try {
@@ -44,11 +45,10 @@ public class ROMLoader {
 	public static Cartridge load(URL url) {
 		InputStream stream = null;
 		try {
-			System.out.println("Loading Cartridge from: " + url);
 			URLConnection conn = url.openConnection();
 			conn.setConnectTimeout(5000);
 			stream = conn.getInputStream();
-			return load(stream, url.toString());
+			return load(stream, url.toString(), getCartridgeName(url.toString()));
 		} catch (AccessControlException ex) {
 			errorMessage(ex, url.toString());
 		} catch (IOException ex) {
@@ -57,7 +57,20 @@ public class ROMLoader {
 		return null;
 	}
 
-	public static Cartridge load(InputStream stream, String name) {
+	public static Cartridge load(FileContents fileCont) {
+		String fileName = "<unknown>";
+		try {
+			fileName = fileCont.getName();
+			InputStream stream = fileCont.getInputStream();
+			return load(stream, fileName, getCartridgeName(fileName));
+		} catch (IOException ex) {
+			errorMessage(ex, fileName);
+			return null;
+		}
+	}
+	
+	public static Cartridge load(InputStream stream, String location, String name) {
+		System.out.println("Loading Cartridge from: " + location);
 		BufferedInputStream buffer = bufferedStream(stream);
 		try {
 			try {
@@ -67,13 +80,13 @@ public class ROMLoader {
 				// If it fails, try assuming its a compressed stream (zip)
 				buffer.reset();
 				InputStream romFromZIP = getFirstROMFromZIP(buffer);
-				if (romFromZIP == null) throw ex;	// Probably not zipped either
+				if (romFromZIP == null) throw ex;	// Probably not zipped either  TODO Consider the internal filename?
 				return tryCreation(romFromZIP, name);
 			}
 		} catch (IOException ex) {
-			errorMessage(ex, name);
+			errorMessage(ex, location);
 		} catch (UnsupportedROMFormatException ex) {
-			errorMessage(ex, name);
+			errorMessage(ex, location);
 		} finally {
 			try { 
 				stream.close();
@@ -81,12 +94,6 @@ public class ROMLoader {
 			} catch (IOException e) {}
 		}
 		return null;
-	}
-
-	private static BufferedInputStream bufferedStream(InputStream stream) {
-		BufferedInputStream buf = new BufferedInputStream(stream, MAX_STREAM_SIZE);
-		buf.mark(MAX_STREAM_SIZE);
-		return buf;
 	}
 
 	private static Cartridge tryCreation(InputStream stream, String name) throws IOException, UnsupportedROMFormatException {
@@ -113,22 +120,43 @@ public class ROMLoader {
 		}
 	}
 
-	private static void errorMessage(Exception ex, String name) {
-		System.out.println("Could not load Cartridge from: " + name);
+	private static String getCartridgeName(String url) {
+		String name = url;
+		try {
+			String enc = System.getProperty("file.encoding");
+			if (enc != null) name = URLDecoder.decode(url, enc);
+			int slash = name.lastIndexOf("/");
+			int bslash = name.lastIndexOf("\\");
+			int i = Math.max(slash, bslash);
+			if (i >= 0 && i < name.length() - 1) name = name.substring(i + 1);
+		} catch (Exception e) {
+			// Give up
+		}
+		return name;
+	}
+
+	private static BufferedInputStream bufferedStream(InputStream stream) {
+		BufferedInputStream buf = new BufferedInputStream(stream, MAX_STREAM_SIZE);
+		buf.mark(MAX_STREAM_SIZE);
+		return buf;
+	}
+
+	private static void errorMessage(Exception ex, String location) {
+		System.out.println("Could not load Cartridge from: " + location);
 		System.out.println(ex);
-		String tName = name == null ? "" : name.trim();
-		if (tName.length() > 80) tName = tName.substring(0, 79);
+		String tLoc = location == null ? "" : location.trim();
+		if (tLoc.length() > 80) tLoc = tLoc.substring(0, 79) + "...";
 		JOptionPane.showMessageDialog(
 			null,
-			"Could not load Cartridge from:\n" + tName + "\n\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage(),
+			"Could not load Cartridge from:\n" + tLoc + "\n\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage(),
 			"Error loading Cartridge",
 			JOptionPane.ERROR_MESSAGE
 		);
 	}
 
 
-	private static final int MAX_ROM_SIZE = Cartridge64K.SIZE;
-	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1000;
+	private static final int MAX_ROM_SIZE = 512 * 1024;
+	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1024;
 
 	public static final String   VALID_FILES_DESC = "ROM files (.bin .rom .a26 .zip)";
 	public static final String[] VALID_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip"};

@@ -1,6 +1,6 @@
 package pc.cartridge;
 
-public class UnsupportedROMFormatException extends Exception {
+public final class UnsupportedROMFormatException extends Exception {
 	public UnsupportedROMFormatException(String message) {
 		super(message);
 	}

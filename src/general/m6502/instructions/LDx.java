@@ -7,9 +7,9 @@ import general.m6502.Instruction;
 import general.m6502.OperandType;
 import general.m6502.Register;
 
-public class LDx extends Instruction {
+public final class LDx extends Instruction {
 
-	public LDx(M6502 cpu, Register reg, OperandType type) {
+	public LDx(M6502 cpu, int reg, int type) {
 		super(cpu);
 		this.reg = reg;
 		this.type = type;
@@ -17,49 +17,31 @@ public class LDx extends Instruction {
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case IMM:
-				ea = cpu.fetchImmediateAddress(); return 2;		
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case Z_PAGE_X:
-				ea = cpu.fetchZeroPageXAddress(); return 4;		// Not all LDs support this mode
-			case Z_PAGE_Y:
-				ea = cpu.fetchZeroPageYAddress(); return 4;		// Not all LDs support this mode
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 4;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0);		// Not all LDs support this mode
-			case ABS_Y:
-				ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0);		// Not all LDs support this mode
-			case IND_X:
-				ea = cpu.fetchIndirectXAddress(); return 6;		// Not all LDs support this mode
-			case IND_Y:
-				ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0);		// Not all LDs support this mode
-			default:
-				throw new IllegalStateException("LDx Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.IMM) 		{ ea = cpu.fetchImmediateAddress(); return 2; }
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 4;	}						// Not all LDs support this mode
+		if (type == OperandType.Z_PAGE_Y) 	{ ea = cpu.fetchZeroPageYAddress(); return 4; }							// Not all LDs support this mode
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		if (type == OperandType.ABS_X) 		{ ea = cpu.fetchAbsoluteXAddress(); return 4 + (cpu.pageCrossed?1:0); }	// Not all LDs support this mode
+		if (type == OperandType.ABS_Y) 		{ ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0); }	// Not all LDs support this mode
+		if (type == OperandType.IND_X) 		{ ea = cpu.fetchIndirectXAddress(); return 6; }							// Not all LDs support this mode
+		if (type == OperandType.IND_Y) 		{ ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0); }	// Not all LDs support this mode }
+		throw new IllegalStateException("LDx Invalid Operand Type: " + type);
 	}
 
 	@Override
 	public void execute() {
 		final byte val = cpu.memory.readByte(ea);
-		switch (reg) {
-			case rA:
-				cpu.A = val; break;
-			case rX:
-				cpu.X = val; break;
-			case rY:
-				cpu.Y = val; break;
-			default:
-				throw new IllegalStateException("LDx Invalid Register: " + reg);
-		}
+		if (reg == Register.rA) 		cpu.A = val;
+		else if (reg == Register.rX) 	cpu.X = val;
+		else if (reg == Register.rY) 	cpu.Y = val;
+		else throw new IllegalStateException("LDx Invalid Register: " + reg);
 		cpu.ZERO = val == 0;
 		cpu.NEGATIVE = val < 0;
 	}
 
-	private final Register reg;
-	private final OperandType type;
+	private final int reg;
+	private final int type;
 	
 	private int ea;
 	

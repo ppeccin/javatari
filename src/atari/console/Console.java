@@ -8,12 +8,15 @@ import general.av.video.VideoStandard;
 import general.board.Clock;
 import general.m6502.M6502;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import parameters.Parameters;
 import atari.board.BUS;
 import atari.cartridge.Cartridge;
+import atari.cartridge.CartridgeFormatOption;
 import atari.cartridge.CartridgeSocket;
+import atari.cartridge.formats.CartridgeDatabase;
 import atari.console.savestate.ConsoleState;
 import atari.console.savestate.SaveStateMedia;
 import atari.console.savestate.SaveStateSocket;
@@ -65,7 +68,7 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 		mainClockGo();
 		videoStandardAutoDetectionStart();
-		if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!");
+		if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!", true);
 	}
 
 	public void powerOff() {
@@ -83,8 +86,8 @@ public class Console {
 		mainClockDestroy();
 	}
 	
-	public void showOSD(String message) {
-		tia.videoOutput().showOSD(message);
+	public void showOSD(String message, boolean overlap) {
+		tia.videoOutput().showOSD(message, overlap);
 	}
 	
 	public VideoStandard videoStandard() {
@@ -97,7 +100,7 @@ public class Console {
 			tia.videoStandard(this.videoStandard);
 			mainClockAdjustToNormal();
 		}
-		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard);
+		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard.toString(), false);
 	}
 
 	// For debug purposes
@@ -138,9 +141,9 @@ public class Console {
 			do {
 				try { Thread.sleep(20); } catch (InterruptedException e) {};
 				std = tia.videoOutput().monitor().videoStandardDetected();
-			} while (std == null && ++tries < 1000/20);
+			} while (std == null && ++tries < 1500/20);
 			if (std != null) videoStandard(std);
-			else showOSD("AUTO: FAILED");
+			else showOSD("AUTO: FAILED", false);
 			videoStandardAutoDetectionInProgress = false;
 		}}.start();
 	}
@@ -246,10 +249,13 @@ public class Console {
 		public void controlStateChanged(Control control, boolean state) {
 			// Normal state controls
 			if (control == Control.FAST_SPEED) {
-				if (state)
+				if (state) {
+					showOSD("FAST FORWARD", true);
 					mainClockAdjustToFast();
-				else
+				} else {
+					showOSD("NORMAL SPEED", true);
 					mainClockAdjustToNormal();
+				}
 				return;
 			} 
 			// Toggles
@@ -268,9 +274,27 @@ public class Console {
 					saveStateSocket.loadState(control.slot);
 					break;
 				case VIDEO_STANDARD:
+					showOSD(null, true);	// Prepares for the upcoming "AUTO" OSD to always show
 					if (videoStandardAuto) videoStandardForced(VideoStandard.NTSC);
 					else if (videoStandard() == VideoStandard.NTSC) videoStandardForced(VideoStandard.PAL); 
 						else videoStandardAuto();
+					break;
+				case CARTRIDGE_FORMAT:
+					if (cartridge() == null) {
+						if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!", true);
+						break;
+					}
+					ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptionsUnhinted(cartridge());
+					if (options.isEmpty()) break;
+					CartridgeFormatOption currOption = null;
+					for (CartridgeFormatOption option : options)
+						if (option.format.equals(cartridge().format())) currOption = option;
+					int pos = options.indexOf(currOption) + 1;		// cycle through options
+					if (pos >= options.size()) pos = 0;
+					CartridgeFormatOption newOption = options.get(pos);
+					Cartridge newCart = newOption.format.create(cartridge());
+					cartridgeSocket().insert(newCart, true);
+					showOSD(newOption.format.toString(), true);
 					break;
 				case POWER_FRY:
 					powerFry();
@@ -311,21 +335,21 @@ public class Console {
 			ConsoleState state = Console.this.saveState();
 			mainClockGo();
 			if (media.save(slot, state))
-				showOSD("State " + slot + " saved");
+				showOSD("State " + slot + " saved", true);
 			else 
-				showOSD("State " + slot + " save failed");
+				showOSD("State " + slot + " save failed", true);
 		}
 		public void loadState(int slot) {
 			if (!powerOn || media == null) return;
 			ConsoleState state = media.load(slot);
 			if (state == null) {
-				showOSD("State " + slot + " load failed");
+				showOSD("State " + slot + " load failed", true);
 				return;
 			}
 			mainClockPause();
 			Console.this.loadState(state);
 			mainClockGo();
-			showOSD("State " + slot + " loaded");
+			showOSD("State " + slot + " loaded", true);
 		}
 		private SaveStateMedia media;
 	}	

@@ -29,7 +29,7 @@ import utils.slickframe.MousePressAndMotionListener;
 import utils.slickframe.SlickFrame;
 import atari.controls.ConsoleControlsSocket;
 
-public class DesktopConsolePanel extends SlickFrame {
+public final class DesktopConsolePanel extends SlickFrame {
 
 	public DesktopConsolePanel(DesktopScreenWindow masterWindow, Monitor monitor) {
 		super(false);

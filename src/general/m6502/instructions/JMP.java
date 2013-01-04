@@ -6,23 +6,18 @@ import general.m6502.M6502;
 import general.m6502.Instruction;
 import general.m6502.OperandType;
 
-public class JMP extends Instruction {
+public final class JMP extends Instruction {
 
-	public JMP(M6502 cpu, OperandType type) {
+	public JMP(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case ABS:
-				newPC = (char) cpu.fetchAbsoluteAddress(); return 3;
-			case IND:
-				newPC = (char) cpu.fetchIndirectAddress(); return 5;
-			default:
-				throw new IllegalStateException("JMP Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.ABS) { newPC = (char) cpu.fetchAbsoluteAddress(); return 3; }
+		if (type == OperandType.IND) { newPC = (char) cpu.fetchIndirectAddress(); return 5; }
+		throw new IllegalStateException("JMP Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -30,7 +25,7 @@ public class JMP extends Instruction {
 		cpu.PC = newPC; 
 	}
 
-	private final OperandType type;
+	private final int type;
 
 	private char newPC;
 	

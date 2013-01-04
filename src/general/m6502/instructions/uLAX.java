@@ -6,31 +6,22 @@ import general.m6502.M6502;
 import general.m6502.OperandType;
 import general.m6502.UndocumentedInstruction;
 
-public class uLAX extends UndocumentedInstruction {
+public final class uLAX extends UndocumentedInstruction {
 
-	public uLAX(M6502 cpu, OperandType type) {
+	public uLAX(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case Z_PAGE_Y:
-				ea = cpu.fetchZeroPageYAddress(); return 4;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress();  return 4;
-			case ABS_Y:
-				ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0);
-			case IND_X:
-				ea = cpu.fetchIndirectXAddress(); return 6;
-			case IND_Y:
-				ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0);
-			default:
-				throw new IllegalStateException("uLAX Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.Z_PAGE_Y) 	{ ea = cpu.fetchZeroPageYAddress(); return 4; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		if (type == OperandType.ABS_Y) 		{ ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0); }
+		if (type == OperandType.IND_X) 		{ ea = cpu.fetchIndirectXAddress(); return 6; }
+		if (type == OperandType.IND_Y) 		{ ea = cpu.fetchIndirectYAddress(); return 5 + (cpu.pageCrossed?1:0); }
+		throw new IllegalStateException("uLAX Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -42,7 +33,7 @@ public class uLAX extends UndocumentedInstruction {
 		cpu.NEGATIVE = val < 0;
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

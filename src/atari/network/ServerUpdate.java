@@ -7,7 +7,7 @@ import java.util.List;
 
 import atari.console.savestate.ConsoleState;
 
-public class ServerUpdate implements Serializable {
+public final class ServerUpdate implements Serializable {
 
 	public Boolean powerOn = null;
 	public List<ControlChange> controlChanges = null;

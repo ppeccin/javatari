@@ -5,7 +5,7 @@ package pc.room;
 import pc.screen.PanelScreen;
 import pc.screen.Screen;
 
-public class AppletRoom extends Room {
+public final class AppletRoom extends Room {
 
 	@Override
 	protected Screen buildScreenPeripheral() {

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class HotspotManager {
+public final class HotspotManager {
 
 	public HotspotManager(Component masterComponent) throws HeadlessException {
 		this(masterComponent, new MousePressAndMotionAdapter() {});

@@ -15,7 +15,7 @@ import javax.sound.sampled.SourceDataLine;
 
 import parameters.Parameters;
 
-public class Speaker implements ClockDriven, AudioMonitor  {
+public final class Speaker implements ClockDriven, AudioMonitor  {
 
 	public Speaker() {
 		super();

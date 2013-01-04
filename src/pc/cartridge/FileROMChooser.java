@@ -11,7 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import parameters.Parameters;
 import atari.cartridge.Cartridge;
 
-public class FileROMChooser {
+public final class FileROMChooser {
 
 	public static Cartridge chooseFile() {
 		if (lastFileChosen == null) lastFileChosen = new File(Parameters.LAST_ROM_FILE_CHOSEN);

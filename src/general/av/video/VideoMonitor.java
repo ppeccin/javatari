@@ -5,7 +5,7 @@ package general.av.video;
 public interface VideoMonitor {
 	
 	public boolean nextLine(int[] pixels, boolean vSynch);
-	public void showOSD(String message);
+	public void showOSD(String message, boolean overlap);
 	public void synchOutput();
 
 	public int currentLine();

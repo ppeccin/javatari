@@ -6,7 +6,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.Instruction;
 
-public class BRK extends Instruction {
+public final class BRK extends Instruction {
 
 	public BRK(M6502 cpu) {
 		super(cpu);
@@ -16,7 +16,7 @@ public class BRK extends Instruction {
 	public int fetch() {
 		// BRK requires one extra unused byte after the opcode, as of the specification
 		// Lets use this byte as a parameter for debug purposes!
-		par = M6502.toUnsignedByte(cpu.memory.readByte(cpu.fetchImmediateAddress()));
+		par = M6502.toUnsignedByte(cpu.memory.readByte(cpu.fetchImmediateAddress()));	// This would be a dummy PC + 1 read
 		return 7;
 	}
 

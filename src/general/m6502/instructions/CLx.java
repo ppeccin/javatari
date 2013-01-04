@@ -2,13 +2,17 @@
 
 package general.m6502.instructions;
 
-import general.m6502.M6502;
+import static general.m6502.StatusBit.bCARRY;
+import static general.m6502.StatusBit.bDECIMAL_MODE;
+import static general.m6502.StatusBit.bINTERRUPT_DISABLE;
+import static general.m6502.StatusBit.bOVERFLOW;
 import general.m6502.Instruction;
-import general.m6502.StatusBit;
+import general.m6502.M6502;
 
-public class CLx extends Instruction {
 
-	public CLx(M6502 cpu, StatusBit bit) {
+public final class CLx extends Instruction {
+
+	public CLx(M6502 cpu, int bit) {
 		super(cpu);
 		this.bit = bit;
 	}
@@ -20,21 +24,14 @@ public class CLx extends Instruction {
 
 	@Override
 	public void execute() {
-		switch (bit) {
-			case bCARRY:
-				cpu.CARRY = false; break;
-			case bDECIMAL_MODE:
-				cpu.DECIMAL_MODE = false; break;
-			case bINTERRUPT_DISABLE:
-				cpu.INTERRUPT_DISABLE = false; break;
-			case bOVERFLOW:
-				cpu.OVERFLOW = false; break;
-			default:
-				throw new IllegalStateException("CLx Invalid StatusBit: " + bit);
-		}
+		if (bit == bCARRY) 					{ cpu.CARRY = false; }
+		else if (bit == bDECIMAL_MODE) 		{ cpu.DECIMAL_MODE = false; }
+		else if (bit == bINTERRUPT_DISABLE) 	{ cpu.INTERRUPT_DISABLE = false; }
+		else if (bit == bOVERFLOW) 			{ cpu.OVERFLOW = false; }
+		else throw new IllegalStateException("CLx Invalid StatusBit: " + bit);
 	}
 
-	private final StatusBit bit;
+	private final int bit;
 	
 
 	public static final long serialVersionUID = 1L;

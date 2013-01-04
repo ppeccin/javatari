@@ -64,6 +64,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public void powerOff() {
 		powerOn = false;
 		videoOutput.newLine(null, false);		// Let the monitor know that the signal is off
+		audioOutput.channel0().setVolume(0);
+		audioOutput.channel1().setVolume(0);
 	}
 
 	@Override
@@ -294,126 +296,120 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			int dif = clock - playfieldDelayedChangeClock;
 			if (dif >= 0 && dif <= 1) return;
 		}
-		switch (playfieldDelayedChangePart) {
-			case 0:	PF0 = playfieldDelayedChangePattern; break;
-			case 1:	PF1 = playfieldDelayedChangePattern; break;
-			case 2:	PF2 = playfieldDelayedChangePattern;
-		}
+
+		if 		(playfieldDelayedChangePart == 0) PF0 = playfieldDelayedChangePattern;
+		else if	(playfieldDelayedChangePart == 1) PF1 = playfieldDelayedChangePattern;
+		else if (playfieldDelayedChangePart == 2) PF2 = playfieldDelayedChangePattern;
+
 		playfieldPatternInvalid = true;
 		playfieldDelayedChangePart = -1;		// Marks the delayed change as nothing
 	}
 
 	private void playfieldAndBallSetShape(int shape) {
 		observableChange();
-		boolean reflect = (shape & 0x01) != 0;
+		final boolean reflect = (shape & 0x01) != 0;
 		if (playfieldReflected != reflect) {
 			playfieldReflected = reflect;
 			playfieldPatternInvalid = true;
 		}
 		playfieldScoreMode = (shape & 0x02) != 0;	// Only if normal priority as per specification???
 		playfieldPriority = (shape & 0x04) != 0;
-		switch (shape & 0x30) {
-			case 0x00:
-				ballScanSpeed = 1; break;
-			case 0x10:
-				ballScanSpeed = 2; break;
-			case 0x20:
-				ballScanSpeed = 4; break;
-			case 0x30:
-				ballScanSpeed = 8; break;
-		}
+		final int speed = shape & 0x30;
+		if 		(speed == 0x00) ballScanSpeed = 1;
+		else if	(speed == 0x10) ballScanSpeed = 2;
+		else if	(speed == 0x20) ballScanSpeed = 4;
+		else if	(speed == 0x30) ballScanSpeed = 8;
 	}
 
 	private void objectsTriggerScanCounters() {
-		switch (player0Counter) {					// Sets the delay countdown to actually start the scan of each copy
-			case 156:
-				if (player0RecentResetHit) player0RecentResetHit = false;
-				else player0ScanStartCountdown = player0ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock 
-				break;
-			case 12:
-				if (player0CloseCopy) player0ScanStartCountdown = 5;
-				break;
-			case 28:
-				if (player0MediumCopy) player0ScanStartCountdown = 5;
-				break;
-			case 60:
-				if (player0WideCopy) player0ScanStartCountdown = 5;
-				break;
+		// Player0: Sets the delay countdown to actually start the scan of each copy
+		if (player0Counter == 156) {
+			if (player0RecentResetHit) player0RecentResetHit = false;
+			else player0ScanStartCountdown = player0ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock 
+		}
+		else if (player0Counter == 12) {
+			if (player0CloseCopy) player0ScanStartCountdown = 5;
+		}
+		else if (player0Counter == 28) {
+			if (player0MediumCopy) player0ScanStartCountdown = 5;
+		}
+		else if (player0Counter == 60) {
+			if (player0WideCopy) player0ScanStartCountdown = 5;
 		}
 		// Actually starts the scans when they should
 		if (player0ScanStartCountdown >= 0)
 			if (--player0ScanStartCountdown < 0) {
 				player0ScanCounter = 7; player0ScanSubCounter = player0ScanSpeed;
 			}
-		switch (player1Counter) {					// Sets the delay countdown to actually start the scan of each copy
-			case 156:
-				if (player1RecentResetHit) player1RecentResetHit = false;
-				else player1ScanStartCountdown = player1ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock
-				break;
-			case 12:
-				if (player1CloseCopy) player1ScanStartCountdown = 5;
-				break;
-			case 28:
-				if (player1MediumCopy) player1ScanStartCountdown = 5;
-				break;
-			case 60:
-				if (player1WideCopy) player1ScanStartCountdown = 5;
-				break;
+
+		// Player1: Sets the delay countdown to actually start the scan of each copy
+		if (player1Counter == 156) {
+			if (player1RecentResetHit) player1RecentResetHit = false;
+			else player1ScanStartCountdown = player1ScanSpeed == 1 ? 5 : 6;		// If Double or Quadruple size, delays 1 additional clock
+		}
+		else if (player1Counter == 12) {
+			if (player1CloseCopy) player1ScanStartCountdown = 5;
+		}
+		else if (player1Counter == 28) {
+			if (player1MediumCopy) player1ScanStartCountdown = 5;
+		}
+		else if (player1Counter == 60) {
+			if (player1WideCopy) player1ScanStartCountdown = 5;
 		}
 		// Actually starts the scans when they should
 		if (player1ScanStartCountdown >= 0)
 			if (--player1ScanStartCountdown < 0) {
 				player1ScanCounter = 7;	player1ScanSubCounter = player1ScanSpeed;
 			}
-		// Missiles and ball dont have delays to start the scan
-		switch (missile0Counter) {
-			case 0:
-				if (missile0RecentResetHit)
-					missile0RecentResetHit = false;
-				else {
-					missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
-				}
-				break;
-			case 16:
-				if (player0CloseCopy) {
-					missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
-				}
-				break;
-			case 32:
-				if (player0MediumCopy) {
-					missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
-				}
-				break;
-			case 64:
-				if (player0WideCopy) {
-					missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
-				}
-				break;
+
+		// Missile0: Does not have delays to start the scan
+		if (missile0Counter == 0) {
+			if (missile0RecentResetHit)
+				missile0RecentResetHit = false;
+			else {
+				missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
+			}
 		}
-		switch (missile1Counter) {
-			case 0:
-				if (missile1RecentResetHit)
-					missile1RecentResetHit = false;
-				else {
-					missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
-				}
-				break;
-			case 16:
-				if (player1CloseCopy) {
-					missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
-				}
-				break;
-			case 32:
-				if (player1MediumCopy) {
-					missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
-				}
-				break;
-			case 64:
-				if (player1WideCopy) {
-					missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
-				}
-				break;
+		else if (missile0Counter == 16) {
+			if (player0CloseCopy) {
+				missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
+			}
 		}
+		else if (missile0Counter == 32) {
+			if (player0MediumCopy) {
+				missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
+			}
+		}
+		else if (missile0Counter == 64) {
+			if (player0WideCopy) {
+				missile0ScanCounter = 0; missile0ScanSubCounter = missile0ScanSpeed;
+			}
+		}
+
+		// Missile1: Does not have delays to start the scan
+		if (missile1Counter == 0) {
+			if (missile1RecentResetHit)
+				missile1RecentResetHit = false;
+			else {
+				missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
+			}
+		}
+		else if (missile1Counter == 16) {
+			if (player1CloseCopy) {
+				missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
+			}
+		}
+		else if (missile1Counter == 32) {
+			if (player1MediumCopy) {
+				missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
+			}
+		}
+		else if (missile1Counter == 64) {
+			if (player1WideCopy) {
+				missile1ScanCounter = 0; missile1ScanSubCounter = missile1ScanSpeed;
+			}
+		}
+
 		// The ball does not have copies and does not wait for the next scanline to start even if recently reset
 		if (ballCounter == 0) {							
 			ballScanCounter = 0; ballScanSubCounter = ballScanSpeed;
@@ -517,15 +513,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (playersDelayedSpriteChangesCount == 0 || playersDelayedSpriteChanges[0][0] == clock) return;
 		for (int i = 0; i < playersDelayedSpriteChangesCount; i++) {
 			int[] change = playersDelayedSpriteChanges[i];
-			switch (change[1]) {
-				case 0: 
-					player0DelayedSprite = change[2];
-					player1ActiveSprite = player1DelayedSprite; 
-					break;
-				case 1: 
-					player1DelayedSprite = change[2];
-					player0ActiveSprite = player0DelayedSprite;
-					ballEnabled = ballDelayedEnablement; 
+			if (change[1] == 0) { 
+				player0DelayedSprite = change[2];
+				player1ActiveSprite = player1DelayedSprite; 
+			} else { 
+				player1DelayedSprite = change[2];
+				player0ActiveSprite = player0DelayedSprite;
+				ballEnabled = ballDelayedEnablement; 
 			}
 		}
 		playersDelayedSpriteChangesCount = 0;
@@ -540,16 +534,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void player0SetShape(int shape) {
 		observableChange();
-		switch (shape & 0x30) {
-			case 0x00:
-				missile0ScanSpeed = 1; break;
-			case 0x10:
-				missile0ScanSpeed = 2; break;
-			case 0x20:
-				missile0ScanSpeed = 4; break;
-			case 0x30:
-				missile0ScanSpeed = 8; break;
-		}
+		int speed = shape & 0x30;
+		if 		(speed == 0x00) missile0ScanSpeed = 1;
+		else if	(speed == 0x10)	missile0ScanSpeed = 2;
+		else if	(speed == 0x20) missile0ScanSpeed = 4;
+		else if	(speed == 0x30)	missile0ScanSpeed = 8;
 		if ((shape & 0x07) == 0x05) {
 			player0ScanSubCounter = player0ScanSpeed = 2;
 			player0CloseCopy = player0MediumCopy = player0WideCopy = false;
@@ -568,16 +557,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void player1SetShape(int shape) {
 		observableChange();
-		switch (shape & 0x30) {
-			case 0x00:
-				missile1ScanSpeed = 1; break;
-			case 0x10:
-				missile1ScanSpeed = 2; break;
-			case 0x20:
-				missile1ScanSpeed = 4; break;
-			case 0x30:
-				missile1ScanSpeed = 8; break;
-		}
+		int speed = shape & 0x30;
+		if 		(speed == 0x00) missile1ScanSpeed = 1;
+		else if	(speed == 0x10)	missile1ScanSpeed = 2;
+		else if	(speed == 0x20) missile1ScanSpeed = 4;
+		else if	(speed == 0x30)	missile1ScanSpeed = 8;
 		if ((shape & 0x07) == 0x05) {
 			player1ScanSubCounter = player1ScanSpeed = 2;
 			player1CloseCopy = player1MediumCopy = player1WideCopy = false;
@@ -595,10 +579,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void hitHMOVE() {
-		// Only if needed
-		if (clock >= HBLANK_DURATION && clock < 210) return;		// 210 is maybe the minimum clock to hit HMOVE for effect in the next line
-		hMoveHitBlank = clock < HBLANK_DURATION;
 		if (debug) debugPixel(DEBUG_HMOVE_COLOR);
+		// 210 is maybe the minimum clock to hit HMOVE for effect in the next line
+		if (clock >= HBLANK_DURATION && clock < 210) {
+			debugInfo("Illegal HMOVE hit");
+			return;
+		}
+		hMoveHitBlank = clock < HBLANK_DURATION;
 		int add;
 		boolean inv = false;
 		add = (hMoveHitBlank ? HMP0 : HMP0 + 8); if (add != 0) { player0Counter += add; if (player0Counter > 159) player0Counter -= 160; inv = true; }
@@ -676,6 +663,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void debug(int level) {
 		debugLevel = level > 4 ? 0 : level;
 		debug = debugLevel != 0;
+		videoOutput.showOSD(debug ? "Debug Level " + debugLevel : "Debug OFF", true);
 		cpu.debug = debug;
 		pia.debug = debug;
 		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
@@ -745,81 +733,79 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	@Override
 	public byte readByte(int address) {
-		switch(address & READ_ADDRESS_MASK) {
-			case 0x00:	return (byte) CXM0P;
-			case 0x01:	return (byte) CXM1P;
-			case 0x02:	return (byte) CXP0FB;
-			case 0x03:	return (byte) CXP1FB;
-			case 0x04:	return (byte) CXM0FB;
-			case 0x05:	return (byte) CXM1FB;
-			case 0x06:	return (byte) CXBLPF;
-			case 0x07:	return (byte) CXPPMM;
-			case 0x08:	return (byte) INPT0;
-			case 0x09:	return (byte) INPT1;
-			case 0x0A:	return (byte) INPT2;
-			case 0x0B:	return (byte) INPT3;
-			case 0x0C:	return (byte) INPT4;
-			case 0x0D:	return (byte) INPT5;
-			case 0x0E:	// Register DOES NOT EXIST
-			case 0x0F:	// Register DOES NOT EXIST
-			default:	debugInfo(String.format("Invalid TIA read register address: %04x", address)); return 0;
-		}
+		final int reg = address & READ_ADDRESS_MASK;
+
+		if (reg == 0x00) return (byte) CXM0P;
+		if (reg == 0x01) return (byte) CXM1P;
+		if (reg == 0x02) return (byte) CXP0FB;
+		if (reg == 0x03) return (byte) CXP1FB;
+		if (reg == 0x04) return (byte) CXM0FB;
+		if (reg == 0x05) return (byte) CXM1FB;
+		if (reg == 0x06) return (byte) CXBLPF;
+		if (reg == 0x07) return (byte) CXPPMM;
+		if (reg == 0x08) return (byte) INPT0;
+		if (reg == 0x09) return (byte) INPT1;
+		if (reg == 0x0A) return (byte) INPT2;
+		if (reg == 0x0B) return (byte) INPT3;
+		if (reg == 0x0C) return (byte) INPT4;
+		if (reg == 0x0D) return (byte) INPT5;
+
+		// debugInfo(String.format("Invalid TIA read register address: %04x", address));
+		return 0;
 	}	
 
 	@Override
 	public void writeByte(int address, byte b) {
-		int i = b & 0xff;
-		switch(address & WRITE_ADDRESS_MASK) {
-			case 0x00:	VSYNC  = i; observableChange(); vSyncOn = (i & 0x02) != 0; return;
-			case 0x01:	VBLANK = i; vBlankSet(i); return;
-			case 0x02:	WSYNC  = i; cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return;		// <STROBE> Halts the CPU until the next HBLANK
-			case 0x03:	RSYNC  = i; /* clock = 0; */ return;
-			case 0x04:	NUSIZ0 = i; player0SetShape(i); return;
-			case 0x05:	NUSIZ1 = i; player1SetShape(i); return;
-			case 0x06:	COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return;
-			case 0x07:	COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return;
-			case 0x08:	COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return;
-			case 0x09:	COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return;
-			case 0x0A:	CTRLPF = i; playfieldAndBallSetShape(i); return;
-			case 0x0B:	REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return;
-			case 0x0C:	REFP1  = i; observableChange(); player1Reflected = (i & 0x08) != 0; return;
-			case 0x0D:	if (PF0 != i || playfieldDelayedChangePart == 0) playfieldDelaySpriteChange(0, i); return;
-			case 0x0E:	if (PF1 != i || playfieldDelayedChangePart == 1) playfieldDelaySpriteChange(1, i); return;
-			case 0x0F:	if (PF2 != i || playfieldDelayedChangePart == 2) playfieldDelaySpriteChange(2, i); return;
-			case 0x10:	RESP0  = i; hitRESP0(); return;
-			case 0x11:	RESP1  = i; hitRESP1(); return;
-			case 0x12:	RESM0  = i; hitRESM0(); return;
-			case 0x13:	RESM1  = i; hitRESM1(); return;
-			case 0x14:	RESBL  = i; hitRESBL(); return;
-			case 0x15:	AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return;
-			case 0x16:	AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return;
-			case 0x17:	AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
-			case 0x18:	AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return;		// Bits 0-4, Divider from 1 to 32 )
-			case 0x19:	AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )
-			case 0x1A:	AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return;				// Bits 0-3, Volume from 0 to 15 )
-			case 0x1B:	GRP0   = i; playerDelaySpriteChange(0, i); return;
-			case 0x1C:	GRP1   = i; playerDelaySpriteChange(1, i); return;
-			case 0x1D:	ENAM0  = i; observableChange(); missile0Enabled = (i & 0x02) != 0; return;
-			case 0x1E:	ENAM1  = i; observableChange(); missile1Enabled = (i & 0x02) != 0; return;
-			case 0x1F:	ENABL  = i; ballSetGraphic(i); return;
-			case 0x20:	HMP0   = (b >> 4); return;
-			case 0x21:	HMP1   = (b >> 4); return;
-			case 0x22:	HMM0   = (b >> 4); return;
-			case 0x23:	HMM1   = (b >> 4); return;
-			case 0x24:	HMBL   = (b >> 4); return;
-			case 0x25:	VDELP0 = i; observableChange(); player0VerticalDelay = (i & 0x01) != 0; return;
-			case 0x26:	VDELP1 = i; observableChange(); player1VerticalDelay = (i & 0x01) != 0; return;
-			case 0x27:	VDELBL = i; observableChange(); ballVerticalDelay = (i & 0x01) != 0; return;
-			case 0x28:	RESMP0 = i; missile0SetResetToPlayer(i); return;
-			case 0x29:	RESMP1 = i; missile1SetResetToPlayer(i); return;
-			case 0x2A:	HMOVE  = i; hitHMOVE();	return;						   	
-			case 0x2B:	HMCLR  = i; HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return;
-			case 0x2C:	CXCLR  = i; observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return;
-			case 0x2D:	// Register DOES NOT EXIST
-			case 0x2E:	// Register DOES NOT EXIST
-			case 0x2F:	// Register DOES NOT EXIST
-			default:	debugInfo(String.format("Invalid TIA write register address: %04x value %d", address, b)); 
-		}
+		final int i = b & 0xff;
+		final int reg = address & WRITE_ADDRESS_MASK;
+		
+		if (reg == 0x00) { VSYNC  = i; observableChange(); vSyncOn = (i & 0x02) != 0; return; }
+		if (reg == 0x01) { VBLANK = i; vBlankSet(i); return; }
+		if (reg == 0x02) { WSYNC  = i; cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
+		if (reg == 0x03) { RSYNC  = i; /* clock = 0; */ return; }
+		if (reg == 0x04) { NUSIZ0 = i; player0SetShape(i); return; }
+		if (reg == 0x05) { NUSIZ1 = i; player1SetShape(i); return; }
+		if (reg == 0x06) { COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return; }
+		if (reg == 0x07) { COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return; }
+		if (reg == 0x08) { COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return; }
+		if (reg == 0x09) { COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return; }
+		if (reg == 0x0A) { CTRLPF = i; playfieldAndBallSetShape(i); return; }
+		if (reg == 0x0B) { REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x0C) { REFP1  = i; observableChange(); player1Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x0D) { if (PF0 != i || playfieldDelayedChangePart == 0) playfieldDelaySpriteChange(0, i); return; }
+		if (reg == 0x0E) { if (PF1 != i || playfieldDelayedChangePart == 1) playfieldDelaySpriteChange(1, i); return; }
+		if (reg == 0x0F) { if (PF2 != i || playfieldDelayedChangePart == 2) playfieldDelaySpriteChange(2, i); return; }
+		if (reg == 0x10) { RESP0  = i; hitRESP0(); return; }
+		if (reg == 0x11) { RESP1  = i; hitRESP1(); return; }
+		if (reg == 0x12) { RESM0  = i; hitRESM0(); return; }
+		if (reg == 0x13) { RESM1  = i; hitRESM1(); return; }
+		if (reg == 0x14) { RESBL  = i; hitRESBL(); return; }
+		if (reg == 0x15) { AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return; }
+		if (reg == 0x16) { AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return; }
+		if (reg == 0x17) { AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
+		if (reg == 0x18) { AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
+		if (reg == 0x19) { AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
+		if (reg == 0x1A) { AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
+		if (reg == 0x1B) { GRP0   = i; playerDelaySpriteChange(0, i); return; }
+		if (reg == 0x1C) { GRP1   = i; playerDelaySpriteChange(1, i); return; }
+		if (reg == 0x1D) { ENAM0  = i; observableChange(); missile0Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1E) { ENAM1  = i; observableChange(); missile1Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1F) { ENABL  = i; ballSetGraphic(i); return; }
+		if (reg == 0x20) { HMP0   = (b >> 4); return; }
+		if (reg == 0x21) { HMP1   = (b >> 4); return; }
+		if (reg == 0x22) { HMM0   = (b >> 4); return; }
+		if (reg == 0x23) { HMM1   = (b >> 4); return; }
+		if (reg == 0x24) { HMBL   = (b >> 4); return; }
+		if (reg == 0x25) { VDELP0 = i; observableChange(); player0VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x26) { VDELP1 = i; observableChange(); player1VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x27) { VDELBL = i; observableChange(); ballVerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x28) { RESMP0 = i; missile0SetResetToPlayer(i); return; }
+		if (reg == 0x29) { RESMP1 = i; missile1SetResetToPlayer(i); return; }
+		if (reg == 0x2A) { HMOVE  = i; hitHMOVE();	return; }						   	
+		if (reg == 0x2B) { HMCLR  = i; HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return; }
+		if (reg == 0x2C) { CXCLR  = i; observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return; }
+
+		// debugInfo(String.format("Invalid TIA write register address: %04x value %d", address, b)); 
 	}
 
 	@Override
@@ -852,9 +838,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case DEBUG:
 				debug(debugLevel + 1); return;
 			case NO_COLLISIONS:
-				debugNoCollisions = !debugNoCollisions; return;
+				debugNoCollisions = !debugNoCollisions;
+				videoOutput.showOSD(debugNoCollisions ? "Collisions OFF" : "Collisions ON", true);
+				return;
 			case PAUSE:
-				debugPause = !debugPause; debugPauseMoreFrames = 0; return;
+				debugPause = !debugPause; debugPauseMoreFrames = 0; 
+				videoOutput.showOSD(debugPause ? "PAUSE" : "RESUME", true);
+				return;
 			case FRAME:
 				debugPauseMoreFrames++; return;
 			case TRACE:

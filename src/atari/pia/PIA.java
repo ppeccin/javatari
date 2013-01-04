@@ -68,33 +68,34 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	@Override
 	public byte readByte(int address) {
-		switch(address & READ_ADDRESS_MASK) {
-			case 0x00:	return (byte) SWCHA;
-			case 0x01:	return (byte) SWACNT;
-			case 0x02:	return (byte) SWCHB;
-			case 0x03:	return (byte) SWBCNT;
-			case 0x04:									
-			case 0x06:	readFromINTIM(); return (byte) INTIM;								
-			case 0x05:									
-			case 0x07:  return (byte) INSTAT;						// Undocumented
-			default:	debugInfo(String.format("Invalid PIA read register address: %04x", address)); return 0;
-		}
+		final int reg = address & READ_ADDRESS_MASK;
+
+		if (reg == 0x00) return (byte) SWCHA;
+		if (reg == 0x01) return (byte) SWACNT;
+		if (reg == 0x02) return (byte) SWCHB;
+		if (reg == 0x03) return (byte) SWBCNT;
+		if (reg == 0x04 || reg == 0x06) { readFromINTIM(); return (byte) INTIM; }								
+		if (reg == 0x05 || reg == 0x07) return (byte) INSTAT;						// Undocumented
+		
+		// debugInfo(String.format("Invalid PIA read register address: %04x", address)); 
+		return 0;
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {
 		int i = b & 0xff;
-		switch(address & WRITE_ADDRESS_MASK) {
-			case 0x00:	/* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x", i)); return;	// Output to controllers not supported
-			case 0x01:	/* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x", i)); return;	// SWACNT configuration not supported
-			case 0x02:	swchbWrite(i); return;																	
-			case 0x03:	SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x", i)); return;
-			case 0x04:	TIM1T  = i; setTimerInterval(i, 1); return;
-			case 0x05:	TIM8T  = i; setTimerInterval(i, 8); return;
-			case 0x06:	TIM64T = i; setTimerInterval(i, 64); return;
-			case 0x07:	T1024T = i; setTimerInterval(i, 1024); return;
-			default:	debugInfo(String.format("Invalid PIA write register address: %04x value %d", address, b));
-		}
+		int reg = address & WRITE_ADDRESS_MASK;
+
+		if (reg == 0x00) { /* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x", i)); return; }	// Output to controllers not supported
+		if (reg == 0x01) { /* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x", i)); return; }	// SWACNT configuration not supported
+		if (reg == 0x02) { swchbWrite(i); return; }																	
+		if (reg == 0x03) { SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x", i)); return; }
+		if (reg == 0x04) { TIM1T  = i; setTimerInterval(i, 1); return; }
+		if (reg == 0x05) { TIM8T  = i; setTimerInterval(i, 8); return; }
+		if (reg == 0x06) { TIM64T = i; setTimerInterval(i, 64); return; }
+		if (reg == 0x07) { T1024T = i; setTimerInterval(i, 1024); return; }
+		
+		// debugInfo(String.format("Invalid PIA write register address: %04x value %d", address, b));
 	}
 
 	@Override
@@ -117,11 +118,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (!state) return;
 		switch (control) {
 			case BLACK_WHITE: if ((SWCHB & 0x08) == 0) SWCHB |= 0x08; else SWCHB &= 0xf7;		//	0 = B/W, 1 = Color 
-					console.showOSD((SWCHB & 0x08) != 0 ? "COLOR" : "B/W"); return;
+					console.showOSD((SWCHB & 0x08) != 0 ? "COLOR" : "B/W", true); return;
 			case DIFFICULTY0: if ((SWCHB & 0x40) == 0) SWCHB |= 0x40; else SWCHB &= 0xbf; 		//  0 = Beginner, 1 = Advanced
-					console.showOSD((SWCHB & 0x40) != 0 ? "P1 Expert" : "P1 Novice"); return;
+					console.showOSD((SWCHB & 0x40) != 0 ? "P1 Expert" : "P1 Novice", true); return;
 			case DIFFICULTY1: if ((SWCHB & 0x80) == 0) SWCHB |= 0x80; else SWCHB &= 0x7f;		//  0 = Beginner, 1 = Advanced
-					console.showOSD((SWCHB & 0x80) != 0 ? "P2 Expert" : "P2 Novice"); return;
+					console.showOSD((SWCHB & 0x80) != 0 ? "P2 Expert" : "P2 Novice", true); return;
 		}
 	}
 

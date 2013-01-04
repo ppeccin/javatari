@@ -11,7 +11,7 @@ import pc.room.Room;
 import utils.Terminator;
 import atari.network.RemoteReceiver;
 
-public class MultiplayerClient {
+public final class MultiplayerClient {
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 

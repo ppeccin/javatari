@@ -6,23 +6,18 @@ import general.m6502.M6502;
 import general.m6502.Instruction;
 import general.m6502.OperandType;
 
-public class BIT extends Instruction {
+public final class BIT extends Instruction {
 
-	public BIT(M6502 cpu, OperandType type) {
+	public BIT(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 4;
-			default:
-				throw new IllegalStateException("BIT Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.Z_PAGE)	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.ABS)	{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		throw new IllegalStateException("BIT Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -33,7 +28,7 @@ public class BIT extends Instruction {
 		cpu.NEGATIVE = (val & 0x80) != 0;		// value of bit 7 from memory
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

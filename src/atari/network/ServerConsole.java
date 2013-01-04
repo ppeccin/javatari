@@ -15,7 +15,7 @@ import atari.controls.ConsoleControls.Control;
 import atari.controls.ConsoleControlsSocket;
 import atari.tia.TIA;
 
-public class ServerConsole extends Console implements ClockDriven {
+public final class ServerConsole extends Console implements ClockDriven {
 
 	public ServerConsole(RemoteTransmitter transmitter) {
 		super();
@@ -82,12 +82,12 @@ public class ServerConsole extends Console implements ClockDriven {
 
 
 	synchronized void clientConnected() {
-		showOSD("Player 2 Client Connected");
+		showOSD("Player 2 Client Connected", true);
 		sendStateUpdate();
 	}
 
 	void clientDisconnected() {
-		showOSD("Player 2 Client Disconnected");
+		showOSD("Player 2 Client Disconnected", true);
 	}
 
 	void receiveClientControlChanges(List<ControlChange> clientControlChages) {

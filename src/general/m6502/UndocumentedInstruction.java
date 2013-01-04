@@ -2,7 +2,6 @@
 
 package general.m6502;
 
-
 public abstract class UndocumentedInstruction extends Instruction {
 
 	public UndocumentedInstruction(M6502 cpu) {

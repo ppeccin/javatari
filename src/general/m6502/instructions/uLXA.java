@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.UndocumentedInstruction;
 
-public class uLXA extends UndocumentedInstruction {
+public final class uLXA extends UndocumentedInstruction {
 
 	public uLXA(M6502 cpu) {
 		super(cpu);

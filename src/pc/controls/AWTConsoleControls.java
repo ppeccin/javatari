@@ -14,7 +14,7 @@ import parameters.Parameters;
 import atari.controls.ConsoleControls;
 import atari.controls.ConsoleControlsInput;
 
-public class AWTConsoleControls implements ConsoleControls, KeyListener {
+public final class AWTConsoleControls implements ConsoleControls, KeyListener {
 	
 	public AWTConsoleControls(VideoMonitor monitor) {
 		super();
@@ -48,7 +48,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 			consoleControlsInput.controlStateChanged(control, false);
 		consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
 		consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
-		videoMonitor.showOSD((paddleMode ? "Paddles" : "Joysticks") + " connected");
+		videoMonitor.showOSD((paddleMode ? "Paddles" : "Joysticks") + " connected", true);
 		if (paddleMode) {
 			if (paddlePositionUpdater != null && paddlePositionUpdater.isAlive()) return;	// All set
 			paddlePositionUpdater = new PaddlesPositionUpdater();
@@ -100,7 +100,7 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 			switch(keyCode) {
 				case KEY_LOCAL_P1_MODE:
 					p1ControlsMode(!p1ControlsMode); 
-					videoMonitor.showOSD((p1ControlsMode ? "P2" : "P1") + " controls mode");
+					videoMonitor.showOSD((p1ControlsMode ? "P2" : "P1") + " controls mode", true);
 					return true;
 				case KEY_LOCAL_PADDLE_MODE:
 					paddleMode(!paddleMode); return true;
@@ -115,11 +115,11 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 					paddle0MovingRight = true; return true;
 				case JOY0_UP:
 					if (paddle0Speed < 10) paddle0Speed++;
-					videoMonitor.showOSD("Paddle 1 speed: " + paddle0Speed);
+					videoMonitor.showOSD("Paddle 1 speed: " + paddle0Speed, true);
 					return true;
 				case JOY0_DOWN:
 					if (paddle0Speed > 1) paddle0Speed--;
-					videoMonitor.showOSD("Paddle 1 speed: " + paddle0Speed);
+					videoMonitor.showOSD("Paddle 1 speed: " + paddle0Speed, true);
 					return true;
 				case JOY1_LEFT:
 					paddle1MovingLeft = true; return true;
@@ -127,11 +127,11 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 					paddle1MovingRight = true; return true;
 				case JOY1_UP:
 					if (paddle1Speed < 10) paddle1Speed++;
-					videoMonitor.showOSD("Paddle 2 speed: " + paddle1Speed);
+					videoMonitor.showOSD("Paddle 2 speed: " + paddle1Speed, true);
 					return true;
 				case JOY1_DOWN:
 					if (paddle1Speed > 1) paddle1Speed--;
-					videoMonitor.showOSD("Paddle 2 speed: " + paddle1Speed);
+					videoMonitor.showOSD("Paddle 2 speed: " + paddle1Speed, true);
 					return true;
 			}			
 		}
@@ -214,13 +214,14 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 		normalCodeMap.put(KEY_RESET,       Control.RESET); 
 		normalCodeMap.put(KEY_FAST_SPEED,  Control.FAST_SPEED); 
 		
-		withALTCodeMap.put(KEY_POWER,          Control.POWER_FRY);
-		withALTCodeMap.put(KEY_PAUSE,          Control.PAUSE);
-		withALTCodeMap.put(KEY_FRAME,          Control.FRAME);
-		withALTCodeMap.put(KEY_TRACE,          Control.TRACE);
-		withALTCodeMap.put(KEY_DEBUG,          Control.DEBUG);
-		withALTCodeMap.put(KEY_NO_COLLISIONS,  Control.NO_COLLISIONS);
-		withALTCodeMap.put(KEY_VIDEO_STANDARD, Control.VIDEO_STANDARD);
+		withALTCodeMap.put(KEY_POWER,            Control.POWER_FRY);
+		withALTCodeMap.put(KEY_PAUSE,            Control.PAUSE);
+		withALTCodeMap.put(KEY_FRAME,            Control.FRAME);
+		withALTCodeMap.put(KEY_TRACE,            Control.TRACE);
+		withALTCodeMap.put(KEY_DEBUG,            Control.DEBUG);
+		withALTCodeMap.put(KEY_NO_COLLISIONS,    Control.NO_COLLISIONS);
+		withALTCodeMap.put(KEY_VIDEO_STANDARD,   Control.VIDEO_STANDARD);
+		withALTCodeMap.put(KEY_CARTRIDGE_FORMAT, Control.CARTRIDGE_FORMAT);
 	
 		withCTRLCodeMap.put(KEY_STATE_0,  Control.SAVE_STATE_0); 
 		withCTRLCodeMap.put(KEY_STATE_1,  Control.SAVE_STATE_1); 
@@ -313,13 +314,14 @@ public class AWTConsoleControls implements ConsoleControls, KeyListener {
 	private static final int KEY_SELECT         = KeyEvent.VK_F11;    
 	private static final int KEY_RESET          = KeyEvent.VK_F12;    
                                                
-	private static final int KEY_PAUSE          = KeyEvent.VK_P;
-	private static final int KEY_FRAME          = KeyEvent.VK_F;
-	private static final int KEY_TRACE          = KeyEvent.VK_T;
-	private static final int KEY_FAST_SPEED     = KeyEvent.VK_TAB;
-	private static final int KEY_DEBUG          = KeyEvent.VK_D;
-	private static final int KEY_NO_COLLISIONS  = KeyEvent.VK_C;
-	private static final int KEY_VIDEO_STANDARD = KeyEvent.VK_V;
+	private static final int KEY_PAUSE            = KeyEvent.VK_P;
+	private static final int KEY_FRAME            = KeyEvent.VK_F;
+	private static final int KEY_TRACE            = KeyEvent.VK_T;
+	private static final int KEY_FAST_SPEED       = KeyEvent.VK_TAB;
+	private static final int KEY_DEBUG            = KeyEvent.VK_D;
+	private static final int KEY_NO_COLLISIONS    = KeyEvent.VK_C;
+	private static final int KEY_VIDEO_STANDARD   = KeyEvent.VK_V;
+	private static final int KEY_CARTRIDGE_FORMAT = KeyEvent.VK_B;
 	
 	private static final int KEY_STATE_0        = KeyEvent.VK_QUOTE;
 	private static final int KEY_STATE_1        = KeyEvent.VK_1;

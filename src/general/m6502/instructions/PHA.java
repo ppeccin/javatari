@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.Instruction;
 
-public class PHA extends Instruction {
+public final class PHA extends Instruction {
 
 	public PHA(M6502 cpu) {
 		super(cpu);
@@ -18,6 +18,7 @@ public class PHA extends Instruction {
 
 	@Override
 	public void execute() {
+		// Does not perform the dummy PC + 1 read
 		cpu.pushByte(cpu.A);
 	}
 	

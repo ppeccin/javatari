@@ -50,13 +50,13 @@ public final class RAM implements BUS16Bits {
 	}
 	
 	public void powerFry() {
-		float var = 1 - FRY_VARIANCE + 2 * Randomizer.instance.nextFloat() * FRY_VARIANCE;
+		final float var = 1 - FRY_VARIANCE + 2 * Randomizer.instance.nextFloat() * FRY_VARIANCE;
 		// Randomly put "0" in bits on the ram
-		int fryZeroBits = (int)(var * FRY_ZERO_BITS);
+		final int fryZeroBits = (int)(var * FRY_ZERO_BITS);
 		for (int i = 0; i < fryZeroBits; i++)
 			bytes[Randomizer.instance.nextInt(128)] &= (byte)Randomizer.instance.nextInt(256);
 		// Randomly put "1" in bits on the ram
-		int fryOneBits = (int)(var * FRY_ONE_BITS);
+		final int fryOneBits = (int)(var * FRY_ONE_BITS);
 		for (int i = 0; i < fryOneBits; i++)
 			bytes[Randomizer.instance.nextInt(128)] |= (byte)(0x01 << Randomizer.instance.nextInt(8));
 	}

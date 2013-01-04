@@ -5,7 +5,7 @@ package main;
 import parameters.Parameters;
 import pc.room.Room;
 
-public class Standalone {
+public final class Standalone {
 
 	public static void main(String[] args) {
 

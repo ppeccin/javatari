@@ -8,11 +8,11 @@ import general.m6502.Register;
 
 import static general.m6502.Register.*;
 
-public class Txx extends Instruction {
+public final class Txx extends Instruction {
 
-	public Txx(M6502 cpu, Register source, Register dest) {
+	public Txx(M6502 cpu, int src, int dest) {
 		super(cpu);
-		this.source = source;
+		this.source = src;
 		this.dest = dest;
 	}
 
@@ -24,38 +24,26 @@ public class Txx extends Instruction {
 	@Override
 	public void execute() {
 		final byte val;
-		switch (source) {
-			case rA:
-				val = cpu.A; break;
-			case rX:
-				val = cpu.X; break;
-			case rY:
-				val = cpu.Y; break;
-			case rSP:
-				val = cpu.SP; break;
-			default:
-				throw new IllegalStateException("Txx Invalid Source Register: " + source);
-		}
-		switch (dest) {
-			case rA:
-				cpu.A = val; break;
-			case rX:
-				cpu.X = val; break;
-			case rY:
-				cpu.Y = val; break;
-			case rSP:
-				cpu.SP = val; break;
-			default:
-				throw new IllegalStateException("Txx Invalid Destination Register: " + dest);
-		}
+		if (source == Register.rA) 			val = cpu.A;
+		else if (source == Register.rX) 	val = cpu.X;
+		else if (source == Register.rY) 	val = cpu.Y;
+		else if (source == Register.rSP) 	val = cpu.SP;
+		else throw new IllegalStateException("Txx Invalid Source Register: " + source);
+
+		if (dest == Register.rA) 		cpu.A = val;
+		else if (dest == Register.rX) 	cpu.X = val;
+		else if (dest == Register.rY) 	cpu.Y = val;
+		else if (dest == Register.rSP) 	cpu.SP = val;
+		else throw new IllegalStateException("Txx Invalid Destination Register: " + dest);
+
 		if (dest != rSP) {		// Does not affect Status Bits when transferring to SP
 			cpu.ZERO = val == 0;
 			cpu.NEGATIVE = val < 0;
 		}
 	}
 
-	private final Register source;
-	private final Register dest;
+	private final int source;
+	private final int dest;
 	
 
 	public static final long serialVersionUID = 1L;

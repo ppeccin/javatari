@@ -2,13 +2,15 @@
 
 package general.m6502.instructions;
 
-import general.m6502.M6502;
+import static general.m6502.StatusBit.bCARRY;
+import static general.m6502.StatusBit.bDECIMAL_MODE;
+import static general.m6502.StatusBit.bINTERRUPT_DISABLE;
 import general.m6502.Instruction;
-import general.m6502.StatusBit;
+import general.m6502.M6502;
 
-public class SEx extends Instruction {
+public final class SEx extends Instruction {
 
-	public SEx(M6502 cpu, StatusBit bit) {
+	public SEx(M6502 cpu, int bit) {
 		super(cpu);
 		this.bit = bit;
 	}
@@ -20,19 +22,13 @@ public class SEx extends Instruction {
 
 	@Override
 	public void execute() {
-		switch (bit) {
-			case bCARRY:
-				cpu.CARRY = true; break;
-			case bDECIMAL_MODE:
-				cpu.DECIMAL_MODE = true; break;
-			case bINTERRUPT_DISABLE:
-				cpu.INTERRUPT_DISABLE = true; break;
-			default:
-				throw new IllegalStateException("SEx Invalid StatusBit: " + bit);
-		}
+		if (bit == bCARRY) 					cpu.CARRY = true;
+		else if (bit == bDECIMAL_MODE) 		cpu.DECIMAL_MODE = true;
+		else if (bit == bINTERRUPT_DISABLE) 	cpu.INTERRUPT_DISABLE = true;
+		else throw new IllegalStateException("SEx Invalid StatusBit: " + bit);
 	}
 
-	private final StatusBit bit;
+	private final int bit;
 	
 
 	public static final long serialVersionUID = 1L;

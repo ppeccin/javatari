@@ -5,6 +5,7 @@ package atari.network;
 import general.board.ClockDriven;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import atari.cartridge.Cartridge;
@@ -14,7 +15,7 @@ import atari.console.savestate.SaveStateMedia;
 import atari.controls.ConsoleControls.Control;
 import atari.controls.ConsoleControlsSocket;
 
-public class ClientConsole extends Console implements ClockDriven {
+public final class ClientConsole extends Console implements ClockDriven {
 
 	public ClientConsole(RemoteReceiver receiver) {
 		super();
@@ -71,11 +72,11 @@ public class ClientConsole extends Console implements ClockDriven {
 	}
 
 	void connected() {
-		showOSD("Connected to Player 1 Server");
+		showOSD("Connected to Player 1 Server", true);
 	}
 
 	void disconnected(){
-		showOSD("Disconnected from Player 1 Server");
+		showOSD("Disconnected from Player 1 Server", true);
 	}
 
 	void receiveServerUpdate(ServerUpdate update) {
@@ -114,6 +115,10 @@ public class ClientConsole extends Console implements ClockDriven {
 	private class ClientConsoleControlsSocketAdapter extends ConsoleControlsSocket {
 		@Override
 		public void controlStateChanged(Control control, boolean state) {
+			if (DISABLED_CONTROLS.contains(control)) {
+				showOSD("Option disabled in Player 2 Client", true);
+				return;
+			}
 			synchronized (queuedChanges) {
 				queuedChanges.add(new ControlChange(control, state));
 			}
@@ -151,7 +156,7 @@ public class ClientConsole extends Console implements ClockDriven {
 	private class ClientConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {
 		@Override
 		public void insert(Cartridge cartridge, boolean autoPower) {
-			showOSD("Only the Server can change Cartridges");
+			showOSD("Only the Server can change Cartridges", true);
 		}
 	}
 
@@ -161,5 +166,9 @@ public class ClientConsole extends Console implements ClockDriven {
 			// Ignore, savestates are controlled by the server
 		}
 	}
+
+	private static List<Control> DISABLED_CONTROLS = Arrays.asList(new Control[] {
+			Control.CARTRIDGE_FORMAT	
+		});
 
 }

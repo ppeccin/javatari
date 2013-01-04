@@ -17,7 +17,7 @@ import parameters.Parameters;
 import atari.cartridge.CartridgeSocket;
 import atari.controls.ConsoleControlsSocket;
 
-public class PanelScreen extends JPanel implements Screen {
+public final class PanelScreen extends JPanel implements Screen {
 
 	public PanelScreen(boolean screenFixedSize) {
 		super();

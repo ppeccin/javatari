@@ -4,7 +4,7 @@ package utils;
 
 import javax.swing.JOptionPane;
 
-public class Debugger {
+public final class Debugger {
 
 	public static int show(String message) {
 		return show(message, message, new String[] { "OK" } );

@@ -579,12 +579,14 @@ public final class M6502 implements ClockDriven {
 
 	// Constants
 	
-	public static char NMI_HANDLER_ADDRESS = 0xfffa;
-	public static char POWER_ON_RESET_ADDRESS = 0xfffc;
-	public static char IRQ_HANDLER_ADDRESS = 0xfffe;
+	public static final byte STACK_INITIAL_SP = (byte)0xff;
+	public static final char STACK_PAGE = (char)0x0100;
+	
+	// Vectors
+	public static final char NMI_HANDLER_ADDRESS = 0xfffa;
+	public static final char POWER_ON_RESET_ADDRESS = 0xfffc;
+	public static final char IRQ_HANDLER_ADDRESS = 0xfffe;
 
-	public static byte STACK_INITIAL_SP = (byte)0xff;
-	public static char STACK_PAGE = (char)0x0100;
 	
 	// Convenience methods
 	
@@ -595,7 +597,7 @@ public final class M6502 implements ClockDriven {
 		return toUunsignedByte((byte)i);
 	}
 
-	//Used to save/load states
+	// Used to save/load states
 	public static class M6502State implements Serializable {
 		byte A, X, Y, SP;
 		char PC;

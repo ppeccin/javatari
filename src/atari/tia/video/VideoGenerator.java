@@ -13,9 +13,9 @@ public final class VideoGenerator implements VideoSignal {
 		return monitor.nextLine(pixels, vSynch);
 	}
 
-	public void showOSD(String message) {
+	public void showOSD(String message, boolean overlap) {
 		if (monitor == null) return;
-		monitor.showOSD(message);
+		monitor.showOSD(message, overlap);
 	}
 
 	public VideoMonitor monitor() {

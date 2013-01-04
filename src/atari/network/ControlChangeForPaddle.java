@@ -4,7 +4,7 @@ package atari.network;
 
 import atari.controls.ConsoleControls.Control;
 
-public class ControlChangeForPaddle extends ControlChange {
+public final class ControlChangeForPaddle extends ControlChange {
 
 	public ControlChangeForPaddle(Control control, int position) {
 		this.control = control;

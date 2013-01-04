@@ -10,7 +10,7 @@ import parameters.Parameters;
 import pc.room.Room;
 import utils.Terminator;
 
-public class MultiplayerServer {
+public final class MultiplayerServer {
 
 	public static void main(String[] args) throws IOException {
 

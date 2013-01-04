@@ -12,7 +12,7 @@ import pc.room.Room;
 import pc.screen.PanelScreen;
 import utils.Terminator;
 
-public class AppletMultiplayerServer extends JApplet {
+public final class AppletMultiplayerServer extends JApplet {
 
 	@Override
 	public void init() {

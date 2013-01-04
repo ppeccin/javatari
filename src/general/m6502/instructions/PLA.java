@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.Instruction;
 
-public class PLA extends Instruction {
+public final class PLA extends Instruction {
 
 	public PLA(M6502 cpu) {
 		super(cpu);
@@ -18,6 +18,8 @@ public class PLA extends Instruction {
 
 	@Override
 	public void execute() {
+		// Does not perform the dummy PC + 1 read
+		// Does not perform the dummy stack read
 		byte val = cpu.pullByte();
 		cpu.A = val;
 		cpu.NEGATIVE = val < 0;

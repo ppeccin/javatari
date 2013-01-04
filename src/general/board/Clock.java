@@ -4,7 +4,7 @@ package general.board;
 
 import java.util.Locale;
 
-public class Clock extends Thread {
+public final class Clock extends Thread {
 
 	public Clock(String name, ClockDriven driven, double hertz) {
 		this(name);

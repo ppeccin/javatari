@@ -2,7 +2,7 @@
 
 package utils;
 
-public class Array2DCopy {
+public final class Array2DCopy {
 
 	public static int[][] copy(int[][] original) {
 		int[][] copy = new int[original.length][];

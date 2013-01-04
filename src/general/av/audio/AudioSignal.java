@@ -2,7 +2,6 @@
 
 package general.av.audio;
 
-
 public interface AudioSignal {
 
 	public void connectMonitor(AudioMonitor monitor);

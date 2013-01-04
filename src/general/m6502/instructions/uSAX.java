@@ -6,27 +6,20 @@ import general.m6502.M6502;
 import general.m6502.OperandType;
 import general.m6502.UndocumentedInstruction;
 
-public class uSAX extends UndocumentedInstruction {
+public final class uSAX extends UndocumentedInstruction {
 
-	public uSAX(M6502 cpu, OperandType type) {
+	public uSAX(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 3;
-			case Z_PAGE_Y:
-				ea = cpu.fetchZeroPageXAddress(); return 4;
-			case IND_X:
-				ea = cpu.fetchZeroPageXAddress(); return 6;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 4;
-			default:
-				throw new IllegalStateException("uAAX Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
+		if (type == OperandType.Z_PAGE_Y) 	{ ea = cpu.fetchZeroPageXAddress(); return 4; }
+		if (type == OperandType.IND_X) 		{ ea = cpu.fetchZeroPageXAddress(); return 6; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }
+		throw new IllegalStateException("uAAX Invalid Operand Type: " + type);
 	}
 
 	@Override
@@ -36,7 +29,7 @@ public class uSAX extends UndocumentedInstruction {
 		cpu.memory.writeByte(ea, val);
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

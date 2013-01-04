@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.UndocumentedInstruction;
 
-public class uARR extends UndocumentedInstruction {
+public final class uARR extends UndocumentedInstruction {
 
 	public uARR(M6502 cpu) {
 		super(cpu);
@@ -31,16 +31,11 @@ public class uARR extends UndocumentedInstruction {
 		cpu.NEGATIVE = val < 0;
 		
 		// Complex
-		switch(cpu.A & 0x60) {
-			case 0x60:
-				cpu.CARRY = true; cpu.OVERFLOW = false; break;
-			case 0x00:
-				cpu.CARRY = false; cpu.OVERFLOW = false; break;
-			case 0x20:
-				cpu.CARRY = false; cpu.OVERFLOW = true; break;
-			case 0x40:
-				cpu.CARRY = true; cpu.OVERFLOW = true; break;
-		}
+		int comp = cpu.A & 0x60;
+		if (comp == 0x60) 		{ cpu.CARRY = true; cpu.OVERFLOW = false; }
+		else if (comp == 0x00) 	{ cpu.CARRY = false; cpu.OVERFLOW = false; }
+		else if (comp == 0x20) 	{ cpu.CARRY = false; cpu.OVERFLOW = true; }
+		else if (comp == 0x40) 	{ cpu.CARRY = true; cpu.OVERFLOW = true; }
 	}
 
 	private int ea;

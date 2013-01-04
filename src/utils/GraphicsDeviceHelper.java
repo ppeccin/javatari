@@ -16,7 +16,7 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-public class GraphicsDeviceHelper {
+public final class GraphicsDeviceHelper {
 
 	public static BufferedImage loadImage(String fileName) throws IOException {
 		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);

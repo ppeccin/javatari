@@ -5,7 +5,7 @@ package general.m6502.instructions;
 import general.m6502.M6502;
 import general.m6502.Instruction;
 
-public class NOP extends Instruction {
+public final class NOP extends Instruction {
 
 	public NOP(M6502 cpu) {
 		super(cpu);

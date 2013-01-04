@@ -11,7 +11,7 @@ import java.util.List;
 import pc.cartridge.ROMLoader;
 import atari.cartridge.Cartridge;
 
-public class ROMTransferHandlerUtil {
+public final class ROMTransferHandlerUtil {
 
 	public static boolean canAccept(Transferable transf) {
 		// General URLs

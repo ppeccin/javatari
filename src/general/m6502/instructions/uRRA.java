@@ -6,54 +6,44 @@ import general.m6502.M6502;
 import general.m6502.OperandType;
 import general.m6502.UndocumentedInstruction;
 
-public class uRRA extends UndocumentedInstruction {
+public final class uRRA extends UndocumentedInstruction {
 
-	public uRRA(M6502 cpu, OperandType type) {
+	public uRRA(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 5;
-			case Z_PAGE_X:
-				ea = cpu.fetchZeroPageXAddress(); return 6;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress();  return 6;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 7;
-			case ABS_Y:
-				ea = cpu.fetchAbsoluteYAddress(); return 7;
-			case IND_X:
-				ea = cpu.fetchIndirectXAddress(); return 8;
-			case IND_Y:
-				ea = cpu.fetchIndirectYAddress(); return 8;
-			default:
-				throw new IllegalStateException("uRRA Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 5; }
+		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 6; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 6; }
+		if (type == OperandType.ABS_X) 		{ ea = cpu.fetchAbsoluteXAddress(); return 7; }
+		if (type == OperandType.ABS_Y) 		{ ea = cpu.fetchAbsoluteYAddress(); return 7; }
+		if (type == OperandType.IND_X) 		{ ea = cpu.fetchIndirectXAddress(); return 8; }
+		if (type == OperandType.IND_Y) 		{ ea = cpu.fetchIndirectYAddress(); return 8; }
+		throw new IllegalStateException("uRRA Invalid Operand Type: " + type);
 	}
 
 	@Override
 	public void execute() {
 		byte val = cpu.memory.readByte(ea); 
-		int oldCarry = cpu.CARRY ? 0x80 : 0;
+		final int oldCarry = cpu.CARRY ? 0x80 : 0;
 		cpu.CARRY = (val & 0x01) != 0;		// bit 0 was set
 		val = (byte) (((val & 0xff) >>> 1) | oldCarry);
 		cpu.memory.writeByte(ea, val);
 
 		// Same as ADC from here
-		int b = val;
-		int uB = M6502.toUnsignedByte(b);
-		int oldA = cpu.A;
-		int uOldA = M6502.toUnsignedByte(oldA);
+		final int b = val;
+		final int uB = M6502.toUnsignedByte(b);
+		final int oldA = cpu.A;
+		final int uOldA = M6502.toUnsignedByte(oldA);
 
 		int aux = oldA + b + (cpu.CARRY?1:0); 
 		int uAux = uOldA + uB + (cpu.CARRY?1:0); 
 
 		// ZERO flag is affected always as in Binary mode
-		byte newA = (byte) M6502.toUnsignedByte(uAux);		// Could be aux 
+		final byte newA = (byte) M6502.toUnsignedByte(uAux);		// Could be aux 
 		cpu.ZERO = newA == 0;
 
 		// But the others flags and the ACC are computed differently in Decimal Mode
@@ -77,7 +67,7 @@ public class uRRA extends UndocumentedInstruction {
 		cpu.A = (byte) M6502.toUnsignedByte(uAux);
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	

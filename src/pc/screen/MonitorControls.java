@@ -10,7 +10,7 @@ import java.util.Map;
 
 import pc.screen.Monitor.Control;
 
-public class MonitorControls implements KeyListener {
+public final class MonitorControls implements KeyListener {
 	
 	public MonitorControls(Monitor monitor) {
 		this.monitor = monitor;

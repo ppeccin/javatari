@@ -6,27 +6,20 @@ import general.m6502.M6502;
 import general.m6502.Instruction;
 import general.m6502.OperandType;
 
-public class DEC extends Instruction {
+public final class DEC extends Instruction {
 
-	public DEC(M6502 cpu, OperandType type) {
+	public DEC(M6502 cpu, int type) {
 		super(cpu);
 		this.type = type;
 	}
 
 	@Override
 	public int fetch() {
-		switch (type) {
-			case Z_PAGE:
-				ea = cpu.fetchZeroPageAddress(); return 5;
-			case Z_PAGE_X:
-				ea = cpu.fetchZeroPageXAddress(); return 6;
-			case ABS:
-				ea = cpu.fetchAbsoluteAddress(); return 6;
-			case ABS_X:
-				ea = cpu.fetchAbsoluteXAddress(); return 7;
-			default:
-				throw new IllegalStateException("DEC Invalid Operand Type: " + type);
-		}
+		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 5; }
+		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 6; }
+		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 6; }
+		if (type == OperandType.ABS_X) 		{ ea = cpu.fetchAbsoluteXAddress(); return 7; }
+		throw new IllegalStateException("DEC Invalid Operand Type: " + type); 
 	}
 
 	@Override
@@ -37,7 +30,7 @@ public class DEC extends Instruction {
 		cpu.NEGATIVE = val < 0;
 	}
 
-	private final OperandType type;
+	private final int type;
 	
 	private int ea;
 	
