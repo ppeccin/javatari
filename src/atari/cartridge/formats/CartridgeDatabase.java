@@ -79,6 +79,7 @@ public class CartridgeDatabase {
 			Cartridge8K_512K_SB.FORMAT,
 			Cartridge8K_UA.FORMAT,
 			Cartridge8K_0840.FORMAT,
+			Cartridge10K_DPC.FORMAT,
 		});
 
 	

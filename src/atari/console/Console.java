@@ -158,8 +158,7 @@ public class Console {
 		pia = new PIA(this);
 		ram = new RAM();
 		tia = new TIA(cpu, pia);
-		bus = new BUS(tia, pia, ram);
-		cpu.connectBus(bus);
+		bus = new BUS(cpu, tia, pia, ram);
 	}
 
 	protected void mainClockCreate() {

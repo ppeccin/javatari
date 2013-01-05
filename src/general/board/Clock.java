@@ -7,18 +7,14 @@ import java.util.Locale;
 public final class Clock extends Thread {
 
 	public Clock(String name, ClockDriven driven, double hertz) {
-		this(name);
+		super(name);
+		running = false;
+		alive = true;
 		this.driven = driven;
 		speed(hertz);
 		start();
 	}
 
-	protected Clock(String name) {
-		super(name);
-		running = false;
-		alive = true; 
-	}
-	
 	public void go() {
 		if (cycleDuration == 0 ) return;
 		running = true;
@@ -61,13 +57,13 @@ public final class Clock extends Thread {
 			if (!alive) return;
 			long waitTime;
 			cycle = 0;
-			startTime = systemNanos();
+			startTime = System.nanoTime();
 			try {
 				while(running) {
 					driven.clockPulse();
 					cycle++;
 					if (cycleDuration > 0) {
-						waitTime = startTime + cycle * cycleDuration - systemNanos();
+						waitTime = startTime + cycle * cycleDuration - System.nanoTime();
 						if (waitTime > 0)
 								sleep(waitTime / 1000000, (int) (waitTime % 1000000));
 						else
@@ -91,23 +87,19 @@ public final class Clock extends Thread {
 		return res;
 	}
 
-	protected long systemNanos() {
-		return System.nanoTime();
-	}
-	
 	private float cyclesPerSecond() {
-		long elapsed = systemNanos() - startTime;
+		long elapsed = System.nanoTime() - startTime;
 		if (elapsed <= 0) return -1;
 		return ((float)cycle / ((float)elapsed / 1000000000));
 	}
 
-	protected double hertz;
-	protected ClockDriven driven;
-	protected boolean alive = false;
-	protected boolean running = false;
+	private final ClockDriven driven;
 
-	protected long cycleDuration;   		// In nanoseconds. -1 = Maximum Speed, 0 = never starts
-	protected long cycle = 0;
-	protected long startTime = 0;
+	private double hertz;
+	private boolean alive = false;
+	private boolean running = false;
+	private long cycleDuration;   		// In nanoseconds. -1 = Maximum Speed, 0 = never starts
+	private long cycle = 0;
+	private long startTime = 0;
 
 }

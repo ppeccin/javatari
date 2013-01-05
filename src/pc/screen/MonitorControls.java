@@ -29,6 +29,7 @@ public final class MonitorControls implements KeyListener {
 
 		keyAltCodeMap.put(KEY_QUALITY,   Control.QUALITY);
 		keyAltCodeMap.put(KEY_DEBUG,     Control.DEBUG);
+		keyAltCodeMap.put(KEY_STATS,     Control.STATS);
 		keyAltCodeMap.put(KEY_CRT_MODES, Control.CRT_MODES);
 		keyAltCodeMap.put(KEY_CART_FILE, Control.LOAD_CARTRIDGE_FILE_NO_AUTO_POWER);
 		keyAltCodeMap.put(KEY_CART_URL,  Control.LOAD_CARTRIDGE_URL_NO_AUTO_POWER);
@@ -127,5 +128,6 @@ public final class MonitorControls implements KeyListener {
 	public static final int KEY_VIDEO_STAND    = KeyEvent.VK_V;
 	
 	public static final int KEY_DEBUG = KeyEvent.VK_D;  
+	public static final int KEY_STATS = KeyEvent.VK_G;  
 
 }

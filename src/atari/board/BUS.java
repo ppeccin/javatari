@@ -5,6 +5,7 @@ package atari.board;
 import parameters.Parameters;
 import utils.Randomizer;
 import general.board.BUS16Bits;
+import general.m6502.M6502;
 import atari.cartridge.Cartridge;
 import atari.pia.PIA;
 import atari.pia.RAM;
@@ -12,7 +13,8 @@ import atari.tia.TIA;
 
 public final class BUS implements BUS16Bits {
 
-	public BUS(TIA tia, PIA pia, RAM ram) {
+	public BUS(M6502 cpu, TIA tia, PIA pia, RAM ram) {
+		cpu.connectBus(this);
 		this.ram = ram;
 		this.tia = tia;
 		this.pia = pia;

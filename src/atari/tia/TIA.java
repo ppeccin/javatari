@@ -43,14 +43,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	public void videoStandard(VideoStandard standard) {
-		videoOutput.standard = standard;
-		audioOutput.videoStandard = standard;
+		videoOutput.standard(standard);
+		audioOutput.videoStandard(standard);
 		palette = standard.equals(VideoStandard.NTSC) ? NTSCPalette.getPalette() : PALPalette.getPalette();
 	}
 	
 	public double desiredClockForVideoStandard() {
 		if (FORCED_CLOCK != 0) return FORCED_CLOCK;
-		return videoOutput.standard().equals(VideoStandard.NTSC) ? DEFAUL_CLOCK_NTSC : DEFAUL_CLOCK_PAL;
+		return videoOutput.standard().fps;
 	}
 	
 	public void powerOn() {
@@ -89,7 +89,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			}
 			// 67
 			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.generateNextSamples(1);
+			audioOutput.clockPulse();
 			// Display period
 			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
 				// Clock delay decodes
@@ -119,14 +119,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
 			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.generateNextSamples(1);
+			audioOutput.clockPulse();
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
 			audioOutput.sendSamplesFrameToMonitor();
 			// If needed, synch with audio output after each frame
-			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor.synchOutput();
+			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
 			// If needed, synch with video output
-			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor.synchOutput();
+			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();
 		}
 	}
 
@@ -286,7 +286,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		playfieldDelayedChangeClock = clock;
 		playfieldDelayedChangePart = part;
 		playfieldDelayedChangePattern = sprite;
-		if (debug) debugPixel(DEBUG_SPECIAL_COLOR2);
+		if (debug) debugPixel(DEBUG_PF_SET_COLOR);
 	}
 
 	private void playfieldPerformDelayedSpriteChange(boolean force) {
@@ -688,7 +688,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void debugInfo(String str) {
 		if (debug) {
-			System.out.printf("Line: %3d, Pixel: %3d, " + str + "\n", videoOutput.monitor.currentLine(), clock);
+			System.out.printf("Line: %3d, Pixel: %3d, " + str + "\n", videoOutput.monitor().currentLine(), clock);
 			// System.out.println(cpu.printState());
 			// System.out.println(cpu.printMemory(0x0090, 32));
 		}
@@ -700,7 +700,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private void processDebugPixelsInLine() {
 		Arrays.fill(linePixels, 0, HBLANK_DURATION, hBlankColor);
-		if (debugLevel >= 4 && videoOutput.monitor.currentLine() % 10 == 0)
+		if (debugLevel >= 4 && videoOutput.monitor().currentLine() % 10 == 0)
 			for (int i = 0; i < LINE_WIDTH; i++) {
 				if (debugPixels[i] != 0) continue;
 				if (i < HBLANK_DURATION) {
@@ -1306,12 +1306,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int DEBUG_M0_COLOR     = 0xff6666ff;
 	private static final int DEBUG_M1_COLOR     = 0xffff6666;
 
-	private static final int DEBUG_PF_COLOR  = 0xff448844;
-	private static final int DEBUG_BK_COLOR  = 0xff333322;
-	private static final int DEBUG_BL_COLOR  = 0xffffff00;
+	private static final int DEBUG_PF_COLOR     = 0xff448844;
+	private static final int DEBUG_PF_SET_COLOR = 0xff33dd33;
+	private static final int DEBUG_BK_COLOR     = 0xff334433;
+	private static final int DEBUG_BL_COLOR     = 0xffffff00;
 
 	private static final int DEBUG_SPECIAL_COLOR  = 0xff00ffff;
-	private static final int DEBUG_SPECIAL_COLOR2  = 0xff00ff00;
+	private static final int DEBUG_SPECIAL_COLOR2 = 0xffff00ff;
 
 	private static final int READ_ADDRESS_MASK = 0x000f;
 	private static final int WRITE_ADDRESS_MASK = 0x003f;
@@ -1322,9 +1323,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
 	
 	private static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
-
-	public static final double DEFAUL_CLOCK_NTSC = Parameters.TIA_DEFAULT_CLOCK_NTSC;		
-	public static final double DEFAUL_CLOCK_PAL =  Parameters.TIA_DEFAULT_CLOCK_PAL;		
 
 
 	// Delayed decodes

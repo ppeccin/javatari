@@ -2,6 +2,7 @@
 
 package atari.network;
 
+import general.av.video.VideoStandard;
 import general.board.Clock;
 import general.board.ClockDriven;
 
@@ -13,7 +14,6 @@ import atari.console.Console;
 import atari.console.savestate.ConsoleState;
 import atari.controls.ConsoleControls.Control;
 import atari.controls.ConsoleControlsSocket;
-import atari.tia.TIA;
 
 public final class ServerConsole extends Console implements ClockDriven {
 
@@ -36,7 +36,7 @@ public final class ServerConsole extends Console implements ClockDriven {
 	@Override
 	protected void mainClockCreate() {
 		// The server clock is always running
-		mainClock = new Clock("Server Console", this, TIA.DEFAUL_CLOCK_NTSC);
+		mainClock = new Clock("Server Console", this, VideoStandard.NTSC.fps);
 		mainClock.go();
 	}
 

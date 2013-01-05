@@ -9,7 +9,7 @@ import atari.cartridge.CartridgeFormat;
 /**
  * Implements the simple bank switching method by masked address range access (within Cart area)
  * Supports SuperChip extra RAM (ON/OFF/AUTO). 
- * Used by several n * xK bank formats with varying extra RAM sizes
+ * Used by several n * 4K bank formats with varying extra RAM sizes
  */
 public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 

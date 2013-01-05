@@ -88,10 +88,6 @@ public final class M6502 implements ClockDriven {
 	public M6502() {
 	}
 
-	public M6502(BUS16Bits memory) {
-		connectBus(memory);
-	}
-
 	public void connectBus(BUS16Bits bus) {
 		this.memory = bus;
 	}

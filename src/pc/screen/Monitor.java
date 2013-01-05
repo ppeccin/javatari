@@ -175,13 +175,14 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		cleanBackBuffer();
+		if (showStats) showOSD(videoSignal.standard() + "  " + line + " fps", true);
 		line = 0;
 		return true;
 	}
 
 	private boolean maxLineExceeded() {
 		if (line > signalHeight + VSYNC_TOLERANCE) {
-			if (debug > 0) System.out.println("Display maximum scanlines exceeded, line: " + line);
+			// if (debug > 0) System.out.println("Display maximum scanlines exceeded: " + line);
 			return newFrame();
 		}
 		return false;
@@ -541,6 +542,8 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 				break;
 			case CRT_MODES:
 				crtModeToggle(); break;
+			case STATS:
+				showStats = !showStats; showOSD(null, true); break;
 			case DEBUG:
 				debug++;
 				if (debug > 4) debug = 0;
@@ -637,6 +640,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	private int crtMode = CRT_MODE;
 
 	private int debug = 0;
+	private boolean showStats = false;
 	
 	private int line = 0;
 
@@ -695,7 +699,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		LOAD_CARTRIDGE_EMPTY,
 		LOAD_CARTRIDGE_PASTE,
 		QUALITY, CRT_MODES,
-		DEBUG,
+		DEBUG, STATS
 	}
 
 	// Simulates a TV display at the sub pixel level (triads) 

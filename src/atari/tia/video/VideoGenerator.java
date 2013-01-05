@@ -32,7 +32,11 @@ public final class VideoGenerator implements VideoSignal {
 		this.monitor = monitor;
 	}
 
-	public VideoMonitor monitor;
-	public VideoStandard standard;
+	public void standard(VideoStandard standard) {
+		this.standard = standard;
+	}
+
+	private VideoMonitor monitor;
+	private VideoStandard standard;
 	
 }

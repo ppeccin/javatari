@@ -141,10 +141,11 @@ public final class Parameters {
 		String val;
 		try {
 			val = props.getProperty("TIA_FORCED_CLOCK"); if (val != null) TIA_FORCED_CLOCK = Double.valueOf(val);
-			val = props.getProperty("TIA_DEFAULT_CLOCK_NTSC"); if (val != null) TIA_DEFAULT_CLOCK_NTSC = Double.valueOf(val);
-			val = props.getProperty("TIA_DEFAULT_CLOCK_PAL"); if (val != null) TIA_DEFAULT_CLOCK_PAL = Double.valueOf(val);
 			val = props.getProperty("TIA_SYNC_WITH_AUDIO_MONITOR"); if (val != null) TIA_SYNC_WITH_AUDIO_MONITOR = Boolean.valueOf(val);
 			val = props.getProperty("TIA_SYNC_WITH_VIDEO_MONITOR"); if (val != null) TIA_SYNC_WITH_VIDEO_MONITOR = Boolean.valueOf(val);
+
+			val = props.getProperty("VIDEO_NTSC_FPS"); if (val != null) VIDEO_NTSC_FPS = Double.valueOf(val);
+			val = props.getProperty("VIDEO_PAL_FPS"); if (val != null) VIDEO_PAL_FPS = Double.valueOf(val);
 
 			val = props.getProperty("TIA_AUDIO_SAMPLE_RATE"); if (val != null) TIA_AUDIO_SAMPLE_RATE = Integer.valueOf(val);
 			val = props.getProperty("TIA_AUDIO_MAX_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(val);
@@ -213,8 +214,6 @@ public final class Parameters {
 	// DEFAULTS
 
 	public static double	TIA_FORCED_CLOCK = 0;							//  0 = No Forced Clock
-	public static double	TIA_DEFAULT_CLOCK_NTSC = 60;
-	public static double	TIA_DEFAULT_CLOCK_PAL = 50.384615;
 	public static boolean 	TIA_SYNC_WITH_AUDIO_MONITOR = false;
 	public static boolean 	TIA_SYNC_WITH_VIDEO_MONITOR = false;
 
@@ -223,6 +222,9 @@ public final class Parameters {
 	public static float 	TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = 0.5f;
 	public static float 	TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE = 0.9f;
 
+	public static double	VIDEO_NTSC_FPS = 60;
+	public static double	VIDEO_PAL_FPS = 50.384615;
+	
 	public static int 		RAM_FRY_ZERO_BITS = 100;						// Quantity of bits to change
 	public static int 		RAM_FRY_ONE_BITS = 25;
 	public static float 	RAM_FRY_VARIANCE = 0.3f;
@@ -261,7 +263,7 @@ public final class Parameters {
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static int		CONSOLE_FAST_SPEED_FACTOR = 8;
-
+	
 	public static boolean 	BUS_DATA_RETENTION = true;
 
 	public static int 		SERVER_SERVICE_PORT = 9998;

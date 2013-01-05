@@ -2,22 +2,22 @@
 
 package general.av.video;
 
+import parameters.Parameters;
+
 public enum VideoStandard  {
 
-	NTSC("NTSC", 228, 262, 60),
-	PAL("PAL", 228, 312, 50);
+	NTSC(228, 262, Parameters.VIDEO_NTSC_FPS),
+	PAL(228, 312, Parameters.VIDEO_PAL_FPS);
 
-	VideoStandard(String name, int width, int height, int fps) {
-		this.name = name;
+	VideoStandard(int width, int height, double fps) {
 		this.width = width;
 		this.height = height;
 		this.fps = fps;
 	}
 
-	public final String name;
 	public final int width;
 	public final int height;
-	public final int fps;
+	public final double fps;
 
 }
 	

@@ -5,18 +5,19 @@ package atari.tia.audio;
 import general.av.audio.AudioMonitor;
 import general.av.audio.AudioSignal;
 import general.av.video.VideoStandard;
+import general.board.ClockDriven;
 import parameters.Parameters;
 
-public abstract class AudioGenerator implements AudioSignal {
+public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 
 	@Override
 	public void connectMonitor(AudioMonitor monitor) {
 		this.monitor = monitor;
 	}
 
-	public void generateNextSamples(int samples) {
-		int remainingSamples = Math.max(desiredSamplesPerFrame() - generatedSamples, 0);
-		internalGenerateNextSamples(Math.min(samples, remainingSamples));
+	@Override
+	public void clockPulse() {
+		if (generatedSamples < samplesPerFrame) generateNextSamples(1);
 	}
 
 	public ChannelStream channel0() {
@@ -28,28 +29,32 @@ public abstract class AudioGenerator implements AudioSignal {
 	}
 
 	public void sendSamplesFrameToMonitor() {
-		int missingSamples = desiredSamplesPerFrame() - generatedSamples;
+		int missingSamples = samplesPerFrame - generatedSamples;
 		if (missingSamples > 0) generateNextSamples(missingSamples);
 		if (monitor != null) monitor.nextSamples(samples, generatedSamples);
 		generatedSamples = 0;
 	}
 
-	protected abstract void internalGenerateNextSamples(int min);
-
-	private int desiredSamplesPerFrame() {
-		return videoStandard.height * 2;		// Perfect amount is 2 samples per scan line
+	public AudioMonitor monitor() {
+		return monitor;
 	}
+
+	public void videoStandard(VideoStandard standard) {
+		// Perfect amount is 2 sample per scanline = 31440, 524 for NTSC(60Hz) and 624 for PAL(50hz)
+		samplesPerFrame = (int) Math.round(SAMPLE_RATE / standard.fps);	
+	}
+
+	
+	protected abstract void generateNextSamples(int min);
 
 	protected final ChannelStream channel0 = new ChannelStream(); 
 	protected final ChannelStream channel1 = new ChannelStream(); 
-
-	public AudioMonitor monitor;
-	public VideoStandard videoStandard;
-
-	protected int generatedSamples = 0;
-	
 	protected final byte[] samples = new byte[1024];	// More than enough samples for a frame
+	protected int generatedSamples = 0;
+	private int samplesPerFrame = 0;
 
-	protected static final float MAX_AMPLITUDE = Parameters.TIA_AUDIO_MAX_AMPLITUDE;
+	private AudioMonitor monitor;
+
+	private static final int SAMPLE_RATE = Parameters.TIA_AUDIO_SAMPLE_RATE;
 
 }
