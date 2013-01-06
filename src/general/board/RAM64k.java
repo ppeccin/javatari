@@ -10,14 +10,12 @@ public final class RAM64k implements BUS16Bits {
 		Arrays.fill(bytes, (byte)0x00);
 	}
 	
+	@Override
 	public byte readByte(int address) {		
 		return bytes[(char)address];	
 	}
 
-	public int unsignedByte(int address) {  
-		return readByte(address) & 0xff;
-	}
-	
+	@Override
 	public void writeByte(int address, byte b) {	
 		bytes[(char)address] = b;		
 	}
@@ -29,8 +27,8 @@ public final class RAM64k implements BUS16Bits {
 		System.out.println();
 	}
 	
-	public byte[] getMattrix() {
-		return bytes;
+	private int unsignedByte(int address) {  
+		return readByte(address) & 0xff;
 	}
 	
 	private byte[] bytes = new byte[65536];

@@ -53,7 +53,7 @@ public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 	}
 
 	@Override
-	protected void performBankSwitch() {
+	protected void performBankSwitchOnMaskedAddress() {
 		// Check and perform bank-switch as necessary
 		if (maskedAddress >= baseBankSwitchAddress && maskedAddress <= topBankSwitchAddress)
 			bankAddressOffset = BANK_SIZE * (maskedAddress - baseBankSwitchAddress);

@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uSBX extends UndocumentedInstruction {
+public final class uSBX extends Instruction {
 
 	public uSBX(M6502 cpu) {
 		super(cpu);
@@ -20,7 +20,7 @@ public final class uSBX extends UndocumentedInstruction {
 	public void execute() {
 		byte b = (byte) (cpu.A & cpu.X);
 		int uB = M6502.toUunsignedByte(b);
-		int uVal = M6502.toUnsignedByte(cpu.memory.readByte(ea)); 
+		int uVal = M6502.toUnsignedByte(cpu.bus.readByte(ea)); 
 		byte newX = (byte)(uB - uVal);
 		cpu.X = newX;
 		

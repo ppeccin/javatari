@@ -2,22 +2,26 @@
 
 package atari.board;
 
+import general.board.BUS16Bits;
+import general.board.ClockDriven;
+import general.m6502.M6502;
 import parameters.Parameters;
 import utils.Randomizer;
-import general.board.BUS16Bits;
-import general.m6502.M6502;
 import atari.cartridge.Cartridge;
 import atari.pia.PIA;
 import atari.pia.RAM;
 import atari.tia.TIA;
 
-public final class BUS implements BUS16Bits {
+public final class BUS implements BUS16Bits, ClockDriven {
 
 	public BUS(M6502 cpu, TIA tia, PIA pia, RAM ram) {
-		cpu.connectBus(this);
+		this.cpu = cpu;
 		this.ram = ram;
 		this.tia = tia;
 		this.pia = pia;
+		cpu.connectBus(this);
+		tia.connectBus(this);
+		pia.connectBus(this);
 	}
 
 	public void powerOn() {
@@ -27,8 +31,16 @@ public final class BUS implements BUS16Bits {
 	}
 
 	public void powerOff() {
+		// Nothing
 	}
 
+	@Override
+	public void clockPulse() {
+		pia.clockPulse();
+		cpu.clockPulse();
+		if (cartridgeNeedsClock) cartridge.clockPulse();
+	}
+	
 	@Override
 	public byte readByte(int address) {
 		if ((address & CART_MASK) == CART_SEL) {					// CART selected?
@@ -45,7 +57,7 @@ public final class BUS implements BUS16Bits {
 				data = tia.readByte(address);							// As if all bits were provided by TIA
 
 		// CART Bus monitoring
-		if (cartridge != null)	cartridge.monitorByteRead(address, data);
+		if (cartridgeNeedsBusMonitoring) cartridge.monitorByteRead(address, data);
 
 		return data;
 	}
@@ -54,27 +66,32 @@ public final class BUS implements BUS16Bits {
 	public void writeByte(int address, byte b) {
 		data = b;
 		
-		if ((address & RAM_MASK) == RAM_SEL) ram.writeByte(address, b);	// RAM selected?
+		if ((address & RAM_MASK) == RAM_SEL) ram.writeByte(address, b);			// RAM selected?
 		else if	((address & TIA_MASK) == TIA_SEL) tia.writeByte(address, b);	// TIA selected?
 		else if	((address & PIA_MASK) == PIA_SEL) pia.writeByte(address, b);	// PIA selected?
 		else 																	// CART selected...
 			if	(cartridge != null) cartridge.writeByte(address, b);				
 
 		// CART Bus monitoring
-		if (cartridge != null) cartridge.monitorByteWritten(address, b);
+		if (cartridgeNeedsBusMonitoring) cartridge.monitorByteWritten(address, b);
 	}
 
 	public void cartridge(Cartridge cartridge) {
 		this.cartridge = cartridge;
+		cartridgeNeedsClock = cartridge == null ? false : cartridge.needsClock();
+		cartridgeNeedsBusMonitoring = cartridge == null ? false : cartridge.needsBusMonitoring();
 	}
 
 
 	public Cartridge cartridge;
+	public final M6502 cpu;
 	public final RAM ram;
 	public final TIA tia;
 	public final PIA pia;
 
 	private byte data = 0;
+	private boolean cartridgeNeedsClock = false;
+	private boolean cartridgeNeedsBusMonitoring = false;
 
 	private static final int CART_MASK = 0x1000;
 	private static final int CART_SEL = 0x1000;

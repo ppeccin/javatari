@@ -28,7 +28,7 @@ public final class EOR extends Instruction {
 
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.A ^ cpu.memory.readByte(ea));
+		final byte val = (byte) (cpu.A ^ cpu.bus.readByte(ea));
 		cpu.A = val;
 		cpu.ZERO = val == 0;
 		cpu.NEGATIVE = val < 0;

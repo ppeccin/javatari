@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uANC extends UndocumentedInstruction {
+public final class uANC extends Instruction {
 
 	public uANC(M6502 cpu) {
 		super(cpu);
@@ -18,7 +18,7 @@ public final class uANC extends UndocumentedInstruction {
 	
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.A & cpu.memory.readByte(ea)); 
+		final byte val = (byte) (cpu.A & cpu.bus.readByte(ea)); 
 		cpu.A = val;
 		cpu.ZERO = val == 0;
 		cpu.CARRY = cpu.NEGATIVE = val < 0;

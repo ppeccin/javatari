@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uSHA extends UndocumentedInstruction {
+public final class uSHA extends Instruction {
 
 	public uSHA(M6502 cpu, int type) {
 		super(cpu);
@@ -23,7 +23,7 @@ public final class uSHA extends UndocumentedInstruction {
 	@Override
 	public void execute() {
 		final byte val = (byte) (cpu.A & cpu.X & (byte)(((ea >>> 8) & 0xff) + 1));  // A & X & (High byte of address + 1) !!! 
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 	}
 
 	private final int type;

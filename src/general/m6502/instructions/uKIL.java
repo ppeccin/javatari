@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uKIL extends UndocumentedInstruction {
+public final class uKIL extends Instruction {
 
 	public uKIL(M6502 cpu) {
 		super(cpu);

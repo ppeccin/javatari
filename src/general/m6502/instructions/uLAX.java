@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uLAX extends UndocumentedInstruction {
+public final class uLAX extends Instruction {
 
 	public uLAX(M6502 cpu, int type) {
 		super(cpu);
@@ -26,7 +26,7 @@ public final class uLAX extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		final byte val = cpu.memory.readByte(ea);
+		final byte val = cpu.bus.readByte(ea);
 		cpu.A = val;
 		cpu.X = val;
 		cpu.ZERO = val == 0;

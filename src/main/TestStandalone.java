@@ -18,7 +18,7 @@ public final class TestStandalone {
 		final Room room = Room.buildStandaloneRoom();
 
 	 	// Insert test Cartridge
-		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/hero.bin");
+		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/Hero.bin");
 		if (cart != null) room.currentConsole().cartridgeSocket().insert(cart, false);
 
 		// Turn everything on

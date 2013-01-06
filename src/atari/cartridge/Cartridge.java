@@ -4,10 +4,11 @@ package atari.cartridge;
 
 import general.av.video.VideoStandard;
 import general.board.BUS16Bits;
+import general.board.ClockDriven;
 
 import java.io.Serializable;
 
-public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
+public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Serializable {
 
 	protected Cartridge(byte[] content, String contentName, CartridgeFormat format) {
 		this.bytes = content;
@@ -28,6 +29,11 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	}
 
 	@Override
+	public void clockPulse() {
+		// Nothing
+	}
+
+	@Override
 	public byte readByte(int address) {
 		maskAddress(address);
 		return bytes[maskedAddress];	
@@ -40,9 +46,19 @@ public abstract class Cartridge implements BUS16Bits, Cloneable, Serializable {
 	}
 
 	public void monitorByteRead(int address, byte data) {
+		// Nothing
 	}
 
 	public void monitorByteWritten(int address, byte data) {
+		// Nothing
+	}
+
+	public boolean needsClock() {
+		return false;
+	}
+
+	public boolean needsBusMonitoring() {
+		return false;
 	}
 
 	protected void maskAddress(int address) {

@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uLAS extends UndocumentedInstruction {
+public final class uLAS extends Instruction {
 
 	public uLAS(M6502 cpu) {
 		super(cpu);
@@ -18,7 +18,7 @@ public final class uLAS extends UndocumentedInstruction {
 	
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.SP & cpu.memory.readByte(ea)); 
+		final byte val = (byte) (cpu.SP & cpu.bus.readByte(ea)); 
 		cpu.A = val;
 		cpu.X = val;
 		cpu.SP = val;

@@ -28,7 +28,7 @@ public final class Cartridge8K_FE extends CartridgeBanked {
 	}
 
 	@Override
-	protected void performBankSwitch() {
+	protected void performBankSwitchOnMaskedAddress() {
 		// Bank switching is not done within masked address range
 		// Its done directly before masking address
 	}

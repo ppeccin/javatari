@@ -155,9 +155,9 @@ public class Console {
 
 	protected void mainComponentsCreate() {
 		cpu = new M6502();
-		pia = new PIA(this);
+		tia = new TIA();
+		pia = new PIA();
 		ram = new RAM();
-		tia = new TIA(cpu, pia);
 		bus = new BUS(cpu, tia, pia, ram);
 	}
 

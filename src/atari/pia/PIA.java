@@ -9,21 +9,26 @@ import java.io.Serializable;
 import java.util.Map;
 
 import utils.Randomizer;
-import atari.console.Console;
+import atari.board.BUS;
 import atari.controls.ConsoleControls;
 import atari.controls.ConsoleControls.Control;
 import atari.controls.ConsoleControlsInput;
 
 public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
-	public PIA(Console console) {
-		this.console = console;
+	public PIA() {
+	}
+
+	public void connectBus(BUS bus) {
+		this.bus = bus;
 	}
 
 	public void powerOn() {
+		// Nothing
 	}
 
 	public void powerOff() {
+		// Nothing
 	}
 
 	@Override
@@ -118,11 +123,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (!state) return;
 		switch (control) {
 			case BLACK_WHITE: if ((SWCHB & 0x08) == 0) SWCHB |= 0x08; else SWCHB &= 0xf7;		//	0 = B/W, 1 = Color 
-					console.showOSD((SWCHB & 0x08) != 0 ? "COLOR" : "B/W", true); return;
+				bus.tia.videoOutput().showOSD((SWCHB & 0x08) != 0 ? "COLOR" : "B/W", true); return;
 			case DIFFICULTY0: if ((SWCHB & 0x40) == 0) SWCHB |= 0x40; else SWCHB &= 0xbf; 		//  0 = Beginner, 1 = Advanced
-					console.showOSD((SWCHB & 0x40) != 0 ? "P1 Expert" : "P1 Novice", true); return;
+				bus.tia.videoOutput().showOSD((SWCHB & 0x40) != 0 ? "P1 Expert" : "P1 Novice", true); return;
 			case DIFFICULTY1: if ((SWCHB & 0x80) == 0) SWCHB |= 0x80; else SWCHB &= 0x7f;		//  0 = Beginner, 1 = Advanced
-					console.showOSD((SWCHB & 0x80) != 0 ? "P2 Expert" : "P2 Novice", true); return;
+				bus.tia.videoOutput().showOSD((SWCHB & 0x80) != 0 ? "P2 Expert" : "P2 Novice", true); return;
 		}
 	}
 
@@ -178,8 +183,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 
-	private Console console;	// Used only to show OSDs
-
+	private BUS bus;
 
 	// State Variables ----------------------------------------------
 

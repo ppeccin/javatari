@@ -17,9 +17,11 @@ public final class RAM implements BUS16Bits {
 	}
 
 	public void powerOn() {
+		// Nothing
 	}
 
 	public void powerOff() {
+		// Nothing
 	}
 
 	@Override

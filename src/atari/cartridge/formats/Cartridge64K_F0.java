@@ -16,7 +16,7 @@ public final class Cartridge64K_F0 extends CartridgeBanked {
 	}
 
 	@Override
-	protected void performBankSwitch() {
+	protected void performBankSwitchOnMaskedAddress() {
 		if (maskedAddress == BANKSW_ADDRESS) {	// Bank selection. Increments bank
 			bankAddressOffset += BANK_SIZE;
 			if (bankAddressOffset >= SIZE) bankAddressOffset = 0;

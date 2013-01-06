@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uARR extends UndocumentedInstruction {
+public final class uARR extends Instruction {
 
 	public uARR(M6502 cpu) {
 		super(cpu);
@@ -19,7 +19,7 @@ public final class uARR extends UndocumentedInstruction {
 	@Override
 	// Some sources say flags are affected per ROR, others say its more complex. The complex one is chosen
 	public void execute() {
-		byte val = (byte) (cpu.A & cpu.memory.readByte(ea)); 
+		byte val = (byte) (cpu.A & cpu.bus.readByte(ea)); 
 		int oldCarry = cpu.CARRY?1:0;
 
 		// Per ROR

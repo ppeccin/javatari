@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uRLA extends UndocumentedInstruction {
+public final class uRLA extends Instruction {
 
 	public uRLA(M6502 cpu, int type) {
 		super(cpu);
@@ -27,11 +27,11 @@ public final class uRLA extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		byte val = cpu.memory.readByte(ea);
+		byte val = cpu.bus.readByte(ea);
 		final int oldCarry = cpu.CARRY?1:0;
 		cpu.CARRY = val < 0;		// bit 7 was set
 		val = (byte) ((val << 1) + oldCarry);
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 		cpu.A = (byte) (cpu.A & val);
 		cpu.ZERO = val == 0;
 		cpu.NEGATIVE = val < 0;

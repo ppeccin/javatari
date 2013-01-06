@@ -9,14 +9,14 @@ import atari.cartridge.CartridgeFormatOption;
 /**
  * Implements the 8K "UA" UA Limited format
  */
-public class Cartridge8K_UA extends CartridgeBankedByUnmaskedAccess {
+public class Cartridge8K_UA extends CartridgeBankedByBusMonitoring {
 
 	protected Cartridge8K_UA(byte[] content, String contentName, CartridgeFormat format) {
 		super(content, contentName, format);
 	}
 
 	@Override
-	protected void performBankSwitch(int address) {
+	protected void performBankSwitchOnMonitoredAccess(int address) {
 		if (address == 0x0220) {
 			if (bankAddressOffset != 0) bankAddressOffset = 0;
 		} else if (address == 0x0240) {

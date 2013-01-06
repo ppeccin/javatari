@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uRRA extends UndocumentedInstruction {
+public final class uRRA extends Instruction {
 
 	public uRRA(M6502 cpu, int type) {
 		super(cpu);
@@ -27,11 +27,11 @@ public final class uRRA extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		byte val = cpu.memory.readByte(ea); 
+		byte val = cpu.bus.readByte(ea); 
 		final int oldCarry = cpu.CARRY ? 0x80 : 0;
 		cpu.CARRY = (val & 0x01) != 0;		// bit 0 was set
 		val = (byte) (((val & 0xff) >>> 1) | oldCarry);
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 
 		// Same as ADC from here
 		final int b = val;

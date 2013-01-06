@@ -31,7 +31,7 @@ public final class LDx extends Instruction {
 
 	@Override
 	public void execute() {
-		final byte val = cpu.memory.readByte(ea);
+		final byte val = cpu.bus.readByte(ea);
 		if (reg == Register.rA) 		cpu.A = val;
 		else if (reg == Register.rX) 	cpu.X = val;
 		else if (reg == Register.rY) 	cpu.Y = val;

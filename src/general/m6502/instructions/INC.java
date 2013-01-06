@@ -24,10 +24,10 @@ public final class INC extends Instruction {
 
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.memory.readByte(ea) + 1); 
+		final byte val = (byte) (cpu.bus.readByte(ea) + 1); 
 		cpu.ZERO = val == 0;
 		cpu.NEGATIVE = val < 0;
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 	}
 
 	private final int type;

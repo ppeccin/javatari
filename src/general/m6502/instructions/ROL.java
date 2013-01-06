@@ -37,13 +37,13 @@ public final class ROL extends Instruction {
 			cpu.ZERO = val == 0;
 			cpu.NEGATIVE = val < 0;
 		} else {
-			byte val = cpu.memory.readByte(ea); 
+			byte val = cpu.bus.readByte(ea); 
 			int oldCarry = cpu.CARRY?1:0;
 			cpu.CARRY = val < 0;		// bit 7 was set
 			val = (byte) ((val << 1) | oldCarry);
 			cpu.ZERO = val == 0;
 			cpu.NEGATIVE = val < 0;
-			cpu.memory.writeByte(ea, val);
+			cpu.bus.writeByte(ea, val);
 		}
 	}
 

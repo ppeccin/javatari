@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uDCP extends UndocumentedInstruction {
+public final class uDCP extends Instruction {
 
 	public uDCP(M6502 cpu, int type) {
 		super(cpu);
@@ -27,8 +27,8 @@ public final class uDCP extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		final byte val = (byte) (cpu.memory.readByte(ea) - 1); 
-		cpu.memory.writeByte(ea, val);
+		final byte val = (byte) (cpu.bus.readByte(ea) - 1); 
+		cpu.bus.writeByte(ea, val);
 		int uVal = M6502.toUunsignedByte(val); 
 		int uA = M6502.toUunsignedByte(cpu.A);
 		cpu.CARRY = uA >= uVal;

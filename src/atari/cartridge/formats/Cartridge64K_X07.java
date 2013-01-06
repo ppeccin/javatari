@@ -9,14 +9,14 @@ import atari.cartridge.CartridgeFormatOption;
 /**
  * Implements the 64K "X07" AtariAge format
  */
-public class Cartridge64K_X07 extends CartridgeBankedByUnmaskedAccess {
+public class Cartridge64K_X07 extends CartridgeBankedByBusMonitoring {
 
 	protected Cartridge64K_X07(byte[] content, String contentName, CartridgeFormat format) {
 		super(content, contentName, format);
 	}
 
 	@Override
-	protected void performBankSwitch(int address) {
+	protected void performBankSwitchOnMonitoredAccess(int address) {
 		if ((address & 0x180f) == 0x080d)		// Method 1
 			bankAddressOffset = ((address & 0x00f0) >> 4) * BANK_SIZE;	// Pick bank from bits 7-4
 		else if (bankAddressOffset >= BANK_14_ADDRESS && (address & 0x1880) == 0x0000) 	// Method 2, only if at bank 14 or 15

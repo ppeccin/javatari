@@ -2,11 +2,11 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
 import general.m6502.OperandType;
-import general.m6502.UndocumentedInstruction;
 
-public final class uSAX extends UndocumentedInstruction {
+public final class uSAX extends Instruction {
 
 	public uSAX(M6502 cpu, int type) {
 		super(cpu);
@@ -26,7 +26,7 @@ public final class uSAX extends UndocumentedInstruction {
 	// Some sources say it would affect N and Z flags, some say it woudnt't. Chose not to affect
 	public void execute() {
 		final byte val = (byte) (cpu.A & cpu.X);
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 	}
 
 	private final int type;

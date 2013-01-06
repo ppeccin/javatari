@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uSHX extends UndocumentedInstruction {
+public final class uSHX extends Instruction {
 
 	public uSHX(M6502 cpu) {
 		super(cpu);
@@ -19,7 +19,7 @@ public final class uSHX extends UndocumentedInstruction {
 	@Override
 	public void execute() {
 		final byte val = (byte) (cpu.X & (byte)(((ea >>> 8) & 0xff) + 1));  // X & (High byte of address + 1) !!! 
-		cpu.memory.writeByte(ea, val);
+		cpu.bus.writeByte(ea, val);
 	}
 
 	private int ea;

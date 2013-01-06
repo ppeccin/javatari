@@ -7,13 +7,13 @@ public final class ChannelStream {
 	public float nextSample() {
 		if (--dividerCountdown <= 0) {
 			dividerCountdown = divider;
-			currentSample = nextSampleForControl() == 1 ? volume : -volume;
+			currentSample = nextSampleForControl();
 		}
-		return currentSample;
+		return currentSample == 1 ? volume : -volume;
 	}
 	
 	public void setVolume(int newVolume) {
-		volume = (float)Math.pow(((float)newVolume / MAX_VOLUME), NON_LINEAR_CONVERSION);
+		volume = (float)newVolume / MAX_VOLUME;
 	}
 
 	public void setDivider(int newDivider) {
@@ -122,7 +122,7 @@ public final class ChannelStream {
 	private int divider = 1;					// Changes to dividers will only be reflected at the next countdown cycle
 	private int dividerCountdown = 1;
 	
-	private float currentSample = 1;
+	private int currentSample = 1;
 	
 	private int poly4 = 0x0f;
 	private int poly5 = 0x1f;
@@ -139,6 +139,5 @@ public final class ChannelStream {
 	};
 	
 	private static final int   MAX_VOLUME = 15;
-	private static final float NON_LINEAR_CONVERSION = 1.15f;
 
 }

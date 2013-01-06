@@ -28,7 +28,7 @@ public final class ADC extends Instruction {
 	
 	@Override
 	public void execute() {
-		int b = cpu.memory.readByte(ea);
+		int b = cpu.bus.readByte(ea);
 		int uB = M6502.toUnsignedByte(b);
 		int oldA = cpu.A;
 		int uOldA = M6502.toUnsignedByte(oldA);

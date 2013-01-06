@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uLXA extends UndocumentedInstruction {
+public final class uLXA extends Instruction {
 
 	public uLXA(M6502 cpu) {
 		super(cpu);
@@ -19,7 +19,7 @@ public final class uLXA extends UndocumentedInstruction {
 	@Override
 	// Some sources say its an OR with $EE then AND with IMM, others exclude the OR, others exclude both the OR and the AND. Excluding just the OR
 	public void execute() {
-		byte val = (byte) (cpu.A /* | 0xEE) */ & cpu.memory.readByte(ea)); 
+		byte val = (byte) (cpu.A /* | 0xEE) */ & cpu.bus.readByte(ea)); 
 		cpu.A = val;
 		cpu.X = val;
 		cpu.ZERO = val == 0;

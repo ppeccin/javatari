@@ -9,7 +9,7 @@ import atari.cartridge.CartridgeFormatOption;
 /**
  * Implements the 8K-512K "SB" Superbanking format
  */
-public class Cartridge8K_512K_SB extends CartridgeBankedByUnmaskedAccess {
+public class Cartridge8K_512K_SB extends CartridgeBankedByBusMonitoring {
 
 	protected Cartridge8K_512K_SB(byte[] content, String contentName, CartridgeFormat format) {
 		super(content, contentName, format);
@@ -17,7 +17,7 @@ public class Cartridge8K_512K_SB extends CartridgeBankedByUnmaskedAccess {
 	}
 
 	@Override
-	protected void performBankSwitch(int address) {
+	protected void performBankSwitchOnMonitoredAccess(int address) {
 		// Perform bank switching as needed
 		if ((address & 0x1800) != 0x0800) return;
 		int bank = address & 0x007f;

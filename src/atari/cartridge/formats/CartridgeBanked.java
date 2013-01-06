@@ -26,10 +26,10 @@ public abstract class CartridgeBanked extends Cartridge {
 	public void maskAddress(int address) {
 		super.maskAddress(address);
 		// Perform bank switching as needed 
-		performBankSwitch();
+		performBankSwitchOnMaskedAddress();
 	}
 		
-	protected abstract void performBankSwitch();
+	protected abstract void performBankSwitchOnMaskedAddress();
 
 
 	protected int bankAddressOffset = 0;

@@ -175,7 +175,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		cleanBackBuffer();
-		if (showStats) showOSD(videoSignal.standard() + "  " + line + " fps", true);
+		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines", true);
 		line = 0;
 		return true;
 	}

@@ -22,7 +22,7 @@ public final class BIT extends Instruction {
 
 	@Override
 	public void execute() {
-		final byte val = cpu.memory.readByte(ea);
+		final byte val = cpu.bus.readByte(ea);
 		cpu.ZERO = (val & cpu.A) == 0;
 		cpu.OVERFLOW = (val & 0x40) != 0;		// value of bit 6 from memory
 		cpu.NEGATIVE = (val & 0x80) != 0;		// value of bit 7 from memory

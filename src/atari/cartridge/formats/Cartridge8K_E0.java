@@ -30,7 +30,7 @@ public final class Cartridge8K_E0 extends CartridgeBanked {
 	}
 
 	@Override
-	protected void performBankSwitch() {
+	protected void performBankSwitchOnMaskedAddress() {
 		// Check if address is within range of bank selection
 		if (maskedAddress < 0x0fe0 || maskedAddress > 0x0ff7)
 			return;

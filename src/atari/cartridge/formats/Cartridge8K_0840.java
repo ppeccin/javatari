@@ -9,14 +9,14 @@ import atari.cartridge.CartridgeFormatOption;
 /**
  * Implements the 8K "0840" Econobanking format
  */
-public class Cartridge8K_0840 extends CartridgeBankedByUnmaskedAccess {
+public class Cartridge8K_0840 extends CartridgeBankedByBusMonitoring {
 
 	protected Cartridge8K_0840(byte[] content, String contentName, CartridgeFormat format) {
 		super(content, contentName, format);
 	}
 
 	@Override
-	protected void performBankSwitch(int address) {
+	protected void performBankSwitchOnMonitoredAccess(int address) {
 		int addrBank = address & 0x1840;
 		if (addrBank == 0x0800) {
 			if (bankAddressOffset != 0) bankAddressOffset = 0;

@@ -16,6 +16,11 @@ public final class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 	}
 
 	@Override
+	public boolean needsClock() {
+		return true;
+	}
+
+	@Override
 	public byte readByte(int address) {
 		maskAddress(address);
 		if (maskedAddress <= 0x03f || (maskedAddress >= 0x800 && maskedAddress <= 0x83f))	// DPC register read
@@ -32,16 +37,32 @@ public final class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 			writeDPCRegister(maskedAddress & 0x00ff, b);
 	}
 	
+	@Override
+	public void clockPulse() {
+		if (audioClockCounter-- > 0) return;
+		audioClockCounter = AUDIO_CLOCK_DIVIDER;
+		for (int f = 5; f <= 7; f++) {
+			if (!soundMode[f]) continue;
+			fetcherPointer[f]--;
+			if ((fetcherPointer[f] & 0x00ff) == 0xff) 
+				setFetcherPointer(f, fetcherPointer[f] & 0xff00 | fetcherStart[f]);
+			else
+				updateFetcherMask(f);
+		}
+	}
+	
 	private byte readDPCRegister(int reg) {
 		// Random number
 		if (reg >= 0x00 && reg <= 0x03) {
 			clockRandomNumber(); 
 			return randomNumber; 
 		}
-		// Sound value  TODO MOVAMT not supported
+		// Sound value (MOVAMT not supported)
 		if (reg >= 0x04 && reg <= 0x07) {
-			clockSound();
-			return SOUND_OUTPUT[(fetcherMask[5] & 0x04) | (fetcherMask[6] & 0x02) | (fetcherMask[7] & 0x01)];
+			return SOUND_OUTPUT[
+			    (soundMode[5] ? fetcherMask[5] & 0x04 : 0) | 
+			    (soundMode[6] ? fetcherMask[6] & 0x02 : 0) | 
+			    (soundMode[7] ? fetcherMask[7] & 0x01 : 0)];
 		}
 		// Fetcher unmasked value
 		if (reg >= 0x08 && reg <= 0x0f) {
@@ -107,20 +128,20 @@ public final class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 		if (reg >= 0x58 && reg <= 0x5b) {
 			setFetcherPointer(reg - 0x58, (fetcherPointer[reg - 0x58] & 0x00ff) | ((b & (0x07)) << 8)); return;	// MSB bits 0-2
 		}
-		// Fetchers 4 Pointers MSB
+		// Fetchers 4 Pointers MSB (Draw Line enable not supported)
 		if (reg == 0x5c) {
 			setFetcherPointer(4, (fetcherPointer[4] & 0x00ff) | ((b & (0x07)) << 8));							// MSB bits 0-2 
-			return; // TODO Draw Line Enable
-		}
-		// Fetchers 5-7 Pointers MSB
-		if (reg >= 0x5d && reg <= 0x5f) {
-			setFetcherPointer(reg - 0x58, (fetcherPointer[reg - 0x58] & 0x00ff) + ((b & (0x07)) << 8));			// MSB bits 0-2
-			soundMode = (b & 0x10) != 0;
 			return;
 		}
-		// Draw Line MOVAMT value
+		// Fetchers 5-7 Pointers MSB and Sound Mode enable
+		if (reg >= 0x5d && reg <= 0x5f) {
+			setFetcherPointer(reg - 0x58, (fetcherPointer[reg - 0x58] & 0x00ff) + ((b & (0x07)) << 8));			// MSB bits 0-2
+			soundMode[reg - 0x58] = (b & 0x10) != 0;
+			return;
+		}
+		// Draw Line MOVAMT value (not supported)
 		if (reg >= 0x60 && reg <= 0x67) {
-			return;	// TODO MOVAMT value
+			return;
 		}
 		// 0x68 - 0x6f Not used
 		// Random Number reset
@@ -154,33 +175,22 @@ public final class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 		if (randomNumber == (byte) 0xff) randomNumber = 0;
 	}
 
-	private void clockSound() {
-		long currTime = System.nanoTime();
-		if (currTime - lastTime < 11500) return;
-		lastTime = currTime;
-		for (int f = 5; f <= 7; f++) {
-			fetcherPointer[f]--;
-			if ((fetcherPointer[f] & 0x00ff) == 0xff) 
-				setFetcherPointer(f, fetcherPointer[f] & 0xff00 | fetcherStart[f]);
-			else
-				updateFetcherMask(f);
-		}
-	}
-
 	
 	private byte randomNumber = (byte) 0x00;
-	private int[] fetcherPointer = new int[8];
-	private byte[] fetcherStart = new byte[8];
-	private byte[] fetcherEnd = new byte[8];
-	private byte[] fetcherMask = new byte[8];
-	private boolean soundMode = false;
-	private long lastTime =  System.nanoTime();
+	private final int[] fetcherPointer = new int[8];
+	private final byte[] fetcherStart = new byte[8];
+	private final byte[] fetcherEnd = new byte[8];
+	private final byte[] fetcherMask = new byte[8];
+	private final boolean[] soundMode = new boolean[8];
+	private int audioClockCounter = 0;
 	
-	private static final byte[] SOUND_OUTPUT = new byte[] { 0x0, 0x4, 0x5, 0x9, 0x6, 0xa, 0xb, 0xf };
+
+	private static final byte[] SOUND_OUTPUT = new byte[] { 0x0, 0x6, 0x6, 0xb, 0x6, 0xb, 0xb, 0xf };
+	private static final int AUDIO_CLOCK_DIVIDER = 59;
 	
 	private static final int ROM_SIZE = 8192 + 2048;
 	private static final int DPC_ROM_END = 8192 + 2048 - 1;
-	private static final int SIZE_TOLERANCE = 256;		// Not sure why, but Pitfall2 ROMs have 255 extra bytes
+	private static final int SIZE_TOLERANCE = 256;		// Pitfall2 ROMs have 255 extra bytes for the random number stream
 	private static final int BASE_BANKSW_ADDRESS = 0x0ff8;
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("DPC", "8K + 2K DPC (Pitfall 2)") {

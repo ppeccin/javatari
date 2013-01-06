@@ -2,11 +2,9 @@
 
 package atari.tia;		
 
-import general.av.video.VideoSignal;
 import general.av.video.VideoStandard;
 import general.board.BUS16Bits;
 import general.board.ClockDriven;
-import general.m6502.M6502;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -14,10 +12,9 @@ import java.util.Map;
 
 import parameters.Parameters;
 import utils.Array2DCopy;
-import atari.console.Console;
+import atari.board.BUS;
 import atari.controls.ConsoleControls;
 import atari.controls.ConsoleControlsInput;
-import atari.pia.PIA;
 import atari.tia.audio.AudioGenerator;
 import atari.tia.audio.AudioMonoGenerator;
 import atari.tia.video.NTSCPalette;
@@ -27,11 +24,13 @@ import atari.tia.video.VideoGenerator;
 @SuppressWarnings("unused")
 public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
-	public TIA(M6502 cpu, PIA pia) {
-		this.cpu = cpu;
-		this.pia = pia;
+	public TIA() {
 		videoOutput = new VideoGenerator();
 		audioOutput = new AudioMonoGenerator();
+	}
+
+	public void connectBus(BUS bus) {
+		this.bus = bus;
 	}
 
 	public VideoGenerator videoOutput() {	// VideoSignal
@@ -75,7 +74,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		boolean videoOutputVSynched = false;	
 		do {
 			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
-			cpu.RDY = true;
+			bus.cpu.RDY = true;
 			// HBLANK period
 			for (clock = 3; clock < HBLANK_DURATION; clock += 3) {	// 3 .. 66
 				// If one entire line since last observable change has just completed, enter repeatLastLine mode
@@ -83,13 +82,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					repeatLastLine = true;
 					lastObservableChangeClock = -1;
 				}
-				// Send clock pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
-				pia.clockPulse();
-				cpu.clockPulse();
+				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
+				bus.clockPulse();
 			}
 			// 67
-			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.clockPulse();
 			// Display period
 			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
 				// Clock delay decodes
@@ -99,33 +95,32 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					repeatLastLine = true;
 					lastObservableChangeClock = -1;
 				}
-				// Send clock pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
+				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
 				if (clock % 3 == 0) {
-					pia.clockPulse();
-					cpu.clockPulse();
+					bus.clockPulse();
+					// First Audio Sample. 2 samples per scan line ~ 31440 KHz
+					if (clock == 114) audioOutput.clockPulse();
 				}
 				objectsTriggerScanCounters();
 				if (!repeatLastLine) setPixelValue();
 				objectsIncrementCounters();
 			}
-			// Send the last clock pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
+			// Send the last clock/3 pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
 			clock = 0;
-			pia.clockPulse();
-			cpu.clockPulse();
+			bus.clockPulse();
+			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.clockPulse();
 			// End of scan line
 			// Handle Paddles capacitor charging
 			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();	// Only if paddles are connected (position != -1)
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
-			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.clockPulse();
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
 			audioOutput.sendSamplesFrameToMonitor();
-			// If needed, synch with audio output after each frame
+			// If needed, synch with audio and video output after each frame
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
-			// If needed, synch with video output
 			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();
 		}
 	}
@@ -664,8 +659,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		debugLevel = level > 4 ? 0 : level;
 		debug = debugLevel != 0;
 		videoOutput.showOSD(debug ? "Debug Level " + debugLevel : "Debug OFF", true);
-		cpu.debug = debug;
-		pia.debug = debug;
+		bus.cpu.debug = debug;
+		bus.pia.debug = debug;
 		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
 		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
 		if (debug)
@@ -761,7 +756,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		
 		if (reg == 0x00) { VSYNC  = i; observableChange(); vSyncOn = (i & 0x02) != 0; return; }
 		if (reg == 0x01) { VBLANK = i; vBlankSet(i); return; }
-		if (reg == 0x02) { WSYNC  = i; cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
+		if (reg == 0x02) { WSYNC  = i; bus.cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
 		if (reg == 0x03) { RSYNC  = i; /* clock = 0; */ return; }
 		if (reg == 0x04) { NUSIZ0 = i; player0SetShape(i); return; }
 		if (reg == 0x05) { NUSIZ1 = i; player1SetShape(i); return; }
@@ -848,7 +843,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			case FRAME:
 				debugPauseMoreFrames++; return;
 			case TRACE:
-				cpu.trace = !cpu.trace; return;
+				bus.cpu.trace = !bus.cpu.trace; return;
 		}
 	}
 
@@ -1096,12 +1091,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	// Variables ----------------------------------------------
 	
 	private final VideoGenerator videoOutput;
-	private final AudioGenerator audioOutput;
+	private final AudioMonoGenerator audioOutput;
 	
 	private int clock = 0;
 
-	private final M6502 cpu;
-	private final PIA pia;
+	private BUS bus;
 
 	private boolean powerOn = false;
 	private final int debugPixels[] = new int[LINE_WIDTH];
@@ -1452,6 +1446,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 		public static final long serialVersionUID = 2L;
 	}
+
 
 }
 

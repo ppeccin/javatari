@@ -89,7 +89,7 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public void connectBus(BUS16Bits bus) {
-		this.memory = bus;
+		this.bus = bus;
 	}
 	
 	public void reset() {
@@ -114,7 +114,7 @@ public final class M6502 implements ClockDriven {
 			if (!RDY) return;						// CPU is halted
 		if (--cyclesToExecute >= 0) return;			// CPU is still "executing" remaining instruction cycles
 		if (trace) showTrace();
-		instructionToExecute = instructions[toUnsignedByte(memory.readByte(PC++))];		// Reads the instruction to be executed
+		instructionToExecute = instructions[toUnsignedByte(bus.readByte(PC++))];		// Reads the instruction to be executed
 		cyclesToExecute = instructionToExecute.fetch() - 1;				// One cycle was just executed already!
 	}
 
@@ -129,6 +129,7 @@ public final class M6502 implements ClockDriven {
 	}
 	
 	public void powerOff() {
+		// Nothing
 	}
 
 	public char fetchImmediateAddress() {
@@ -136,21 +137,21 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public char fetchRelativeAddress() {
-		char res = (char) (memory.readByte(PC++) + PC);  // PC should be get AFTER the increment and be added to the offset that was read
+		char res = (char) (bus.readByte(PC++) + PC);  // PC should be get AFTER the increment and be added to the offset that was read
 		pageCrossed = (res & 0xff00) != (PC & 0xff00);
 		return res;		
 	}
 
 	public char fetchZeroPageAddress() {
-		return (char) toUnsignedByte((memory.readByte(PC++)));
+		return (char) toUnsignedByte((bus.readByte(PC++)));
 	}
 
 	public char fetchZeroPageXAddress() {
-		return (char) toUnsignedByte(memory.readByte(PC++) + X);		// Sum should wrap the byte and always be in range 0 - ff
+		return (char) toUnsignedByte(bus.readByte(PC++) + X);		// Sum should wrap the byte and always be in range 0 - ff
 	}
 
 	public int fetchZeroPageYAddress() {
-		return (char) toUnsignedByte(memory.readByte(PC++) + Y);		// Sum should wrap the byte and always be in range 0 - ff
+		return (char) toUnsignedByte(bus.readByte(PC++) + Y);		// Sum should wrap the byte and always be in range 0 - ff
 	}
 	
 	public char fetchAbsoluteAddress() {
@@ -187,23 +188,23 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public char memoryReadWord(int address) {
-		return (char) (toUnsignedByte(memory.readByte(address)) + (toUnsignedByte(memory.readByte(address + 1)) << 8));		// Address + 1 may wrap, LSB first
+		return (char) (toUnsignedByte(bus.readByte(address)) + (toUnsignedByte(bus.readByte(address + 1)) << 8));		// Address + 1 may wrap, LSB first
 	}
 
 	public char memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
 		if ((address & 0xff) == 0xff)		
-			return (char) (toUnsignedByte(memory.readByte(address)) + (toUnsignedByte(memory.readByte(address & 0xff00)) << 8));	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
+			return (char) (toUnsignedByte(bus.readByte(address)) + (toUnsignedByte(bus.readByte(address & 0xff00)) << 8));	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
 		else
 			return memoryReadWord(address);
 	}
 
 	public void pushByte(byte b) {
 		// if ((SP & 0xff) < 0x80) showDebug(String.format("PUSH: %02x", b));		// Pushing into TIA area!!!
-		memory.writeByte(STACK_PAGE + toUunsignedByte(SP--), b);
+		bus.writeByte(STACK_PAGE + toUunsignedByte(SP--), b);
 	}
 
 	public byte pullByte() {
-		return memory.readByte(STACK_PAGE + toUunsignedByte(++SP));
+		return bus.readByte(STACK_PAGE + toUunsignedByte(++SP));
 	}
 	
 	public void pushWord(char w) {
@@ -243,7 +244,7 @@ public final class M6502 implements ClockDriven {
 	public String printMemory(int fromAddress, int count) {
 		String str = "";
 		for(int i = 0; i < count; i++)
-			str = str + String.format("%02x ", memory.readByte(fromAddress + i));
+			str = str + String.format("%02x ", bus.readByte(fromAddress + i));
 		return str;
 	}
 
@@ -299,7 +300,7 @@ public final class M6502 implements ClockDriven {
 	public char PC;
 	public boolean CARRY, ZERO, OVERFLOW, NEGATIVE, DECIMAL_MODE, INTERRUPT_DISABLE, BREAK_COMMAND;
 	public boolean RDY;		// RDY pin, used to halt the processor
-	public BUS16Bits memory;
+	public BUS16Bits bus;
 
 
 	// Auxiliary flags and variables for internal, debugging and instructions use

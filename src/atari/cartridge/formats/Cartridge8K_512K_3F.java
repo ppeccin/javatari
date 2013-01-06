@@ -9,7 +9,7 @@ import atari.cartridge.CartridgeFormatOption;
 /**
  * Implements the 8K-512K "Enhanced 3F" Tigervision format
  */
-public class Cartridge8K_512K_3F extends CartridgeBanked {
+public class Cartridge8K_512K_3F extends CartridgeBankedByBusMonitoring {
 
 	protected Cartridge8K_512K_3F(byte[] content, String contentName, CartridgeFormat format) {
 		super(content, contentName, format);
@@ -27,6 +27,11 @@ public class Cartridge8K_512K_3F extends CartridgeBanked {
 	}
 
 	@Override
+	public void monitorByteRead(int address, byte data) {
+		// Nothing
+	}
+
+	@Override
 	public void monitorByteWritten(int address, byte data) {
 		// Perform bank switching as needed
 		if (address <= 0x003f) {
@@ -37,11 +42,9 @@ public class Cartridge8K_512K_3F extends CartridgeBanked {
 	}
 
 	@Override
-	protected void performBankSwitch() {
-		// Bank switching is not done within masked address range
-		// Its done directly via bus monitoring
+	protected void performBankSwitchOnMonitoredAccess(int address) {
+		// Bank switching is done only on monitored writes
 	}
-	
 
 	protected final int selectableSliceMaxBank; 
 	protected final int fixedSliceAddressOffset;		// This slice is fixed at the last bank 

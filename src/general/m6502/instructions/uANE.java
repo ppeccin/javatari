@@ -2,10 +2,10 @@
 
 package general.m6502.instructions;
 
+import general.m6502.Instruction;
 import general.m6502.M6502;
-import general.m6502.UndocumentedInstruction;
 
-public final class uANE extends UndocumentedInstruction {
+public final class uANE extends Instruction {
 
 	public uANE(M6502 cpu) {
 		super(cpu);
@@ -18,7 +18,7 @@ public final class uANE extends UndocumentedInstruction {
 
 	@Override
 	public void execute() {
-		cpu.memory.readByte(ea);
+		cpu.bus.readByte(ea);
 		// Exact operation unknown. Lets do nothing!
 		cpu.debug(">>> Undocumented opcode ANE (XAA)");
 	}
