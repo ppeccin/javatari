@@ -113,7 +113,9 @@ public class Console {
 	}
 
 	protected void cartridge(Cartridge cartridge) {
+		controlsSocket.removeForwardedInput(cartridge());
 		bus.cartridge(cartridge);
+		if (cartridge != null) controlsSocket.addForwardedInput(cartridge);
 	}
 
 	protected void videoStandardAuto() {

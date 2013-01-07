@@ -89,7 +89,7 @@ public final class Cartridge8K_512K_3E extends Cartridge8K_512K_3F {
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length % BANK_SIZE != 0 || content.length < MIN_SIZE || content.length > MAX_SIZE) return null;
-			return new CartridgeFormatOptionHinted(111, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(111, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

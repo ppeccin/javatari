@@ -10,11 +10,6 @@ import atari.controls.ConsoleControls.Control;
 
 public class ConsoleControlsSocket implements ConsoleControlsInput {
 
-	public ConsoleControlsSocket() {
-		forwardedInputs = new ArrayList<ConsoleControlsInput>();
-		redefinitonListener = new ArrayList<ConsoleControlsRedefinitionListener>();
-	}
-	
 	@Override
 	public void controlStateChanged(Control control, boolean state) {
 		for (ConsoleControlsInput input : forwardedInputs)
@@ -34,9 +29,14 @@ public class ConsoleControlsSocket implements ConsoleControlsInput {
 	}
 
 	public void addForwardedInput(ConsoleControlsInput input) {
+		forwardedInputs = new ArrayList<ConsoleControlsInput>(forwardedInputs);	// To prevent comodification
 		forwardedInputs.add(input);
 	}
 	
+	public void removeForwardedInput(ConsoleControlsInput input) {
+		forwardedInputs = new ArrayList<ConsoleControlsInput>(forwardedInputs);	// To prevent comodification
+		forwardedInputs.remove(input);
+	}
 	public void addRedefinitionListener(ConsoleControlsRedefinitionListener listener) {
 		redefinitonListener.add(listener);
 	}
@@ -47,7 +47,7 @@ public class ConsoleControlsSocket implements ConsoleControlsInput {
 	}
 	
 	
-	private List<ConsoleControlsInput> forwardedInputs;
-	private List<ConsoleControlsRedefinitionListener> redefinitonListener;
+	private List<ConsoleControlsInput> forwardedInputs = new ArrayList<ConsoleControlsInput>();
+	private List<ConsoleControlsRedefinitionListener> redefinitonListener = new ArrayList<ConsoleControlsRedefinitionListener>();
 
 }

@@ -84,7 +84,7 @@ public final class Cartridge16K_E7 extends CartridgeBanked {
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(102, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(102, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

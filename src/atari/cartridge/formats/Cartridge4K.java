@@ -31,7 +31,7 @@ public final class Cartridge4K extends Cartridge {
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length < MIN_SIZE || content.length > MAX_SIZE || MAX_SIZE % content.length != 0) return null;
-			return new CartridgeFormatOptionHinted(101, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(101, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

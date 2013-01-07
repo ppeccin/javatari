@@ -58,7 +58,7 @@ public final class Cartridge2K_CV extends Cartridge {
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE && content.length != SIZE * 2) return null;	// Also accepts 4K ROMs
-			return new CartridgeFormatOptionHinted(102, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(102, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

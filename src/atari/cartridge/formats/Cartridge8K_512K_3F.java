@@ -58,12 +58,12 @@ public class Cartridge8K_512K_3F extends CartridgeBankedByBusMonitoring {
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("3F", "8K-512K Tigervision") {
 		@Override
 		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_512K_3F(content, contentName, FORMAT);
+			return new Cartridge8K_512K_3F(content, contentName, this);
 		}
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length % BANK_SIZE != 0 || content.length < MIN_SIZE || content.length > MAX_SIZE) return null;
-			return new CartridgeFormatOptionHinted(112, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(112, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

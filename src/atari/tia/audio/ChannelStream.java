@@ -4,12 +4,12 @@ package atari.tia.audio;
 
 public final class ChannelStream {
 
-	public float nextSample() {
+	public float nextSample() {				// Range 0 - 1
 		if (--dividerCountdown <= 0) {
 			dividerCountdown = divider;
 			currentSample = nextSampleForControl();
 		}
-		return currentSample == 1 ? volume : -volume;
+		return currentSample == 1 ? volume : 0;
 	}
 	
 	public void setVolume(int newVolume) {
@@ -108,13 +108,13 @@ public final class ChannelStream {
 	}
 
 	private int currentTone31() {
-		return tone31Stream[tone31Count];
+		return TONE31_STREAM[tone31Count];
 	}
 
 	private int nextTone31() {
 		if (++tone31Count == 31)
 			tone31Count = 0;
-		return tone31Stream[tone31Count];
+		return TONE31_STREAM[tone31Count];
 	}
 
 	private float volume = 0;					// 0 - 1
@@ -122,7 +122,7 @@ public final class ChannelStream {
 	private int divider = 1;					// Changes to dividers will only be reflected at the next countdown cycle
 	private int dividerCountdown = 1;
 	
-	private int currentSample = 1;
+	private int currentSample = 0;
 	
 	private int poly4 = 0x0f;
 	private int poly5 = 0x1f;
@@ -134,7 +134,7 @@ public final class ChannelStream {
 	private int tone6Countdown = 3;
 
 	private int tone31Count = 30;
-	private static final int[] tone31Stream = new int[] { 
+	private static final int[] TONE31_STREAM = new int[] { 
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	};
 	

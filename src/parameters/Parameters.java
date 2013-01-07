@@ -149,8 +149,6 @@ public final class Parameters {
 
 			val = props.getProperty("TIA_AUDIO_SAMPLE_RATE"); if (val != null) TIA_AUDIO_SAMPLE_RATE = Integer.valueOf(val);
 			val = props.getProperty("TIA_AUDIO_MAX_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(val);
-			val = props.getProperty("TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = Float.valueOf(val);
-			val = props.getProperty("TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE = Float.valueOf(val);
 
 			val = props.getProperty("RAM_FRY_ZERO_BITS"); if (val != null) RAM_FRY_ZERO_BITS = Integer.valueOf(val);
 			val = props.getProperty("RAM_FRY_ONE_BITS"); if (val != null) RAM_FRY_ONE_BITS = Integer.valueOf(val);
@@ -205,7 +203,7 @@ public final class Parameters {
 	}
 
 	// Main Emulator Version
-	public static final String VERSION = "version 2.50";
+	public static final String VERSION = "version 3.00";
 
 	
 	// Cartridge URL to load passed as argument
@@ -219,8 +217,6 @@ public final class Parameters {
 
 	public static int 		TIA_AUDIO_SAMPLE_RATE = 31430;					// A little less than TIA Scanline frequency * 2 = 31440
 	public static float 	TIA_AUDIO_MAX_AMPLITUDE = 0.5f;
-	public static float 	TIA_AUDIO_MAX_MONO_CHANNEL_AMPLITUDE = 0.5f;
-	public static float 	TIA_AUDIO_MAX_STEREO_CHANNEL_AMPLITUDE = 0.9f;
 
 	public static double	VIDEO_NTSC_FPS = 60;
 	public static double	VIDEO_PAL_FPS = 50.384615;

@@ -85,6 +85,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
 				bus.clockPulse();
 			}
+			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.clockPulse();
 			// 67
 			// Display period
 			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
@@ -98,8 +100,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
 				if (clock % 3 == 0) {
 					bus.clockPulse();
-					// First Audio Sample. 2 samples per scan line ~ 31440 KHz
-					if (clock == 114) audioOutput.clockPulse();
+					// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
+					if (clock == 180) audioOutput.clockPulse();
 				}
 				objectsTriggerScanCounters();
 				if (!repeatLastLine) setPixelValue();
@@ -108,8 +110,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Send the last clock/3 pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
 			clock = 0;
 			bus.clockPulse();
-			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.clockPulse();
 			// End of scan line
 			// Handle Paddles capacitor charging
 			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();	// Only if paddles are connected (position != -1)
@@ -754,51 +754,51 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		final int i = b & 0xff;
 		final int reg = address & WRITE_ADDRESS_MASK;
 		
-		if (reg == 0x00) { VSYNC  = i; observableChange(); vSyncOn = (i & 0x02) != 0; return; }
-		if (reg == 0x01) { VBLANK = i; vBlankSet(i); return; }
-		if (reg == 0x02) { WSYNC  = i; bus.cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
-		if (reg == 0x03) { RSYNC  = i; /* clock = 0; */ return; }
-		if (reg == 0x04) { NUSIZ0 = i; player0SetShape(i); return; }
-		if (reg == 0x05) { NUSIZ1 = i; player1SetShape(i); return; }
-		if (reg == 0x06) { COLUP0 = i; observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return; }
-		if (reg == 0x07) { COLUP1 = i; observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return; }
-		if (reg == 0x08) { COLUPF = i; observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return; }
-		if (reg == 0x09) { COLUBK = i; observableChange(); if (!debug) playfieldBackground = palette[i]; return; }
-		if (reg == 0x0A) { CTRLPF = i; playfieldAndBallSetShape(i); return; }
-		if (reg == 0x0B) { REFP0  = i; observableChange(); player0Reflected = (i & 0x08) != 0; return; }
-		if (reg == 0x0C) { REFP1  = i; observableChange(); player1Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x00) { /*VSYNC  = i;*/ observableChange(); vSyncOn = (i & 0x02) != 0; return; }
+		if (reg == 0x01) { /*VBLANK = i;*/ vBlankSet(i); return; }
+		if (reg == 0x02) { /*WSYNC  = i;*/ bus.cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
+		if (reg == 0x03) { /*RSYNC  = i;*/ /* clock = 0; */ return; }
+		if (reg == 0x04) { /*NUSIZ0 = i;*/ player0SetShape(i); return; }
+		if (reg == 0x05) { /*NUSIZ1 = i;*/ player1SetShape(i); return; }
+		if (reg == 0x06) { /*COLUP0 = i;*/ observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return; }
+		if (reg == 0x07) { /*COLUP1 = i;*/ observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return; }
+		if (reg == 0x08) { /*COLUPF = i;*/ observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return; }
+		if (reg == 0x09) { /*COLUBK = i;*/ observableChange(); if (!debug) playfieldBackground = palette[i]; return; }
+		if (reg == 0x0A) { /*CTRLPF = i;*/ playfieldAndBallSetShape(i); return; }
+		if (reg == 0x0B) { /*REFP0  = i;*/ observableChange(); player0Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x0C) { /*REFP1  = i;*/ observableChange(); player1Reflected = (i & 0x08) != 0; return; }
 		if (reg == 0x0D) { if (PF0 != i || playfieldDelayedChangePart == 0) playfieldDelaySpriteChange(0, i); return; }
 		if (reg == 0x0E) { if (PF1 != i || playfieldDelayedChangePart == 1) playfieldDelaySpriteChange(1, i); return; }
 		if (reg == 0x0F) { if (PF2 != i || playfieldDelayedChangePart == 2) playfieldDelaySpriteChange(2, i); return; }
-		if (reg == 0x10) { RESP0  = i; hitRESP0(); return; }
-		if (reg == 0x11) { RESP1  = i; hitRESP1(); return; }
-		if (reg == 0x12) { RESM0  = i; hitRESM0(); return; }
-		if (reg == 0x13) { RESM1  = i; hitRESM1(); return; }
-		if (reg == 0x14) { RESBL  = i; hitRESBL(); return; }
+		if (reg == 0x10) { /*RESP0  = i;*/ hitRESP0(); return; }
+		if (reg == 0x11) { /*RESP1  = i;*/ hitRESP1(); return; }
+		if (reg == 0x12) { /*RESM0  = i;*/ hitRESM0(); return; }
+		if (reg == 0x13) { /*RESM1  = i;*/ hitRESM1(); return; }
+		if (reg == 0x14) { /*RESBL  = i;*/ hitRESBL(); return; }
 		if (reg == 0x15) { AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return; }
 		if (reg == 0x16) { AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return; }
 		if (reg == 0x17) { AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
 		if (reg == 0x18) { AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
 		if (reg == 0x19) { AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
 		if (reg == 0x1A) { AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
-		if (reg == 0x1B) { GRP0   = i; playerDelaySpriteChange(0, i); return; }
-		if (reg == 0x1C) { GRP1   = i; playerDelaySpriteChange(1, i); return; }
-		if (reg == 0x1D) { ENAM0  = i; observableChange(); missile0Enabled = (i & 0x02) != 0; return; }
-		if (reg == 0x1E) { ENAM1  = i; observableChange(); missile1Enabled = (i & 0x02) != 0; return; }
-		if (reg == 0x1F) { ENABL  = i; ballSetGraphic(i); return; }
+		if (reg == 0x1B) { /*GRP0   = i;*/ playerDelaySpriteChange(0, i); return; }
+		if (reg == 0x1C) { /*GRP1   = i;*/ playerDelaySpriteChange(1, i); return; }
+		if (reg == 0x1D) { /*ENAM0  = i;*/ observableChange(); missile0Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1E) { /*ENAM1  = i;*/ observableChange(); missile1Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1F) { /*ENABL  = i;*/ ballSetGraphic(i); return; }
 		if (reg == 0x20) { HMP0   = (b >> 4); return; }
 		if (reg == 0x21) { HMP1   = (b >> 4); return; }
 		if (reg == 0x22) { HMM0   = (b >> 4); return; }
 		if (reg == 0x23) { HMM1   = (b >> 4); return; }
 		if (reg == 0x24) { HMBL   = (b >> 4); return; }
-		if (reg == 0x25) { VDELP0 = i; observableChange(); player0VerticalDelay = (i & 0x01) != 0; return; }
-		if (reg == 0x26) { VDELP1 = i; observableChange(); player1VerticalDelay = (i & 0x01) != 0; return; }
-		if (reg == 0x27) { VDELBL = i; observableChange(); ballVerticalDelay = (i & 0x01) != 0; return; }
-		if (reg == 0x28) { RESMP0 = i; missile0SetResetToPlayer(i); return; }
-		if (reg == 0x29) { RESMP1 = i; missile1SetResetToPlayer(i); return; }
-		if (reg == 0x2A) { HMOVE  = i; hitHMOVE();	return; }						   	
-		if (reg == 0x2B) { HMCLR  = i; HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return; }
-		if (reg == 0x2C) { CXCLR  = i; observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return; }
+		if (reg == 0x25) { /*VDELP0 = i;*/ observableChange(); player0VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x26) { /*VDELP1 = i;*/ observableChange(); player1VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x27) { /*VDELBL = i;*/ observableChange(); ballVerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x28) { /*RESMP0 = i;*/ missile0SetResetToPlayer(i); return; }
+		if (reg == 0x29) { /*RESMP1 = i;*/ missile1SetResetToPlayer(i); return; }
+		if (reg == 0x2A) { /*HMOVE  = i;*/ hitHMOVE();	return; }						   	
+		if (reg == 0x2B) { /*HMCLR  = i;*/ HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return; }
+		if (reg == 0x2C) { /*CXCLR  = i;*/ observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return; }
 
 		// debugInfo(String.format("Invalid TIA write register address: %04x value %d", address, b)); 
 	}
@@ -1229,51 +1229,51 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	// Write registers -------------------------------------------
 
-	private int VSYNC;		// ......1.  vertical sync set-clear
-	private int VBLANK;		// 11....1.  vertical blank set-clear
-	private int WSYNC;		// <strobe>  wait for leading edge of horizontal blank
-	private int RSYNC;		// <strobe>  reset horizontal sync counter
-	private int NUSIZ0;		// ..111111  number-size player-missile 0
-	private int NUSIZ1;		// ..111111  number-size player-missile 1
-	private int COLUP0;		// 1111111.  color-lum player 0 and missile 0
-	private int COLUP1;		// 1111111.  color-lum player 1 and missile 1
-	private int COLUPF;		// 1111111.  color-lum playfield and ball
-	private int COLUBK;		// 1111111.  color-lum background
-	private int CTRLPF;		// ..11.111  control playfield ball size & collisions
-	private int REFP0;		// ....1...  reflect player 0
-	private int REFP1;		// ....1...  reflect player 1
+//	private int VSYNC;		// ......1.  vertical sync set-clear
+//	private int VBLANK;		// 11....1.  vertical blank set-clear
+//	private int WSYNC;		// <strobe>  wait for leading edge of horizontal blank
+//	private int RSYNC;		// <strobe>  reset horizontal sync counter
+//	private int NUSIZ0;		// ..111111  number-size player-missile 0
+//	private int NUSIZ1;		// ..111111  number-size player-missile 1
+//	private int COLUP0;		// 1111111.  color-lum player 0 and missile 0
+//	private int COLUP1;		// 1111111.  color-lum player 1 and missile 1
+//	private int COLUPF;		// 1111111.  color-lum playfield and ball
+//	private int COLUBK;		// 1111111.  color-lum background
+//	private int CTRLPF;		// ..11.111  control playfield ball size & collisions
+//	private int REFP0;		// ....1...  reflect player 0
+//	private int REFP1;		// ....1...  reflect player 1
 	private int PF0;		// 1111....  playfield register byte 0
 	private int PF1;		// 11111111  playfield register byte 1
 	private int PF2;		// 11111111  playfield register byte 2
-	private int RESP0;		// <strobe>  reset player 0
-	private int RESP1;		// <strobe>  reset player 1
-	private int RESM0;		// <strobe>  reset missile 0
-	private int RESM1;		// <strobe>  reset missile 1
-	private int RESBL;		// <strobe>  reset ball
+//	private int RESP0;		// <strobe>  reset player 0
+//	private int RESP1;		// <strobe>  reset player 1
+//	private int RESM0;		// <strobe>  reset missile 0
+//	private int RESM1;		// <strobe>  reset missile 1
+//	private int RESBL;		// <strobe>  reset ball
 	private int AUDC0;		// ....1111  audio control 0
 	private int AUDC1;		// ....1111  audio control 1
 	private int AUDF0;		// ...11111  audio frequency 0
 	private int AUDF1;		// ...11111  audio frequency 1
 	private int AUDV0;		// ....1111  audio volume 0
 	private int AUDV1;		// ....1111  audio volume 1
-	private int GRP0;		// 11111111  graphics player 0
-	private int GRP1;		// 11111111  graphics player 1
-	private int ENAM0;		// ......1.  graphics (enable) missile 0
-	private int ENAM1;		// ......1.  graphics (enable) missile 1
-	private int ENABL;		// ......1.  graphics (enable) ball
+//	private int GRP0;		// 11111111  graphics player 0
+//	private int GRP1;		// 11111111  graphics player 1
+//	private int ENAM0;		// ......1.  graphics (enable) missile 0
+//	private int ENAM1;		// ......1.  graphics (enable) missile 1
+//	private int ENABL;		// ......1.  graphics (enable) ball
 	private int HMP0;		// 1111....  horizontal motion player 0
 	private int HMP1;		// 1111....  horizontal motion player 1
 	private int HMM0;		// 1111....  horizontal motion missile 0
 	private int HMM1;		// 1111....  horizontal motion missile 1
 	private int HMBL;		// 1111....  horizontal motion ball
-	private int VDELP0;		// .......1  vertical delay player 0
-	private int VDELP1;		// .......1  vertical delay player 1
-	private int VDELBL;		// .......1  vertical delay ball
-	private int RESMP0;		// ......1.  reset missile 0 to player 0
-	private int RESMP1;		// ......1.  reset missile 1 to player 1
-	private int HMOVE;		// <strobe>  apply horizontal motion
-	private int HMCLR;		// <strobe>  clear horizontal motion registers
-	private int CXCLR;		// <strobe>  clear collision latches
+//	private int VDELP0;		// .......1  vertical delay player 0
+//	private int VDELP1;		// .......1  vertical delay player 1
+//	private int VDELBL;		// .......1  vertical delay ball
+//	private int RESMP0;		// ......1.  reset missile 0 to player 0
+//	private int RESMP1;		// ......1.  reset missile 1 to player 1
+//	private int HMOVE;		// <strobe>  apply horizontal motion
+//	private int HMCLR;		// <strobe>  clear horizontal motion registers
+//	private int CXCLR;		// <strobe>  clear collision latches
 
 
 	// Constants --------------------------------------------------

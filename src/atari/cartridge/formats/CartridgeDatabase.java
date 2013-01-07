@@ -80,6 +80,7 @@ public class CartridgeDatabase {
 			Cartridge8K_UA.FORMAT,
 			Cartridge8K_0840.FORMAT,
 			Cartridge10K_DPC.FORMAT,
+			CartridgePitfall2EnhancedDPCAudio.FORMAT
 		});
 
 	
@@ -118,6 +119,9 @@ public class CartridgeDatabase {
 		}),
 		new NameHint(Cartridge8K_512K_3E.FORMAT, new String[] {
 				".*BOULDER.*DASH.*", 		"BLDRDASH.*"
+		}),
+		new NameHint(CartridgePitfall2EnhancedDPCAudio.FORMAT, new String[] {
+				".*PITFALL.*(2|II).*"
 		})
 	};
 

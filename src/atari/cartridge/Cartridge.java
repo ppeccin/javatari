@@ -7,8 +7,13 @@ import general.board.BUS16Bits;
 import general.board.ClockDriven;
 
 import java.io.Serializable;
+import java.util.Map;
 
-public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Serializable {
+import atari.board.BUS;
+import atari.controls.ConsoleControls.Control;
+import atari.controls.ConsoleControlsInput;
+
+public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Serializable, ConsoleControlsInput {
 
 	protected Cartridge(byte[] content, String contentName, CartridgeFormat format) {
 		this.bytes = content;
@@ -26,6 +31,10 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 
 	public CartridgeFormat format() {
 		return format;
+	}
+
+	public void connectBus(BUS bus) {
+		this.bus = bus;
 	}
 
 	@Override
@@ -79,6 +88,22 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 		return null;
 	}
 
+	@Override
+	public void controlStateChanged(Control control, boolean state) {
+		// Nothing
+	}
+
+	@Override
+	public void controlStateChanged(Control control, int position) {
+		// Nothing
+	}
+
+	@Override
+	public void controlsStateReport(Map<Control, Boolean> report) {
+		// Nothing
+	}
+
+	protected transient BUS bus;
 
 	protected byte[] bytes;
 	private final String contentName;

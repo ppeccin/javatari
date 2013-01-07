@@ -470,14 +470,16 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 				return;
 			case KeyEvent.ALT_DOWN_MASK:
 				switch (code) {
-					case KEY_FULL_SCR: fullScreen(!fullScreen); return;
-					case KEY_HELP: if (!fullScreen && consolePanelWindow != null) consolePanelWindow.toggle(); return;
+					case KEY_FULL_SCR: 
+						fullScreen(!fullScreen); return;
+					case KEY_CONSOLE_PANEL: 
+						if (!fullScreen && consolePanelWindow != null) consolePanelWindow.toggle(); return;
 				}
 			}
 		}
-		static final int KEY_EXIT     = KeyEvent.VK_ESCAPE;
-		static final int KEY_HELP     = KeyEvent.VK_H;
-		static final int KEY_FULL_SCR = KeyEvent.VK_ENTER;
+		static final int KEY_EXIT          = KeyEvent.VK_ESCAPE;
+		static final int KEY_CONSOLE_PANEL = KeyEvent.VK_H;
+		static final int KEY_FULL_SCR      = KeyEvent.VK_ENTER;
 	}
 
 	

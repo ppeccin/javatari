@@ -221,7 +221,6 @@ public final class AWTConsoleControls implements ConsoleControls, KeyListener {
 		withALTCodeMap.put(KEY_DEBUG,            Control.DEBUG);
 		withALTCodeMap.put(KEY_NO_COLLISIONS,    Control.NO_COLLISIONS);
 		withALTCodeMap.put(KEY_VIDEO_STANDARD,   Control.VIDEO_STANDARD);
-		withALTCodeMap.put(KEY_CARTRIDGE_FORMAT, Control.CARTRIDGE_FORMAT);
 	
 		withCTRLCodeMap.put(KEY_STATE_0,  Control.SAVE_STATE_0); 
 		withCTRLCodeMap.put(KEY_STATE_1,  Control.SAVE_STATE_1); 
@@ -250,7 +249,11 @@ public final class AWTConsoleControls implements ConsoleControls, KeyListener {
 		withALTCodeMap.put(KEY_STATE_10, Control.LOAD_STATE_10); 
 		withALTCodeMap.put(KEY_STATE_11, Control.LOAD_STATE_11); 
 		withALTCodeMap.put(KEY_STATE_12, Control.LOAD_STATE_12); 
-	}
+
+		withALTCodeMap.put(KEY_CARTRIDGE_FORMAT,    Control.CARTRIDGE_FORMAT);
+		withALTCodeMap.put(KEY_CARTRIDGE_CLOCK_DEC, Control.CARTRIDGE_CLOCK_DEC);
+		withALTCodeMap.put(KEY_CARTRIDGE_CLOCK_INC, Control.CARTRIDGE_CLOCK_INC);
+}
 
 	public void initJoystickKeys() {
 		joysticksCodeMap.clear();
@@ -321,7 +324,6 @@ public final class AWTConsoleControls implements ConsoleControls, KeyListener {
 	private static final int KEY_DEBUG            = KeyEvent.VK_D;
 	private static final int KEY_NO_COLLISIONS    = KeyEvent.VK_C;
 	private static final int KEY_VIDEO_STANDARD   = KeyEvent.VK_V;
-	private static final int KEY_CARTRIDGE_FORMAT = KeyEvent.VK_B;
 	
 	private static final int KEY_STATE_0        = KeyEvent.VK_QUOTE;
 	private static final int KEY_STATE_1        = KeyEvent.VK_1;
@@ -339,6 +341,11 @@ public final class AWTConsoleControls implements ConsoleControls, KeyListener {
 
 	private static final int KEY_LOCAL_P1_MODE     = KeyEvent.VK_J;
 	private static final int KEY_LOCAL_PADDLE_MODE = KeyEvent.VK_L;
+	
+	private static final int KEY_CARTRIDGE_FORMAT    = KeyEvent.VK_B;
+	private static final int KEY_CARTRIDGE_CLOCK_DEC = KeyEvent.VK_END;
+	private static final int KEY_CARTRIDGE_CLOCK_INC = KeyEvent.VK_HOME;
+
 	
 	private static final Control[] playerDigitalControls = new Control[] {
 		Control.JOY0_UP, Control.JOY0_DOWN, Control.JOY0_LEFT, Control.JOY0_RIGHT, Control.JOY0_BUTTON,

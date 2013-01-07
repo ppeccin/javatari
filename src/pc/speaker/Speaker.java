@@ -37,6 +37,7 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 
 	public void powerOff(){
 		if (dataLine == null) return;
+		dataLine.drain();
 		dataLine.stop();
 		clock.pause();
 	}

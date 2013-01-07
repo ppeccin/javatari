@@ -11,8 +11,8 @@ import atari.cartridge.CartridgeFormatOption;
  */
 public class Cartridge8K_0840 extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge8K_0840(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format);
+	protected Cartridge8K_0840(byte[] content, String contentName) {
+		super(content, contentName, FORMAT);
 	}
 
 	@Override
@@ -32,12 +32,12 @@ public class Cartridge8K_0840 extends CartridgeBankedByBusMonitoring {
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("0840", "8K Econobanking") {
 		@Override
 		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_0840(content, contentName, FORMAT);
+			return new Cartridge8K_0840(content, contentName);
 		}
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(116, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(116, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

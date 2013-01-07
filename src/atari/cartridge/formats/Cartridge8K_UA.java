@@ -11,8 +11,8 @@ import atari.cartridge.CartridgeFormatOption;
  */
 public class Cartridge8K_UA extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge8K_UA(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format);
+	protected Cartridge8K_UA(byte[] content, String contentName) {
+		super(content, contentName, FORMAT);
 	}
 
 	@Override
@@ -31,12 +31,12 @@ public class Cartridge8K_UA extends CartridgeBankedByBusMonitoring {
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("UA", "8K UA Limited") {
 		@Override
 		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_UA(content, contentName, FORMAT);
+			return new Cartridge8K_UA(content, contentName);
 		}
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(115, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(115, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

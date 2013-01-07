@@ -28,7 +28,7 @@ public final class Cartridge24K_28K_FA2 extends CartridgeBankedByMaskedRange {
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE24K && content.length != SIZE28K) return null;
-			return new CartridgeFormatOptionHinted(101, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(101, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};

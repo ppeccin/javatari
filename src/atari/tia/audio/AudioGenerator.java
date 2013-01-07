@@ -44,9 +44,9 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 		samplesPerFrame = (int) Math.round(SAMPLE_RATE / standard.fps);	
 	}
 
-	
 	protected abstract void generateNextSamples(int min);
 
+	
 	protected final ChannelStream channel0 = new ChannelStream(); 
 	protected final ChannelStream channel1 = new ChannelStream(); 
 	protected final byte[] samples = new byte[1024];	// More than enough samples for a frame
@@ -55,6 +55,7 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 
 	private AudioMonitor monitor;
 
+	
 	private static final int SAMPLE_RATE = Parameters.TIA_AUDIO_SAMPLE_RATE;
 
 }

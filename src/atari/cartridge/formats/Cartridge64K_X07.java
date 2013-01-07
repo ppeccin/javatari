@@ -11,8 +11,8 @@ import atari.cartridge.CartridgeFormatOption;
  */
 public class Cartridge64K_X07 extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge64K_X07(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format);
+	protected Cartridge64K_X07(byte[] content, String contentName) {
+		super(content, contentName, FORMAT);
 	}
 
 	@Override
@@ -31,12 +31,12 @@ public class Cartridge64K_X07 extends CartridgeBankedByBusMonitoring {
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("X07", "64K AtariAge") {
 		@Override
 		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge64K_X07(content, contentName, FORMAT);
+			return new Cartridge64K_X07(content, contentName);
 		}
 		@Override
 		public CartridgeFormatOption getOption(byte content[], String contentName) {
 			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(102, FORMAT, contentName);
+			return new CartridgeFormatOptionHinted(102, this, contentName);
 		}
 		private static final long serialVersionUID = 1L;
 	};
