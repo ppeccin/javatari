@@ -103,9 +103,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 					bus.clockPulse();
 					subClock3 = 3;
 				}
-				objectsTriggerScans();
-				if (!repeatLastLine) setPixelValue();
 				objectsClockCounters();
+				if (!repeatLastLine) setPixelValue();
 			}
 			// Send the last clock/3 pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
 			clock = 0;
@@ -222,14 +221,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			if (P1) CXP1FB |= 0x40; 
 		}
 		if (M0) {
-			if (P1) CXM0P |= 0x80;
-			if (P0) CXM0P |= 0x40; 
+			if (P1) CXM0P  |= 0x80;
+			if (P0) CXM0P  |= 0x40; 
 			if (FL) CXM0FB |= 0x80;
 			if (BL) CXM0FB |= 0x40; 
 		}
 		if (M1) {
-			if (P0) CXM1P |= 0x80;
-			if (P1) CXM1P |= 0x40; 
+			if (P0) CXM1P  |= 0x80;
+			if (P1) CXM1P  |= 0x40; 
 			if (FL) CXM1FB |= 0x80;
 			if (BL) CXM1FB |= 0x40; 
 			if (M0) CXPPMM |= 0x40; 
@@ -317,7 +316,23 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		else if	(speed == 0x30) ballScanSpeed = 1;
 	}
 
-	private void objectsTriggerScans() {
+	private void objectsClockCounters() {
+		player0ClockCounter();
+		player1ClockCounter();
+		missile0ClockCounter();
+		missile1ClockCounter();
+		ballClockCounter();
+	}
+
+	private void player0ClockCounter() {
+		if (++player0Counter == 160) player0Counter = 0;
+		if (player0ScanCounter >= 0) {
+			// If missileResetToPlayer is on and the player scan has started the FIRST copy
+			if (player0ScanCounter >= 28 && missile0ResetToPlayer && player0Counter < 12 )	
+				missile0Counter = 156;
+			player0ScanCounter -= player0ScanSpeed;
+		}
+
 		// Player0: Sets the delay countdown to actually start the scan of each copy
 		if (player0Counter == 156) {
 			if (player0RecentResetHit) player0RecentResetHit = false;
@@ -336,6 +351,16 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (player0ScanStartCountdown >= 0)
 			if (--player0ScanStartCountdown < 0)
 				player0ScanCounter = 31;	// 31 = pixel 7 (ScanCounter / 4)
+	}
+
+	private void player1ClockCounter() {
+		if (++player1Counter == 160) player1Counter = 0;
+		if (player1ScanCounter >= 0) {
+			// If missileResetToPlayer is on and the player scan has started the FIRST copy
+			if (player1ScanCounter >= 28 && missile1ResetToPlayer && player1Counter < 12 )	
+				missile1Counter = 156;
+			player1ScanCounter -= player1ScanSpeed;
+		}
 
 		// Player1: Sets the delay countdown to actually start the scan of each copy
 		if (player1Counter == 156) {
@@ -355,6 +380,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (player1ScanStartCountdown >= 0)
 			if (--player1ScanStartCountdown < 0)
 				player1ScanCounter = 31;	// 31 = pixel 7 (ScanCounter / 4)
+	}
+
+	private void missile0ClockCounter() {
+		if (++missile0Counter == 160) missile0Counter = 0;
+		if (missile0ScanCounter >= 0) missile0ScanCounter -= missile0ScanSpeed;
 
 		// Missile0: Does not have delays to start the scan
 		if (missile0Counter == 0) {
@@ -370,6 +400,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		else if (missile0Counter == 64) {
 			if (player0WideCopy) missile0ScanCounter = 7;
 		}
+	}
+
+	private void missile1ClockCounter() {
+		if (++missile1Counter == 160) missile1Counter = 0;
+		if (missile1ScanCounter >= 0) missile1ScanCounter -= missile1ScanSpeed;
 
 		// Missile1: Does not have delays to start the scan
 		if (missile1Counter == 0) {
@@ -385,36 +420,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		else if (missile1Counter == 64) {
 			if (player1WideCopy) missile1ScanCounter = 7;
 		}
+	}
+
+	private void ballClockCounter() {
+		if (++ballCounter == 160) ballCounter = 0;
+		if (ballScanCounter >= 0) ballScanCounter -= ballScanSpeed;
 
 		// The ball does not have copies and does not wait for the next scanline to start even if recently reset
 		if (ballCounter == 0) ballScanCounter = 7;
-	}
-
-	private void objectsClockCounters() {
-		if (++player0Counter == 160) player0Counter = 0;
-		if (player0ScanCounter >= 0) {
-			// If missileResetToPlayer is on and the player scan has started the FIRST copy
-			if (player0ScanCounter >= 28 && missile0ResetToPlayer && player0Counter < 12 )	
-				missile0Counter = 156;
-			player0ScanCounter -= player0ScanSpeed;
-		}
-
-		if (++player1Counter == 160) player1Counter = 0;
-		if (player1ScanCounter >= 0) {
-			// If missileResetToPlayer is on and the player scan has started the FIRST copy
-			if (player1ScanCounter >= 28 && missile1ResetToPlayer && player1Counter < 12 )	
-				missile1Counter = 156;
-			player1ScanCounter -= player1ScanSpeed;
-		}
-
-		if (++missile0Counter == 160) missile0Counter = 0;
-		if (missile0ScanCounter >= 0) missile0ScanCounter -= missile0ScanSpeed;
-				
-		if (++missile1Counter == 160) missile1Counter = 0;
-		if (missile1ScanCounter >= 0) missile1ScanCounter -= missile1ScanSpeed;
-
-		if (++ballCounter == 160) ballCounter = 0;
-		if (ballScanCounter >= 0) ballScanCounter -= ballScanSpeed;
 	}
 
 	private void adjustLineAtEnd() {
@@ -435,7 +448,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	private void observableChange() {
 		lastObservableChangeClock = clock;
-		repeatLastLine = false;	
+		if (repeatLastLine) repeatLastLine = false;	
 	}
 
 	private void playerDelaySpriteChange(int player, int sprite) {
@@ -538,39 +551,54 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (inv) observableChange();
 	}	
 	
-	private void hitRESP0() {										// TODO Is this 158 wrong? Seems to work that way...
+	private void hitRESP0() {
 		observableChange();
-		player0RecentResetHit = player0Counter != 156;
-		player0Counter = clock < HBLANK_DURATION ? 158 : 156; 	
+		player0RecentResetHit = player0Counter != 155;
 		if (debug) debugPixel(DEBUG_P0_RES_COLOR);
+
+		if (clock >= HBLANK_DURATION) player0Counter = 155;					// Normal +4 reset
+		else if (clock > 0 ) player0Counter = hMoveHitBlank ? 156 : 157;	// If during HBLANK, +2 reset or +3 if after HMOVE
+		else player0Counter = 158;											// +1 reset 
 	}
 	
 	private void hitRESP1() {
 		observableChange();
-		player1RecentResetHit = player1Counter != 156;
-		player1Counter = clock < HBLANK_DURATION ? 158 : 156; 
+		player1RecentResetHit = player1Counter != 155;				
 		if (debug) debugPixel(DEBUG_P1_RES_COLOR);
+
+		if (clock >= HBLANK_DURATION) player1Counter = 155;
+		else if (clock > 0 ) player1Counter = hMoveHitBlank ? 156 : 157;
+		else player1Counter = 158; 
 	}
 	
 	private void hitRESM0() {
 		observableChange();
-		missile0Counter = clock < HBLANK_DURATION ? 158 : 156; 
-		missile0RecentResetHit = true;
+		missile0RecentResetHit = true;								
 		if (debug) debugPixel(DEBUG_M0_COLOR);
+
+		if (clock >= HBLANK_DURATION) missile0Counter = 155;
+		else if (clock > 0 ) missile0Counter = hMoveHitBlank ? 156 : 157;
+		else missile0Counter = 158; 
 	}
 	
 	private void hitRESM1() {
 		observableChange();
-		missile1Counter = clock < HBLANK_DURATION ? 158 : 156; 
 		missile1RecentResetHit = true;
 		if (debug) debugPixel(DEBUG_M1_COLOR);
+
+		if (clock >= HBLANK_DURATION) missile1Counter = 155;
+		else if (clock > 0 ) missile1Counter = hMoveHitBlank ? 156 : 157;
+		else missile1Counter = 158; 
 	}
 	
 	private void hitRESBL() {
 		observableChange();
-		ballCounter = clock < HBLANK_DURATION ? 158 : 156;				 
 		if (debug) debugPixel(DEBUG_BL_COLOR);
-	}
+
+		if (clock >= HBLANK_DURATION) ballCounter = 155;
+		else if (clock > 0 ) ballCounter = hMoveHitBlank ? 156 : 157;
+		else ballCounter = 158; 
+}
 	
 	private void missile0SetResetToPlayer(int res) {
 		observableChange();
@@ -1371,9 +1399,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int INPT4; 
 		int INPT5; 
 
-		public static final long serialVersionUID = 2L;
+		public static final long serialVersionUID = 3L;
 	}
 
-
 }
-
