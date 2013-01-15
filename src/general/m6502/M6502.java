@@ -99,8 +99,8 @@ public final class M6502 implements ClockDriven {
 	public void resetAt(char initialPC) {
 		PC = initialPC;
 		INTERRUPT_DISABLE = true;
-		cyclesToExecute = 0;
 		instructionToExecute = null;
+		cyclesToExecute = -1;
 	}
 	
 	/** This implementation executes all fetch operations on the FIRST cycle, 
@@ -108,14 +108,14 @@ public final class M6502 implements ClockDriven {
 	@Override
 	public void clockPulse() {
 		// If this is the last execution cycle of the instruction, execute it and IGNORE the !RDY signal 
-		if (cyclesToExecute == 1)
+		if (cyclesToExecute == 0)
 			instructionToExecute.execute();
 		else
 			if (!RDY) return;						// CPU is halted
 		if (--cyclesToExecute >= 0) return;			// CPU is still "executing" remaining instruction cycles
 		if (trace) showTrace();
-		instructionToExecute = instructions[toUnsignedByte(bus.readByte(PC++))];		// Reads the instruction to be executed
-		cyclesToExecute = instructionToExecute.fetch() - 1;				// One cycle was just executed already!
+		instructionToExecute = instructions[toUnsignedByte(bus.readByte(PC++))];	// Reads the instruction to be executed
+		cyclesToExecute = instructionToExecute.fetch() - 1;							// One cycle was just executed already!
 	}
 
 	public void powerOn() {	// Initializes the CPU as if it were just powered on
@@ -199,7 +199,6 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public void pushByte(byte b) {
-		// if ((SP & 0xff) < 0x80) showDebug(String.format("PUSH: %02x", b));		// Pushing into TIA area!!!
 		bus.writeByte(STACK_PAGE + toUunsignedByte(SP--), b);
 	}
 
@@ -308,7 +307,7 @@ public final class M6502 implements ClockDriven {
 	public boolean trace = false;
 	public boolean debug = false;
 	public boolean pageCrossed = false;
-	private int cyclesToExecute = 0;
+	private int cyclesToExecute = -1;
 	private Instruction instructionToExecute;
 	
 

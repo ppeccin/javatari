@@ -235,7 +235,3 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 }
-
-
-
-

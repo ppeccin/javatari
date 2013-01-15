@@ -8,7 +8,7 @@ public final class AudioMonoGenerator extends AudioGenerator {
 
 	@Override
 	protected void generateNextSamples(int quant) {
-		for (int i = 0; i < quant; i++) {
+		for (int i = quant; i > 0; i--) {
 			float mixedSample = channel0.nextSample() - channel1.nextSample();
 
 			// Add a little damper effect to round the edges of the square wave

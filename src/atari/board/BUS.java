@@ -78,7 +78,7 @@ public final class BUS implements BUS16Bits, ClockDriven {
 
 	public void cartridge(Cartridge cartridge) {
 		this.cartridge = cartridge;
-		cartridge.connectBus(this);
+		if (cartridge != null) cartridge.connectBus(this);
 		cartridgeNeedsClock = cartridge == null ? false : cartridge.needsClock();
 		cartridgeNeedsBusMonitoring = cartridge == null ? false : cartridge.needsBusMonitoring();
 	}

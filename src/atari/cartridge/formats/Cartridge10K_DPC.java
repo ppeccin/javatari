@@ -217,7 +217,7 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 	protected byte audioOutput = 0;
 	
 
-	private static final int AUDIO_CLOCK_DEFAULT_DIVIDER = 59;
+	private static final int AUDIO_CLOCK_DEFAULT_DIVIDER = 60;
 	private static final byte[] AUDIO_MIXED_OUTPUT = new byte[] { 0x0, 0x5, 0x5, 0xa, 0x5, 0xa, 0xa, 0xf };
 	//	private static final byte[] AUDIO_MIXED_OUTPUT = new byte[] { 0x0, 0x4, 0x5, 0x9, 0x6, 0xa, 0xb, 0xf };   // Per specification
 	

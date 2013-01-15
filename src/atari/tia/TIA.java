@@ -76,12 +76,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
 			bus.cpu.RDY = true;
 			// HBLANK period
-			for (clock = 3; clock !=  HBLANK_DURATION + 1; clock += 3) {	// 3 .. 66
-				// If one entire line since last observable change has just completed, enter repeatLastLine mode
-				if (clock == lastObservableChangeClock) {	// Verify
-					repeatLastLine = true;
-					lastObservableChangeClock = -1;
-				}
+			for (clock = 3; clock < HBLANK_DURATION; clock += 3) {		// 3 .. 66
+				checkRepeatMode();
 				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
 				bus.clockPulse();
 			}
@@ -90,14 +86,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			audioOutput.clockPulse();
 			// Display period
 			int subClock3 = 2;	// To control the clock/3 cycles. First at clock 69
-			for (clock = 68; clock != LINE_WIDTH; clock++) {			// 68 .. 227
+			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
+				checkRepeatMode();
 				// Clock delay decodes
 				if (vBlankDecode.isActive) vBlankDecode.clockPulse();
-				// If one entire line since last observable change has just completed, enter repeatLastLine mode
-				if (clock == lastObservableChangeClock) {
-					repeatLastLine = true;
-					lastObservableChangeClock = -1;
-				}
 				// Send clock/3 pulse to the CPU and PIA each 3 TIA cycles, at the end of the 3rd cycle, 
 				if (--subClock3 == 0) {
 					bus.clockPulse();
@@ -113,7 +105,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
 			audioOutput.clockPulse();
 			// Handle Paddles capacitor charging
-			if (!paddleCapacitorsGrounded && paddle0Position != -1)	chargePaddleCapacitors();	// Only if paddles are connected (position != -1)
+			if (paddle0Position >= 0 && !paddleCapacitorsGrounded) chargePaddleCapacitors();	// Only if paddles are connected (position >= 0)
 			// Send the finished line to the output
 			adjustLineAtEnd();
 			videoOutputVSynched = videoOutput.newLine(linePixels, vSyncOn);
@@ -123,6 +115,14 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// If needed, synch with audio and video output after each frame
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
 			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();
+		}
+	}
+
+	private void checkRepeatMode() {
+		// If one entire line since last observable change has just completed, enter repeatLastLine mode
+		if (clock == lastObservableChangeClock) {
+			repeatLastLine = true;
+			lastObservableChangeClock = -1;
 		}
 	}
 
@@ -136,13 +136,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			return;
 		}
 		// Pixel color
-		int color = -1;
+		int color = 1;		// All valid colors are between 0xffffffff ad 0x00000000, therefore <= 0
 		// Flags for Collision latches
 		boolean P0 = false, P1 = false, M0 = false, M1 = false, FL = false, BL = false;
 		// Get the value for the PlayField and Ball first only if PlayField and Ball have higher priority
 		if (playfieldPriority) {
 			// Get the value for the Ball
-			if (ballScanCounter != -1 && ballScanCounter <= 7) {
+			if (ballScanCounter >= 0 && ballScanCounter <= 7) {
 				playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
 				if (ballEnabled) {
 					BL = true;
@@ -151,54 +151,54 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			}
 			if (playfieldCurrentPixel) { 
 				FL = true;
-				if (color == -1) color = playfieldColor;	// No Score Mode in priority mode
+				if (color > 0) color = playfieldColor;	// No Score Mode in priority mode
 			}
 		}
 		// Get the value for Player0
-		if (player0ScanCounter != -1 && player0ScanCounter <= 31) {
+		if (player0ScanCounter >= 0 && player0ScanCounter <= 31) {
 			playersPerformDelayedSpriteChanges();
 			int sprite = player0VerticalDelay ? player0ActiveSprite : player0DelayedSprite;
 			if (sprite != 0)
 				if (((sprite >> (player0Reflected ? (7 - (player0ScanCounter >>> 2)) : (player0ScanCounter >>> 2))) & 0x01) != 0) {
 					P0 = true;
-					if (color == -1) color = player0Color;
+					if (color > 0) color = player0Color;
 				}
 		}
-		if (missile0ScanCounter != -1 && missile0Enabled && missile0ScanCounter <= 7 && !missile0ResetToPlayer) {
+		if (missile0ScanCounter >= 0 && missile0Enabled && missile0ScanCounter <= 7 && !missile0ResetToPlayer) {
 			M0 = true;
-			if (color == -1) color = missile0Color;
+			if (color > 0) color = missile0Color;
 		}
 		// Get the value for Player1
-		if (player1ScanCounter != -1 && player1ScanCounter <= 31) {
+		if (player1ScanCounter >= 0 && player1ScanCounter <= 31) {
 			playersPerformDelayedSpriteChanges();
 			int sprite = player1VerticalDelay ? player1ActiveSprite : player1DelayedSprite;
 			if (sprite != 0)
-				if (((sprite >> (player1Reflected ? (7 - (player1ScanCounter>>>2)) : (player1ScanCounter>>>2))) & 0x01) != 0) {
+				if (((sprite >> (player1Reflected ? (7 - (player1ScanCounter >>> 2)) : (player1ScanCounter >>> 2))) & 0x01) != 0) {
 					P1 = true;
-					if (color == -1) color = player1Color;
+					if (color > 0) color = player1Color;
 				}
 		}
-		if (missile1ScanCounter != -1 && missile1Enabled &&  missile1ScanCounter <= 7 && !missile1ResetToPlayer) {
+		if (missile1ScanCounter >= 0 && missile1Enabled &&  missile1ScanCounter <= 7 && !missile1ResetToPlayer) {
 			M1 = true;
-			if (color == -1) color = missile1Color;
+			if (color > 0) color = missile1Color;
 		}
 		if (!playfieldPriority) {
 			// Get the value for the Ball (low priority)
-			if (ballScanCounter != -1 && ballScanCounter <= 7) {
+			if (ballScanCounter >= 0 && ballScanCounter <= 7) {
 				playersPerformDelayedSpriteChanges();		// May trigger Ball delayed enablement
 				if (ballEnabled) {
 					BL = true;
-					if (color == -1) color = ballColor;
+					if (color > 0) color = ballColor;
 				}
 			}
 			// Get the value for the the PlayField (low priority)
 			if (playfieldCurrentPixel) {
 				FL = true;
-				if (color == -1) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
+				if (color > 0) color = !playfieldScoreMode ? playfieldColor : (clock < 148 ? player0Color : player1Color);
 			}
 		}
 		// If nothing more is showing, get the PlayField background value (low priority)
-		if (color == -1) color = playfieldBackground;
+		if (color > 0) color = playfieldBackground;
 		// Set the correct pixel color
 		linePixels[clock] = color;
 		// Finish collision latches
@@ -239,30 +239,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void player0ClockCounter() {
 		if (++player0Counter == 160) player0Counter = 0;
-		if (player0ScanCounter != -1) {
+		if (player0ScanCounter >= 0) {
 			// If missileResetToPlayer is on and the player scan has started the FIRST copy
 			if (missile0ResetToPlayer && player0Counter < 12 && player0ScanCounter >= 28 && player0ScanCounter <= 31)
 				missile0Counter = 156;
 			player0ScanCounter -= player0ScanSpeed;
 		}
-
-//		if (player0Counter > 60) {
-//			if (player0Counter == 156) {
-//				if (player0RecentReset) player0RecentReset = false;
-//				else player0ScanCounter = 31 + player0ScanSpeed * (player0ScanSpeed == 4 ? 5 : 6);	// Double or Quad size, delay 1 more pixel
-//			}
-//		} else {
-//			if (player0Counter > 28) {
-//				if (player0WideCopy && player0Counter == 60) player0ScanCounter = 31 + player0ScanSpeed * 5;
-//			} else {
-//				if (player0Counter > 12) {
-//					if (player0MediumCopy && player0Counter == 28) player0ScanCounter = 31 + player0ScanSpeed * 5;
-//				} else {
-//					if (player0CloseCopy && player0Counter == 12) player0ScanCounter = 31 + player0ScanSpeed * 5;
-//				}
-//			}
-//		}
-		
 		// Start scans 4 clocks before each copy. Scan is between 0 and 31, each pixel = 4 scan clocks
 		if (player0Counter == 156) {
 			if (player0RecentReset) player0RecentReset = false;
@@ -281,30 +263,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void player1ClockCounter() {
 		if (++player1Counter == 160) player1Counter = 0;
-		if (player1ScanCounter != -1) {
+		if (player1ScanCounter >= 0) {
 			// If missileResetToPlayer is on and the player scan has started the FIRST copy
 			if (missile1ResetToPlayer && player1Counter < 12 && player1ScanCounter >= 28 && player1ScanCounter <= 31)
 				missile1Counter = 156;
 			player1ScanCounter -= player1ScanSpeed;
 		}
-
-//		if (player1Counter > 60) {
-//			if (player1Counter == 156) {
-//				if (player1RecentReset) player1RecentReset = false;
-//				else player1ScanCounter = 31 + player1ScanSpeed * (player1ScanSpeed == 4 ? 5 : 6);	// Double or Quad size, delay 1 more pixel
-//			}
-//		} else {
-//			if (player1Counter > 28) {
-//				if (player1WideCopy && player1Counter == 60) player1ScanCounter = 31 + player1ScanSpeed * 5;
-//			} else {
-//				if (player1Counter > 12) {
-//					if (player1MediumCopy && player1Counter == 28) player1ScanCounter = 31 + player1ScanSpeed * 5;
-//				} else {
-//					if (player1CloseCopy && player1Counter == 12) player1ScanCounter = 31 + player1ScanSpeed * 5;
-//				}
-//			}
-//		}
-
 		// Start scans 4 clocks before each copy. Scan is between 0 and 31, each pixel = 4 scan clocks
 		if (player1Counter == 156) {
 			if (player1RecentReset) player1RecentReset = false;
@@ -323,25 +287,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void missile0ClockCounter() {
 		if (++missile0Counter == 160) missile0Counter = 0;
-		if (missile0ScanCounter != -1) missile0ScanCounter -= missile0ScanSpeed;
-
-//		if (missile0Counter > 60) {
-//			if (missile0Counter == 156) {
-//				if (missile0RecentReset) missile0RecentReset = false;
-//				else missile0ScanCounter = 7 + missile0ScanSpeed * 4;
-//			}
-//		} else {
-//			if (missile0Counter > 28) {
-//				if (player0WideCopy && missile0Counter == 60) missile0ScanCounter = 7 + missile0ScanSpeed * 4;
-//			} else {
-//				if (missile0Counter > 12) {
-//					if (player0MediumCopy && missile0Counter == 28) missile0ScanCounter = 7 + missile0ScanSpeed * 4;
-//				} else {
-//					if (player0CloseCopy && missile0Counter == 12) missile0ScanCounter = 7 + missile0ScanSpeed * 4;
-//				}
-//			}
-//		}
-
+		if (missile0ScanCounter >= 0) missile0ScanCounter -= missile0ScanSpeed;
 		// Start scans 4 clocks before each copy. Scan is between 0 and 7, each pixel = 8 scan clocks
 		if (missile0Counter == 156) {
 			if (missile0RecentReset) missile0RecentReset = false;
@@ -360,25 +306,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void missile1ClockCounter() {
 		if (++missile1Counter == 160) missile1Counter = 0;
-		if (missile1ScanCounter != -1) missile1ScanCounter -= missile1ScanSpeed;
-
-//		if (missile1Counter > 60) {
-//			if (missile1Counter == 156) {
-//				if (missile1RecentReset) missile1RecentReset = false;
-//				else missile1ScanCounter = 7 + missile1ScanSpeed * 4;
-//			}
-//		} else {
-//			if (missile1Counter > 28) {
-//				if (player1WideCopy && missile1Counter == 60) missile1ScanCounter = 7 + missile1ScanSpeed * 4;
-//			} else {
-//				if (missile1Counter > 12) {
-//					if (player1MediumCopy && missile1Counter == 28) missile1ScanCounter = 7 + missile1ScanSpeed * 4;
-//				} else {
-//					if (player1CloseCopy && missile1Counter == 12) missile1ScanCounter = 7 + missile1ScanSpeed * 4;
-//				}
-//			}
-//		}
-
+		if (missile1ScanCounter >= 0) missile1ScanCounter -= missile1ScanSpeed;
 		// Start scans 4 clocks before each copy. Scan is between 0 and 7, each pixel = 8 scan clocks
 		if (missile1Counter == 156) {
 			if (missile1RecentReset) missile1RecentReset = false;
@@ -397,8 +325,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void ballClockCounter() {
 		if (++ballCounter == 160) ballCounter = 0;
-		if (ballScanCounter != -1) ballScanCounter -= ballScanSpeed;
-
+		if (ballScanCounter >= 0) ballScanCounter -= ballScanSpeed;
 		// The ball does not have copies and does not wait for the next scanline to start even if recently reset
 		// Start scans 4 clocks before. Scan is between 0 and 7, each pixel = 8 scan clocks
 		if (ballCounter == 156) ballScanCounter = 7 + ballScanSpeed * 4;
@@ -418,13 +345,11 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (playfieldDelayedChangePart == -1) return;
 		if (!force) {
 			int dif = clock - playfieldDelayedChangeClock;
-			if (dif >= 0 && dif <= 1) return;
+			if (dif == 0 || dif == 1) return;
 		}
-
 		if 		(playfieldDelayedChangePart == 0) PF0 = playfieldDelayedChangePattern;
 		else if	(playfieldDelayedChangePart == 1) PF1 = playfieldDelayedChangePattern;
 		else if (playfieldDelayedChangePart == 2) PF2 = playfieldDelayedChangePattern;
-
 		playfieldPatternInvalid = true;
 		playfieldDelayedChangePart = -1;		// Marks the delayed change as nothing
 	}
@@ -526,9 +451,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			player0CloseCopy = player0MediumCopy = player0WideCopy = false;
 		} else {
 			speed = 4;							// Normal size = 4 = full speed = 1 pixel per clock
-			player0CloseCopy = (shape & 0x01) != 0;  
+			player0CloseCopy =  (shape & 0x01) != 0;  
 			player0MediumCopy = (shape & 0x02) != 0;  
-			player0WideCopy = (shape & 0x04) != 0;
+			player0WideCopy =   (shape & 0x04) != 0;
 		}
 		if (player0ScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
@@ -559,9 +484,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			player1CloseCopy = player1MediumCopy = player1WideCopy = false;
 		} else {
 			speed = 4;							// Normal size = 4 = full speed = 1 pixel per clock
-			player1CloseCopy = (shape & 0x01) != 0;  
+			player1CloseCopy =  (shape & 0x01) != 0;  
 			player1MediumCopy = (shape & 0x02) != 0;  
-			player1WideCopy = (shape & 0x04) != 0;
+			player1WideCopy =   (shape & 0x04) != 0;
 		}
 		if (player1ScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
@@ -652,23 +577,23 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		boolean vis = false;
 		add = (hMoveHitBlank ? HMP0 : HMP0 + 8); if (add != 0) { 
 			vis = true;
-			if (add > 0) for (int i = 0; i < add; i++) player0ClockCounter();
+			if (add > 0) for (int i = add; i > 0; i--) player0ClockCounter();
 			else { 
 				player0Counter += add; if (player0Counter < 0) player0Counter += 160; 
-				if (player0ScanCounter > 0) player0ScanCounter -= player0ScanSpeed * add; 
+				if (player0ScanCounter >= 0) player0ScanCounter -= player0ScanSpeed * add; 
 			}
 		}
 		add = (hMoveHitBlank ? HMP1 : HMP1 + 8); if (add != 0) {
 			vis = true;
-			if (add > 0) for (int i = 0; i < add; i++) player1ClockCounter();
+			if (add > 0) for (int i = add; i > 0; i--) player1ClockCounter();
 			else { 
 				player1Counter += add; if (player1Counter < 0) player1Counter += 160; 
-				if (player1ScanCounter > 0) player1ScanCounter -= player1ScanSpeed * add; 
+				if (player1ScanCounter >= 0) player1ScanCounter -= player1ScanSpeed * add; 
 			}
 		}
 		add = (hMoveHitBlank ? HMM0 : HMM0 + 8); if (add != 0) {
 			vis = true;
-			if (add > 0) for (int i = 0; i < add; i++) missile0ClockCounter();
+			if (add > 0) for (int i = add; i > 0; i--) missile0ClockCounter();
 			else { 
 				missile0Counter += add; if (missile0Counter < 0) missile0Counter += 160; 
 				if (missile0ScanCounter >= 0) missile0ScanCounter -= missile0ScanSpeed * add; 
@@ -676,18 +601,18 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		}
 		add = (hMoveHitBlank ? HMM1 : HMM1 + 8); if (add != 0) {
 			vis = true;
-			if (add > 0) for (int i = 0; i < add; i++) missile1ClockCounter();
+			if (add > 0) for (int i = add; i > 0; i--) missile1ClockCounter();
 			else { 
 				missile1Counter += add; if (missile1Counter < 0) missile1Counter += 160;
-				if (missile1ScanCounter > 0) missile1ScanCounter -= missile1ScanSpeed * add; 
+				if (missile1ScanCounter >= 0) missile1ScanCounter -= missile1ScanSpeed * add; 
 			}
 		}
 		add = (hMoveHitBlank ? HMBL : HMBL + 8); if (add != 0) {
 			vis = true;
-			if (add > 0) for (int i = 0; i < add; i++) ballClockCounter();
+			if (add > 0) for (int i = add; i > 0; i--) ballClockCounter();
 			else { 
 				ballCounter += add; if (ballCounter < 0) ballCounter += 160;
-				if (ballScanCounter > 0) ballScanCounter -= ballScanSpeed * add;
+				if (ballScanCounter >= 0) ballScanCounter -= ballScanSpeed * add;
 			}
 		}
 		if (vis) observableChange();
