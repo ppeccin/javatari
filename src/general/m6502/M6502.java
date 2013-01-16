@@ -93,11 +93,7 @@ public final class M6502 implements ClockDriven {
 	}
 	
 	public void reset() {
-		resetAt(memoryReadWord(POWER_ON_RESET_ADDRESS));
-	}
-	
-	public void resetAt(char initialPC) {
-		PC = initialPC;
+		PC = memoryReadWord(POWER_ON_RESET_ADDRESS);
 		INTERRUPT_DISABLE = true;
 		instructionToExecute = null;
 		cyclesToExecute = -1;
@@ -132,42 +128,42 @@ public final class M6502 implements ClockDriven {
 		// Nothing
 	}
 
-	public char fetchImmediateAddress() {
+	public int fetchImmediateAddress() {
 		return PC++;
 	}
 
-	public char fetchRelativeAddress() {
-		char res = (char) (bus.readByte(PC++) + PC);  // PC should be get AFTER the increment and be added to the offset that was read
+	public int fetchRelativeAddress() {
+		int res = bus.readByte(PC++) + PC;  // PC should be get AFTER the increment and be added to the offset that was read
 		pageCrossed = (res & 0xff00) != (PC & 0xff00);
 		return res;		
 	}
 
-	public char fetchZeroPageAddress() {
-		return (char) toUnsignedByte((bus.readByte(PC++)));
+	public int fetchZeroPageAddress() {
+		return toUnsignedByte((bus.readByte(PC++)));
 	}
 
-	public char fetchZeroPageXAddress() {
-		return (char) toUnsignedByte(bus.readByte(PC++) + X);		// Sum should wrap the byte and always be in range 0 - ff
+	public int fetchZeroPageXAddress() {
+		return toUnsignedByte(bus.readByte(PC++) + X);		// Sum should wrap the byte and always be in range 0 - ff
 	}
 
 	public int fetchZeroPageYAddress() {
-		return (char) toUnsignedByte(bus.readByte(PC++) + Y);		// Sum should wrap the byte and always be in range 0 - ff
+		return toUnsignedByte(bus.readByte(PC++) + Y);		// Sum should wrap the byte and always be in range 0 - ff
 	}
 	
-	public char fetchAbsoluteAddress() {
-		return memoryReadWord((PC+=2) - 2);		// PC should be get BEFORE the double increment 
+	public int fetchAbsoluteAddress() {
+		return memoryReadWord((PC+=2) - 2);					// PC should be get BEFORE the double increment 
 	}
 
-	public char fetchAbsoluteXAddress() {
-		final char addr = fetchAbsoluteAddress();
-		final char res = (char) (addr + toUunsignedByte(X));
+	public int fetchAbsoluteXAddress() {
+		final int addr = fetchAbsoluteAddress();
+		final int res = addr + toUunsignedByte(X);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res;
 	}
 
-	public char fetchAbsoluteYAddress() {
-		final char addr = fetchAbsoluteAddress();
-		final char res = (char) (addr + toUunsignedByte(Y));
+	public int fetchAbsoluteYAddress() {
+		final int addr = fetchAbsoluteAddress();
+		final int res = addr + toUunsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res;
 	}
@@ -180,20 +176,20 @@ public final class M6502 implements ClockDriven {
 		return memoryReadWordWrappingPage(fetchZeroPageXAddress());		// Should wrap page (the zero page) reading effective address
 	}
 
-	public char fetchIndirectYAddress() {
-		final char addr = memoryReadWordWrappingPage(fetchZeroPageAddress());		// Should wrap page (the zero page) reading effective address
-		final char res = (char) (addr + toUunsignedByte(Y));
+	public int fetchIndirectYAddress() {
+		final int addr = memoryReadWordWrappingPage(fetchZeroPageAddress());		// Should wrap page (the zero page) reading effective address
+		final int res = addr + toUunsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res; 
 	}
 
-	public char memoryReadWord(int address) {
-		return (char) (toUnsignedByte(bus.readByte(address)) + (toUnsignedByte(bus.readByte(address + 1)) << 8));		// Address + 1 may wrap, LSB first
+	public int memoryReadWord(int address) {
+		return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address + 1)) << 8);		// Address + 1 may wrap, LSB first
 	}
 
-	public char memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
+	public int memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
 		if ((address & 0xff) == 0xff)		
-			return (char) (toUnsignedByte(bus.readByte(address)) + (toUnsignedByte(bus.readByte(address & 0xff00)) << 8));	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
+			return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address & 0xff00)) << 8);	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
 		else
 			return memoryReadWord(address);
 	}
@@ -206,26 +202,26 @@ public final class M6502 implements ClockDriven {
 		return bus.readByte(STACK_PAGE + toUunsignedByte(++SP));
 	}
 	
-	public void pushWord(char w) {
+	public void pushWord(int w) {
 		pushByte((byte) ((w >>> 8) & 0xff));
 		pushByte((byte) (w & 0xff));
 	}
 
-	public char pullWord() {
-		return (char) ((pullByte() & 0xff) + ((pullByte() & 0xff) << 8));
+	public int pullWord() {
+		return (pullByte() & 0xff) | ((pullByte() & 0xff) << 8);
 	}
 
 	public byte PS() {
 		byte b = (byte)(
-			(NEGATIVE?0x80:0) + (OVERFLOW?0x40:0) + (BREAK_COMMAND?0x10:0) +
-			(DECIMAL_MODE?0x08:0) + (INTERRUPT_DISABLE?0x04:0) + (ZERO?0x02:0) + (CARRY?0x01:0));
+			(NEGATIVE?0x80:0) | (OVERFLOW?0x40:0) | (BREAK_COMMAND?0x10:0) |
+			(DECIMAL_MODE?0x08:0) | (INTERRUPT_DISABLE?0x04:0) | (ZERO?0x02:0) | (CARRY?0x01:0));
 		return b;
 	}
 	
 	public void PS(byte b) {
 		int i = b & 0xff; 
-		NEGATIVE = (i & 0x80) > 0; OVERFLOW = (i & 0x40) > 0; BREAK_COMMAND = (i & 0x10) > 0;
-		DECIMAL_MODE = (i & 0x08) > 0; INTERRUPT_DISABLE = (i & 0x04) > 0; ZERO = (i & 0x02) > 0; CARRY = (i & 0x01) > 0;
+		NEGATIVE = (i & 0x80) != 0; OVERFLOW = (i & 0x40) != 0; BREAK_COMMAND = (i & 0x10) != 0;
+		DECIMAL_MODE = (i & 0x08) != 0; INTERRUPT_DISABLE = (i & 0x04) != 0; ZERO = (i & 0x02) != 0; CARRY = (i & 0x01) != 0;
 	}
 
 	public String printState() {
@@ -296,7 +292,7 @@ public final class M6502 implements ClockDriven {
 	// Public real 6502 registers and memory, for instructions and general access
 
 	public byte A, X, Y, SP;
-	public char PC;
+	public int PC;			// Assumes anyone reading PC should mask it to 0xfff
 	public boolean CARRY, ZERO, OVERFLOW, NEGATIVE, DECIMAL_MODE, INTERRUPT_DISABLE, BREAK_COMMAND;
 	public boolean RDY;		// RDY pin, used to halt the processor
 	public BUS16Bits bus;
@@ -576,12 +572,12 @@ public final class M6502 implements ClockDriven {
 	// Constants
 	
 	public static final byte STACK_INITIAL_SP = (byte)0xff;
-	public static final char STACK_PAGE = (char)0x0100;
+	public static final int STACK_PAGE = 0x0100;
 	
 	// Vectors
-	public static final char NMI_HANDLER_ADDRESS = 0xfffa;
-	public static final char POWER_ON_RESET_ADDRESS = 0xfffc;
-	public static final char IRQ_HANDLER_ADDRESS = 0xfffe;
+	public static final int NMI_HANDLER_ADDRESS = 0xfffa;
+	public static final int POWER_ON_RESET_ADDRESS = 0xfffc;
+	public static final int IRQ_HANDLER_ADDRESS = 0xfffe;
 
 	
 	// Convenience methods
@@ -596,7 +592,7 @@ public final class M6502 implements ClockDriven {
 	// Used to save/load states
 	public static class M6502State implements Serializable {
 		byte A, X, Y, SP;
-		char PC;
+		int PC;
 		boolean CARRY, ZERO, OVERFLOW, NEGATIVE, DECIMAL_MODE, INTERRUPT_DISABLE, BREAK_COMMAND;
 		boolean RDY;
 		boolean trace;

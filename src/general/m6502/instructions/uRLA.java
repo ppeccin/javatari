@@ -30,7 +30,7 @@ public final class uRLA extends Instruction {
 		byte val = cpu.bus.readByte(ea);
 		final int oldCarry = cpu.CARRY?1:0;
 		cpu.CARRY = val < 0;		// bit 7 was set
-		val = (byte) ((val << 1) + oldCarry);
+		val = (byte) ((val << 1) | oldCarry);
 		cpu.bus.writeByte(ea, val);
 		cpu.A = (byte) (cpu.A & val);
 		cpu.ZERO = val == 0;

@@ -17,7 +17,7 @@ public final class ROR extends Instruction {
 
 	@Override
 	public int fetch() {
-		if (type == OperandType.ACC) 		{ ea = -1; return 2; }
+		if (type == OperandType.ACC) 		{ return 2; }
 		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 5; }
 		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 6; }
 		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 6; }
@@ -30,9 +30,9 @@ public final class ROR extends Instruction {
 		// Special case for ACC
 		if (type == ACC) {
 			byte val = cpu.A;
-			int oldCarry = cpu.CARRY?1:0;
-			cpu.CARRY = (val & 0x01) > 0;		// bit 0 was set
-			val = (byte) (((val & 0xff) >>> 1) + oldCarry * 0x80);
+			int oldCarry = cpu.CARRY ? 0x80 : 0;
+			cpu.CARRY = (val & 0x01) != 0;		// bit 0 was set
+			val = (byte) (((val & 0xff) >>> 1) | oldCarry);
 			cpu.A = val;
 			cpu.ZERO = val == 0;
 			cpu.NEGATIVE = val < 0;

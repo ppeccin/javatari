@@ -4,7 +4,7 @@ package general.board;
 
 public interface BUS16Bits {
 
-	// Address (int) may be out of bounds then wrap as converted to char. No problem!
+	// Address (int) may be out of bounds. Implementations should mask it to 0xfff 
 
 	public byte readByte(int address);
 

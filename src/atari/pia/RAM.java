@@ -55,11 +55,11 @@ public final class RAM implements BUS16Bits {
 		final float var = 1 - FRY_VARIANCE + 2 * Randomizer.instance.nextFloat() * FRY_VARIANCE;
 		// Randomly put "0" in bits on the ram
 		final int fryZeroBits = (int)(var * FRY_ZERO_BITS);
-		for (int i = 0; i < fryZeroBits; i++)
+		for (int i = fryZeroBits; i > 0; i--)
 			bytes[Randomizer.instance.nextInt(128)] &= (byte)Randomizer.instance.nextInt(256);
 		// Randomly put "1" in bits on the ram
 		final int fryOneBits = (int)(var * FRY_ONE_BITS);
-		for (int i = 0; i < fryOneBits; i++)
+		for (int i = fryOneBits; i > 0; i--)
 			bytes[Randomizer.instance.nextInt(128)] |= (byte)(0x01 << Randomizer.instance.nextInt(8));
 	}
 

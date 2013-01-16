@@ -20,7 +20,7 @@ public final class RTS extends Instruction {
 	public void execute() {
 		// Does not perform the dummy PC + 1 read
 		// Does not perform the dummy stack read
-		cpu.PC = (char) (cpu.pullWord() + 1); 	
+		cpu.PC = cpu.pullWord() + 1; 	
 		// Does not perform the dummy PC read before PC++
 	}
 	

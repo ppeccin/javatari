@@ -20,7 +20,7 @@ public final class Bxx extends Instruction {
 
 	@Override
 	public int fetch() {
-		newPC = (char) cpu.fetchRelativeAddress();		// Reads operand regardless of the branch being taken or not
+		newPC = cpu.fetchRelativeAddress();		// Reads operand regardless of the branch being taken or not
 		if (bit == bZERO) 			{ branch = cpu.ZERO == cond; }
 		else if (bit == bNEGATIVE)	{ branch = cpu.NEGATIVE == cond; }
 		else if (bit == bCARRY)		{ branch = cpu.CARRY == cond; }
@@ -38,7 +38,7 @@ public final class Bxx extends Instruction {
 	private final int bit;
 	private final boolean cond;
 	
-	private char newPC;
+	private int newPC;
 	private boolean branch;
 	
 	

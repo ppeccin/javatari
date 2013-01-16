@@ -15,8 +15,8 @@ public final class JMP extends Instruction {
 
 	@Override
 	public int fetch() {
-		if (type == OperandType.ABS) { newPC = (char) cpu.fetchAbsoluteAddress(); return 3; }
-		if (type == OperandType.IND) { newPC = (char) cpu.fetchIndirectAddress(); return 5; }
+		if (type == OperandType.ABS) { newPC = cpu.fetchAbsoluteAddress(); return 3; }
+		if (type == OperandType.IND) { newPC = cpu.fetchIndirectAddress(); return 5; }
 		throw new IllegalStateException("JMP Invalid Operand Type: " + type);
 	}
 
@@ -27,7 +27,7 @@ public final class JMP extends Instruction {
 
 	private final int type;
 
-	private char newPC;
+	private int newPC;
 	
 
 	public static final long serialVersionUID = 1L;

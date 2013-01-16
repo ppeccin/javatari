@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.sun.corba.se.impl.orbutil.concurrent.DebugMutex;
+
 import parameters.Parameters;
 import utils.Array2DCopy;
 import atari.board.BUS;
@@ -97,6 +99,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				}
 				objectsClockCounters();
 				if (!repeatLastLine && (clock >= 76 || !hMoveHitBlank)) setPixelValue();
+				// else linePixels[clock] |= 0x88800080;	// Add a pink dye to show pixels repeated
 			}
 			// Send the last clock/3 pulse to the CPU and PIA, at the end of the 227th cycle, perceived by the TIA at clock 0 next line
 			clock = 0;
@@ -673,14 +676,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		videoOutput.showOSD(debug ? "Debug Level " + debugLevel : "Debug OFF", true);
 		bus.cpu.debug = debug;
 		bus.pia.debug = debug;
-		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
-		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
-		if (debug)
-			debugSetColors();
-		else {
-			Arrays.fill(linePixels, hBlankColor);
-			observableChange();
-		}
+		if (debug) debugSetColors();
+		else debugRestoreColors();
 	}
 
 	private void debugSetColors() {
@@ -691,14 +688,20 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		ballColor = DEBUG_BL_COLOR;
 		playfieldColor = DEBUG_PF_COLOR;
 		playfieldBackground = DEBUG_BK_COLOR;
+		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
+		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
+	}
+
+	private void debugRestoreColors() {
+		Arrays.fill(linePixels, vBlankColor);
+		hBlankColor = HBLANK_COLOR;
+		vBlankColor = VBLANK_COLOR;
+		playfieldBackground = palette[0];
+		observableChange();
 	}
 
 	private void debugInfo(String str) {
-		if (debug) {
-			System.out.printf("Line: %3d, Pixel: %3d, " + str + "\n", videoOutput.monitor().currentLine(), clock);
-			// System.out.println(cpu.printState());
-			// System.out.println(cpu.printMemory(0x0090, 32));
-		}
+		if (debug) System.out.printf("Line: %3d, Pixel: %3d, " + str + "\n", videoOutput.monitor().currentLine(), clock);
 	}
 	
 	private void debugPixel(int color) {

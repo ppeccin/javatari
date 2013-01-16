@@ -71,7 +71,7 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	}
 
 	protected void maskAddress(int address) {
-		maskedAddress = address & 0x0fff;
+		maskedAddress = address & ADDRESS_MASK;
 	}
 
 	public VideoStandard suggestedVideoStandard() {
@@ -113,6 +113,8 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 
 	private VideoStandard suggestedVideoStandard = null;
 
+
+	private static final int ADDRESS_MASK = 0x0fff;
 	
 	public static final long serialVersionUID = 1L;
 

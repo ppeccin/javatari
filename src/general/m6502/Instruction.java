@@ -10,7 +10,7 @@ public abstract class Instruction implements Serializable {
 		this.cpu = cpu;
 	}
 
-	public abstract int fetch();
+	public abstract int fetch();	// Should return the number of cycles needed to complete execution
 
 	public abstract void execute();
 

@@ -12,12 +12,12 @@ public final class RAM64k implements BUS16Bits {
 	
 	@Override
 	public byte readByte(int address) {		
-		return bytes[(char)address];	
+		return bytes[address & 0xffff];
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {	
-		bytes[(char)address] = b;		
+		bytes[address & 0xffff] = b;		
 	}
 
 	public void dump(int init, int quant) {

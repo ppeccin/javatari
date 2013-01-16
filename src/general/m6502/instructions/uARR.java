@@ -20,12 +20,12 @@ public final class uARR extends Instruction {
 	// Some sources say flags are affected per ROR, others say its more complex. The complex one is chosen
 	public void execute() {
 		byte val = (byte) (cpu.A & cpu.bus.readByte(ea)); 
-		int oldCarry = cpu.CARRY?1:0;
+		int oldCarry = cpu.CARRY ? 0x80 : 0;
 
 		// Per ROR
 		// cpu.CARRY = (val & 0x01) > 0;		// bit 0 was set
 
-		val = (byte) (((val & 0xff) >>> 1) + oldCarry * 0x80);
+		val = (byte) (((val & 0xff) >>> 1) | oldCarry);
 		cpu.A = val;
 		cpu.ZERO = val == 0;
 		cpu.NEGATIVE = val < 0;

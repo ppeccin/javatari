@@ -36,9 +36,9 @@ public final class uISB extends Instruction {
 		final int oldA = cpu.A;
 		final int uOldA = M6502.toUnsignedByte(oldA);
 
-		final boolean oldCarry = cpu.CARRY;
-		final int aux = oldA - b - (!oldCarry?1:0); 
-		int uAux = uOldA - uB - (!oldCarry?1:0); 
+		int oldCarryNot = cpu.CARRY?0:1;
+		final int aux = oldA - b - oldCarryNot; 
+		int uAux = uOldA - uB - oldCarryNot; 
 		
 		// Flags are affected always as in Binary mode
 		byte newA = (byte) M6502.toUnsignedByte(uAux);		// Could be aux 
@@ -54,7 +54,7 @@ public final class uISB extends Instruction {
 		}
 
 		// Decimal Mode computations
-		uAux = (uOldA & 0x0f) - (uB & 0x0f) - (!oldCarry?1:0);
+		uAux = (uOldA & 0x0f) - (uB & 0x0f) - oldCarryNot;
 		if (uAux < 0) uAux = ((uAux - 0x06) & 0x0f) - 0x10;
 		uAux = (uOldA & 0xf0) - (uB & 0xf0) + uAux;
 		if (uAux < 0) uAux -= 0x60;

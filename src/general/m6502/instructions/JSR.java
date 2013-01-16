@@ -21,12 +21,12 @@ public final class JSR extends Instruction {
 	public void execute() {
 		byte PCL = cpu.bus.readByte(ea);
 		// Does not perform the dummy stack read
-		cpu.pushWord((char) (cpu.PC));				// JSR should push the return address - 1
+		cpu.pushWord(cpu.PC);				// JSR should push the return address - 1
 		byte PCH = cpu.bus.readByte(ea + 1);
-		cpu.PC = (char) ((M6502.toUnsignedByte(PCH) << 8) + M6502.toUnsignedByte(PCL));
+		cpu.PC = (M6502.toUnsignedByte(PCH) << 8) | M6502.toUnsignedByte(PCL);
 	}
 
-	private char ea;
+	private int ea;
 
 	
 	public static final long serialVersionUID = 1L;

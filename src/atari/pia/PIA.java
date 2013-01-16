@@ -139,11 +139,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@Override
 	public void controlsStateReport(Map<ConsoleControls.Control, Boolean> report) {
 		//  Only Panel Controls are visible from outside
-		report.put(Control.BLACK_WHITE, (SWCHB & 0x08) == 0);
-		report.put(Control.DIFFICULTY0, (SWCHB & 0x40) != 0);
-		report.put(Control.DIFFICULTY1, (SWCHB & 0x80) != 0);
-		report.put(Control.SELECT, (SWCHB & 0x02) == 0);
-		report.put(Control.RESET, (SWCHB & 0x01) == 0);
+		report.put(Control.BLACK_WHITE,	(SWCHB & 0x08) == 0);
+		report.put(Control.DIFFICULTY0,	(SWCHB & 0x40) != 0);
+		report.put(Control.DIFFICULTY1,	(SWCHB & 0x80) != 0);
+		report.put(Control.SELECT, 		(SWCHB & 0x02) == 0);
+		report.put(Control.RESET,		(SWCHB & 0x01) == 0);
 	}
 	
 	public PIAState saveState() {
