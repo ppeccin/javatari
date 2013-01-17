@@ -75,11 +75,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public byte readByte(int address) {
 		final int reg = address & READ_ADDRESS_MASK;
 
-		if (reg == 0x00) return (byte) SWCHA;
-		if (reg == 0x01) return (byte) SWACNT;
-		if (reg == 0x02) return (byte) SWCHB;
-		if (reg == 0x03) return (byte) SWBCNT;
 		if (reg == 0x04 || reg == 0x06) { readFromINTIM(); return (byte) INTIM; }								
+		if (reg == 0x00) return (byte) SWCHA;
+		if (reg == 0x02) return (byte) SWCHB;
+		if (reg == 0x01) return (byte) SWACNT;
+		if (reg == 0x03) return (byte) SWBCNT;
 		if (reg == 0x05 || reg == 0x07) return (byte) INSTAT;						// Undocumented
 		
 		// debugInfo(String.format("Invalid PIA read register address: %04x", address)); 
@@ -91,14 +91,14 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		int i = b & 0xff;
 		int reg = address & WRITE_ADDRESS_MASK;
 
-		if (reg == 0x00) { /* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x", i)); return; }	// Output to controllers not supported
-		if (reg == 0x01) { /* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x", i)); return; }	// SWACNT configuration not supported
-		if (reg == 0x02) { swchbWrite(i); return; }																	
-		if (reg == 0x03) { SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x", i)); return; }
 		if (reg == 0x04) { TIM1T  = i; setTimerInterval(i, 1); return; }
 		if (reg == 0x05) { TIM8T  = i; setTimerInterval(i, 8); return; }
 		if (reg == 0x06) { TIM64T = i; setTimerInterval(i, 64); return; }
 		if (reg == 0x07) { T1024T = i; setTimerInterval(i, 1024); return; }
+		if (reg == 0x02) { swchbWrite(i); return; }																	
+		if (reg == 0x03) { SWBCNT = i; debugInfo(String.format(">>>> Ineffective Write to PIA SWBCNT: %02x", i)); return; }
+		if (reg == 0x00) { /* SWCHA  = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWCHA: %02x", i)); return; }	// Output to controllers not supported
+		if (reg == 0x01) { /* SWACNT = i; */ debugInfo(String.format(">>>> Unsupported Write to PIA SWACNT: %02x", i)); return; }	// SWACNT configuration not supported
 		
 		// debugInfo(String.format("Invalid PIA write register address: %04x value %d", address, b));
 	}

@@ -19,7 +19,7 @@ public final class uSBX extends Instruction {
 	@Override
 	public void execute() {
 		byte b = (byte) (cpu.A & cpu.X);
-		int uB = M6502.toUunsignedByte(b);
+		int uB = M6502.toUnsignedByte(b);
 		int uVal = M6502.toUnsignedByte(cpu.bus.readByte(ea)); 
 		byte newX = (byte)(uB - uVal);
 		cpu.X = newX;

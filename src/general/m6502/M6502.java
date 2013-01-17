@@ -139,7 +139,7 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public int fetchZeroPageAddress() {
-		return toUnsignedByte((bus.readByte(PC++)));
+		return toUnsignedByte(bus.readByte(PC++));
 	}
 
 	public int fetchZeroPageXAddress() {
@@ -156,14 +156,14 @@ public final class M6502 implements ClockDriven {
 
 	public int fetchAbsoluteXAddress() {
 		final int addr = fetchAbsoluteAddress();
-		final int res = addr + toUunsignedByte(X);
+		final int res = addr + toUnsignedByte(X);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res;
 	}
 
 	public int fetchAbsoluteYAddress() {
 		final int addr = fetchAbsoluteAddress();
-		final int res = addr + toUunsignedByte(Y);
+		final int res = addr + toUnsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res;
 	}
@@ -178,7 +178,7 @@ public final class M6502 implements ClockDriven {
 
 	public int fetchIndirectYAddress() {
 		final int addr = memoryReadWordWrappingPage(fetchZeroPageAddress());		// Should wrap page (the zero page) reading effective address
-		final int res = addr + toUunsignedByte(Y);
+		final int res = addr + toUnsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res; 
 	}
@@ -195,16 +195,16 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public void pushByte(byte b) {
-		bus.writeByte(STACK_PAGE + toUunsignedByte(SP--), b);
+		bus.writeByte(STACK_PAGE + toUnsignedByte(SP--), b);
 	}
 
 	public byte pullByte() {
-		return bus.readByte(STACK_PAGE + toUunsignedByte(++SP));
+		return bus.readByte(STACK_PAGE + toUnsignedByte(++SP));
 	}
 	
 	public void pushWord(int w) {
-		pushByte((byte) ((w >>> 8) & 0xff));
-		pushByte((byte) (w & 0xff));
+		pushByte((byte) (w >>> 8));
+		pushByte((byte) w);
 	}
 
 	public int pullWord() {
@@ -219,9 +219,8 @@ public final class M6502 implements ClockDriven {
 	}
 	
 	public void PS(byte b) {
-		int i = b & 0xff; 
-		NEGATIVE = (i & 0x80) != 0; OVERFLOW = (i & 0x40) != 0; BREAK_COMMAND = (i & 0x10) != 0;
-		DECIMAL_MODE = (i & 0x08) != 0; INTERRUPT_DISABLE = (i & 0x04) != 0; ZERO = (i & 0x02) != 0; CARRY = (i & 0x01) != 0;
+		NEGATIVE = (b & 0x80) != 0; OVERFLOW = (b & 0x40) != 0; BREAK_COMMAND = (b & 0x10) != 0;
+		DECIMAL_MODE = (b & 0x08) != 0; INTERRUPT_DISABLE = (b & 0x04) != 0; ZERO = (b & 0x02) != 0; CARRY = (b & 0x01) != 0;
 	}
 
 	public String printState() {
@@ -582,11 +581,11 @@ public final class M6502 implements ClockDriven {
 	
 	// Convenience methods
 	
-	public static int toUunsignedByte(byte b) {	// ** NOTE does not return a real byte for signed operations
+	public static int toUnsignedByte(byte b) {	// ** NOTE does not return a real byte for signed operations
 		return b & 0xff;
 	}
 	public static int toUnsignedByte(int i) {	// ** NOTE does not return a real byte for signed operations
-		return toUunsignedByte((byte)i);
+		return i & 0xff;
 	}
 
 	// Used to save/load states

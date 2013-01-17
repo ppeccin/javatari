@@ -32,9 +32,9 @@ public final class CPx extends Instruction {
 	public void execute() {
 		int uVal = M6502.toUnsignedByte(cpu.bus.readByte(ea)); 
 		int uR;
-		if (reg == Register.rA) 		uR = M6502.toUunsignedByte(cpu.A);
-		else if (reg == Register.rX) 	uR = M6502.toUunsignedByte(cpu.X);
-		else if (reg == Register.rY) 	uR = M6502.toUunsignedByte(cpu.Y);
+		if (reg == Register.rA) 		uR = M6502.toUnsignedByte(cpu.A);
+		else if (reg == Register.rX) 	uR = M6502.toUnsignedByte(cpu.X);
+		else if (reg == Register.rY) 	uR = M6502.toUnsignedByte(cpu.Y);
 		else throw new IllegalStateException("CPx Invalid Register: " + reg);
 		cpu.CARRY = uR >= uVal;
 		cpu.ZERO = uR == uVal;

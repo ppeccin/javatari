@@ -542,30 +542,51 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void hitRESM0() {
 		observableChange();
 		if (debug) debugPixel(DEBUG_M0_COLOR);
-		if (clock >= HBLANK_DURATION) {
-			if (missile0Counter != 155) missile0RecentReset = true;				
+//		if (clock >= HBLANK_DURATION) {
+//			if (missile0Counter != 155) missile0RecentReset = true;				
+//			missile0Counter = 155;
+//		}
+//		else if (clock > 0 ) missile0Counter = hMoveHitBlank ? 156 : 157;
+//		else missile0Counter = 158; 
+
+		if (clock >= HBLANK_DURATION) 
 			missile0Counter = 155;
-		}
-		else if (clock > 0 ) missile0Counter = hMoveHitBlank ? 156 : 157;
-		else missile0Counter = 158; 
+		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4 )
+			missile0Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
+		else 
+			missile0Counter = 157;	
 	}
 	
 	private void hitRESM1() {
 		observableChange();
 		if (debug) debugPixel(DEBUG_M1_COLOR);
-		if (clock >= HBLANK_DURATION) {
-			if (missile1Counter != 155) missile1RecentReset = true;				
+//		if (clock >= HBLANK_DURATION) {
+//			if (missile1Counter != 155) missile1RecentReset = true;				
+//			missile1Counter = 155;
+//		} else if (clock > 0 ) missile1Counter = hMoveHitBlank ? 156 : 157;
+//		else missile1Counter = 158; 
+
+		if (clock >= HBLANK_DURATION) 
 			missile1Counter = 155;
-		} else if (clock > 0 ) missile1Counter = hMoveHitBlank ? 156 : 157;
-		else missile1Counter = 158; 
+		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4 )
+			missile1Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
+		else 
+			missile1Counter = 157;	
 	}
 	
 	private void hitRESBL() {
 		observableChange();
 		if (debug) debugPixel(DEBUG_BL_COLOR);
-		if (clock >= HBLANK_DURATION) ballCounter = 155;
-		else if (clock > 0 ) ballCounter = hMoveHitBlank ? 156 : 157;
-		else ballCounter = 158; 
+//		if (clock >= HBLANK_DURATION) ballCounter = 155;
+//		else if (clock > 0 ) ballCounter = hMoveHitBlank ? 156 : 157;
+//		else ballCounter = 157;	
+
+		if (clock >= HBLANK_DURATION) 
+			ballCounter = 155;
+		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4 )
+			ballCounter = 157 - ((clock - hMoveHitClock - 4) >> 2);
+		else 
+			ballCounter = 157;	
 	}
 	
 	private void hitHMOVE() {
@@ -576,6 +597,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			return;
 		}
 		hMoveHitBlank = clock < HBLANK_DURATION;
+		hMoveHitClock = clock;
 		int add;
 		boolean vis = false;
 		add = (hMoveHitBlank ? HMP0 : HMP0 + 8); if (add != 0) { 
@@ -688,15 +710,15 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		ballColor = DEBUG_BL_COLOR;
 		playfieldColor = DEBUG_PF_COLOR;
 		playfieldBackground = DEBUG_BK_COLOR;
-		hBlankColor = debugLevel >= 2 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
+		hBlankColor = debugLevel >= 1 ? DEBUG_HBLANK_COLOR : HBLANK_COLOR;
 		vBlankColor = debugLevel >= 2 ? DEBUG_VBLANK_COLOR : VBLANK_COLOR;
 	}
 
 	private void debugRestoreColors() {
-		Arrays.fill(linePixels, vBlankColor);
 		hBlankColor = HBLANK_COLOR;
 		vBlankColor = VBLANK_COLOR;
 		playfieldBackground = palette[0];
+		Arrays.fill(linePixels, hBlankColor);
 		observableChange();
 	}
 
@@ -775,51 +797,51 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		final int i = b & 0xff;
 		final int reg = address & WRITE_ADDRESS_MASK;
 		
-		if (reg == 0x00) { /*VSYNC  = i;*/ observableChange(); vSyncOn = (i & 0x02) != 0; return; }
-		if (reg == 0x01) { /*VBLANK = i;*/ vBlankSet(i); return; }
+		if (reg == 0x1B) { /*GRP0   = i;*/ playerDelaySpriteChange(0, i); return; }
+		if (reg == 0x1C) { /*GRP1   = i;*/ playerDelaySpriteChange(1, i); return; }
 		if (reg == 0x02) { /*WSYNC  = i;*/ bus.cpu.RDY = false; if (debug) debugPixel(DEBUG_WSYNC_COLOR); return; } 	// <STROBE> Halts the CPU until the next HBLANK
-		if (reg == 0x03) { /*RSYNC  = i;*/ /* clock = 0; */ return; }
-		if (reg == 0x04) { /*NUSIZ0 = i;*/ player0SetShape(i); return; }
-		if (reg == 0x05) { /*NUSIZ1 = i;*/ player1SetShape(i); return; }
-		if (reg == 0x06) { /*COLUP0 = i;*/ observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return; }
-		if (reg == 0x07) { /*COLUP1 = i;*/ observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return; }
-		if (reg == 0x08) { /*COLUPF = i;*/ observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return; }
-		if (reg == 0x09) { /*COLUBK = i;*/ observableChange(); if (!debug) playfieldBackground = palette[i]; return; }
-		if (reg == 0x0A) { /*CTRLPF = i;*/ playfieldAndBallSetShape(i); return; }
-		if (reg == 0x0B) { /*REFP0  = i;*/ observableChange(); player0Reflected = (i & 0x08) != 0; return; }
-		if (reg == 0x0C) { /*REFP1  = i;*/ observableChange(); player1Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x2A) { /*HMOVE  = i;*/ hitHMOVE();	return; }						   	
 		if (reg == 0x0D) { if (PF0 != i || playfieldDelayedChangePart == 0) playfieldDelaySpriteChange(0, i); return; }
 		if (reg == 0x0E) { if (PF1 != i || playfieldDelayedChangePart == 1) playfieldDelaySpriteChange(1, i); return; }
 		if (reg == 0x0F) { if (PF2 != i || playfieldDelayedChangePart == 2) playfieldDelaySpriteChange(2, i); return; }
+		if (reg == 0x14) { /*RESBL  = i;*/ hitRESBL(); return; }
 		if (reg == 0x10) { /*RESP0  = i;*/ hitRESP0(); return; }
 		if (reg == 0x11) { /*RESP1  = i;*/ hitRESP1(); return; }
 		if (reg == 0x12) { /*RESM0  = i;*/ hitRESM0(); return; }
 		if (reg == 0x13) { /*RESM1  = i;*/ hitRESM1(); return; }
-		if (reg == 0x14) { /*RESBL  = i;*/ hitRESBL(); return; }
+		if (reg == 0x20) { HMP0   = (b >> 4); return; }
+		if (reg == 0x21) { HMP1   = (b >> 4); return; }
+		if (reg == 0x22) { HMM0   = (b >> 4); return; }
+		if (reg == 0x23) { HMM1   = (b >> 4); return; }
+		if (reg == 0x24) { HMBL   = (b >> 4); return; }
+		if (reg == 0x2B) { /*HMCLR  = i;*/ HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return; }
+		if (reg == 0x06) { /*COLUP0 = i;*/ observableChange(); if (!debug) player0Color = missile0Color = palette[i]; return; }
+		if (reg == 0x07) { /*COLUP1 = i;*/ observableChange(); if (!debug) player1Color = missile1Color = palette[i]; return; }
+		if (reg == 0x08) { /*COLUPF = i;*/ observableChange(); if (!debug) playfieldColor = ballColor = palette[i]; return; }
+		if (reg == 0x09) { /*COLUBK = i;*/ observableChange(); if (!debug) playfieldBackground = palette[i]; return; }
+		if (reg == 0x1D) { /*ENAM0  = i;*/ observableChange(); missile0Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1E) { /*ENAM1  = i;*/ observableChange(); missile1Enabled = (i & 0x02) != 0; return; }
+		if (reg == 0x1F) { /*ENABL  = i;*/ ballSetGraphic(i); return; }
+		if (reg == 0x04) { /*NUSIZ0 = i;*/ player0SetShape(i); return; }
+		if (reg == 0x05) { /*NUSIZ1 = i;*/ player1SetShape(i); return; }
+		if (reg == 0x0A) { /*CTRLPF = i;*/ playfieldAndBallSetShape(i); return; }
+		if (reg == 0x0B) { /*REFP0  = i;*/ observableChange(); player0Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x0C) { /*REFP1  = i;*/ observableChange(); player1Reflected = (i & 0x08) != 0; return; }
+		if (reg == 0x25) { /*VDELP0 = i;*/ observableChange(); player0VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x26) { /*VDELP1 = i;*/ observableChange(); player1VerticalDelay = (i & 0x01) != 0; return; }
+		if (reg == 0x27) { /*VDELBL = i;*/ observableChange(); ballVerticalDelay = (i & 0x01) != 0; return; }
 		if (reg == 0x15) { AUDC0  = i; audioOutput.channel0().setControl(i & 0x0f); return; }
 		if (reg == 0x16) { AUDC1  = i; audioOutput.channel1().setControl(i & 0x0f); return; }
 		if (reg == 0x17) { AUDF0  = i; audioOutput.channel0().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
 		if (reg == 0x18) { AUDF1  = i; audioOutput.channel1().setDivider((i & 0x1f) + 1); return; }		// Bits 0-4, Divider from 1 to 32 )
 		if (reg == 0x19) { AUDV0  = i; audioOutput.channel0().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
 		if (reg == 0x1A) { AUDV1  = i; audioOutput.channel1().setVolume(i & 0x0f); return; }			// Bits 0-3, Volume from 0 to 15 )
-		if (reg == 0x1B) { /*GRP0   = i;*/ playerDelaySpriteChange(0, i); return; }
-		if (reg == 0x1C) { /*GRP1   = i;*/ playerDelaySpriteChange(1, i); return; }
-		if (reg == 0x1D) { /*ENAM0  = i;*/ observableChange(); missile0Enabled = (i & 0x02) != 0; return; }
-		if (reg == 0x1E) { /*ENAM1  = i;*/ observableChange(); missile1Enabled = (i & 0x02) != 0; return; }
-		if (reg == 0x1F) { /*ENABL  = i;*/ ballSetGraphic(i); return; }
-		if (reg == 0x20) { HMP0   = (b >> 4); return; }
-		if (reg == 0x21) { HMP1   = (b >> 4); return; }
-		if (reg == 0x22) { HMM0   = (b >> 4); return; }
-		if (reg == 0x23) { HMM1   = (b >> 4); return; }
-		if (reg == 0x24) { HMBL   = (b >> 4); return; }
-		if (reg == 0x25) { /*VDELP0 = i;*/ observableChange(); player0VerticalDelay = (i & 0x01) != 0; return; }
-		if (reg == 0x26) { /*VDELP1 = i;*/ observableChange(); player1VerticalDelay = (i & 0x01) != 0; return; }
-		if (reg == 0x27) { /*VDELBL = i;*/ observableChange(); ballVerticalDelay = (i & 0x01) != 0; return; }
 		if (reg == 0x28) { /*RESMP0 = i;*/ missile0SetResetToPlayer(i); return; }
 		if (reg == 0x29) { /*RESMP1 = i;*/ missile1SetResetToPlayer(i); return; }
-		if (reg == 0x2A) { /*HMOVE  = i;*/ hitHMOVE();	return; }						   	
-		if (reg == 0x2B) { /*HMCLR  = i;*/ HMP0 = HMP1 = HMM0 = HMM1 = HMBL = 0; return; }
+		if (reg == 0x01) { /*VBLANK = i;*/ vBlankSet(i); return; }
+		if (reg == 0x00) { /*VSYNC  = i;*/ observableChange(); vSyncOn = (i & 0x02) != 0; return; }
 		if (reg == 0x2C) { /*CXCLR  = i;*/ observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return; }
+		if (reg == 0x03) { /*RSYNC  = i;*/ /* clock = 0; */ return; }
 
 		// debugInfo(String.format("Invalid TIA write register address: %04x value %d", address, b)); 
 	}
@@ -1100,6 +1122,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private VBlankDecode vBlankDecode = new VBlankDecode();
 
 	private boolean hMoveHitBlank = false;
+	private int hMoveHitClock = -1;		// TODO State
 	
 	private boolean[] playfieldPattern = new boolean[40];
 	private boolean playfieldPatternInvalid = true;

@@ -35,7 +35,6 @@ public final class ADC extends Instruction {
 
 		int aux = oldA + b + (cpu.CARRY?1:0); 
 		int uAux = uOldA + uB + (cpu.CARRY?1:0); 
-
 		
 		// ZERO flag is affected always as in Binary mode
 		byte newA = (byte) M6502.toUnsignedByte(uAux);		// Could be aux 

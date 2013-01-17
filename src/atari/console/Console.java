@@ -206,7 +206,7 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 	}
 
-	protected ConsoleState saveState() {
+	protected ConsoleState saveState() {		// TODO Verify "screen bumps"
 		return new ConsoleState(
 			tia.saveState(),
 			pia.saveState(),

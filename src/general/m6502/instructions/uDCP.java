@@ -29,8 +29,8 @@ public final class uDCP extends Instruction {
 	public void execute() {
 		final byte val = (byte) (cpu.bus.readByte(ea) - 1); 
 		cpu.bus.writeByte(ea, val);
-		int uVal = M6502.toUunsignedByte(val); 
-		int uA = M6502.toUunsignedByte(cpu.A);
+		int uVal = M6502.toUnsignedByte(val); 
+		int uA = M6502.toUnsignedByte(cpu.A);
 		cpu.CARRY = uA >= uVal;
 		cpu.ZERO = uA == uVal;
 		cpu.NEGATIVE = ((byte)(uA - uVal)) < 0;
