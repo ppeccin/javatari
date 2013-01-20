@@ -84,8 +84,11 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	
 	@Override
 	public Cartridge clone() {
-		try { return (Cartridge)super.clone(); } catch (CloneNotSupportedException e) {}
-		return null;
+		try { 
+			return (Cartridge)super.clone(); 
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 
 	@Override

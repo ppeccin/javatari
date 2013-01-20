@@ -78,9 +78,7 @@ import general.m6502.instructions.uSHX;
 import general.m6502.instructions.uSHY;
 import general.m6502.instructions.uSLO;
 import general.m6502.instructions.uSRE;
-
 import java.io.Serializable;
-
 import utils.Debugger;
 
 public final class M6502 implements ClockDriven {
@@ -95,23 +93,25 @@ public final class M6502 implements ClockDriven {
 	public void reset() {
 		PC = memoryReadWord(POWER_ON_RESET_ADDRESS);
 		INTERRUPT_DISABLE = true;
-		instructionToExecute = null;
-		cyclesToExecute = -1;
+		currentInstruction = null;
+		remainingCycles = -1;
 	}
 	
 	/** This implementation executes all fetch operations on the FIRST cycle, 
-	  * then read and write operations on the LAST cycle of each instruction, and skips the cycles in between */
+	  * then read and write operations on the LAST cycle of each instruction, doing nothing in cycles in between */
 	@Override
 	public void clockPulse() {
-		// If this is the last execution cycle of the instruction, execute it and IGNORE the !RDY signal 
-		if (cyclesToExecute == 0)
-			instructionToExecute.execute();
-		else
-			if (!RDY) return;						// CPU is halted
-		if (--cyclesToExecute >= 0) return;			// CPU is still "executing" remaining instruction cycles
-		if (trace) showTrace();
-		instructionToExecute = instructions[toUnsignedByte(bus.readByte(PC++))];	// Reads the instruction to be executed
-		cyclesToExecute = instructionToExecute.fetch() - 1;							// One cycle was just executed already!
+		// If this is the last execution cycle of the instruction, execute it ignoring the !RDY signal 
+		if (remainingCycles == 1) {
+			currentInstruction.execute();
+			remainingCycles = 0;
+			return;
+		}
+		if (!RDY) return;						// CPU is halted
+		if (remainingCycles-- > 0) return;		// CPU is still "executing" remaining instruction cycles
+		// if (trace) showDebug(">>> TRACE");
+		currentInstruction = instructions[toUnsignedByte(bus.readByte(PC++))];	// Reads the instruction to be executed
+		remainingCycles = currentInstruction.fetch() - 1;						// One cycle was just executed already!
 	}
 
 	public void powerOn() {	// Initializes the CPU as if it were just powered on
@@ -169,22 +169,22 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public int fetchIndirectAddress() {
-		return memoryReadWordWrappingPage(fetchAbsoluteAddress());		// Should wrap page reading effective address
+		return memoryReadWordWrappingPage(fetchAbsoluteAddress());				// Should wrap page reading effective address
 	}
 
 	public int fetchIndirectXAddress() {
-		return memoryReadWordWrappingPage(fetchZeroPageXAddress());		// Should wrap page (the zero page) reading effective address
+		return memoryReadWordWrappingPage(fetchZeroPageXAddress());				// Should wrap page (the zero page) reading effective address
 	}
 
 	public int fetchIndirectYAddress() {
-		final int addr = memoryReadWordWrappingPage(fetchZeroPageAddress());		// Should wrap page (the zero page) reading effective address
+		final int addr = memoryReadWordWrappingPage(fetchZeroPageAddress());	// Should wrap page (the zero page) reading effective address
 		final int res = addr + toUnsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
 		return res; 
 	}
 
 	public int memoryReadWord(int address) {
-		return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address + 1)) << 8);		// Address + 1 may wrap, LSB first
+		return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address + 1)) << 8);	// Address + 1 may wrap, LSB first
 	}
 
 	public int memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
@@ -231,7 +231,9 @@ public final class M6502 implements ClockDriven {
 		", Y: " + String.format("%02x", Y) +
 		", SP: " + String.format("%02x", SP) +
 		", PC: " + String.format("%04x", (int)PC) +
-		",  Flags: " + String.format("%08d", Integer.parseInt(Integer.toBinaryString(PS() & 0xff)));
+		", Flags: " + String.format("%08d", Integer.parseInt(Integer.toBinaryString(PS() & 0xff))) +
+		", Instr: " + currentInstruction.getClass().getSimpleName() +  
+		", RemCycles: " + remainingCycles;
 		return str;
 	}
 
@@ -257,10 +259,6 @@ public final class M6502 implements ClockDriven {
 		if (res == 2) ((Clock)Thread.currentThread()).terminate();
 	}
 
-	private void showTrace() {
-		showDebug(">>> TRACE");
-	}
-	
 	public M6502State saveState() {
 		M6502State state = new M6502State();
 		state.PC = PC; state.A = A; state.X = X; state.Y = Y; state.SP = SP; 
@@ -269,8 +267,8 @@ public final class M6502 implements ClockDriven {
 		state.RDY = RDY;
 		state.trace = trace; state.debug = debug;
 		state.pageCrossed = pageCrossed;
-		state.instructionToExecute = instructionToExecute;
-		state.cyclesToExecute = cyclesToExecute;
+		state.currentInstruction = currentInstruction.clone();
+		state.remainingCycles = remainingCycles;
 		return state;
 	}
 	
@@ -281,10 +279,10 @@ public final class M6502 implements ClockDriven {
 		RDY = state.RDY;
 		trace = state.trace; debug = state.debug;
 		pageCrossed = state.pageCrossed;
-		instructionToExecute = state.instructionToExecute;
-		if (instructionToExecute != null)
-			instructionToExecute.cpu = this;
-		cyclesToExecute = state.cyclesToExecute;
+		currentInstruction = state.currentInstruction;
+		if (currentInstruction != null)
+			currentInstruction.cpu = this;
+		remainingCycles = state.remainingCycles;
 	}
 
 
@@ -302,8 +300,8 @@ public final class M6502 implements ClockDriven {
 	public boolean trace = false;
 	public boolean debug = false;
 	public boolean pageCrossed = false;
-	private int cyclesToExecute = -1;
-	private Instruction instructionToExecute;
+	private int remainingCycles = -1;
+	private Instruction currentInstruction;
 	
 
 	// Instructions map. # = Undocumented Instruction
@@ -569,7 +567,6 @@ public final class M6502 implements ClockDriven {
 	
 
 	// Constants
-	
 	public static final byte STACK_INITIAL_SP = (byte)0xff;
 	public static final int STACK_PAGE = 0x0100;
 	
@@ -580,7 +577,6 @@ public final class M6502 implements ClockDriven {
 
 	
 	// Convenience methods
-	
 	public static int toUnsignedByte(byte b) {	// ** NOTE does not return a real byte for signed operations
 		return b & 0xff;
 	}
@@ -597,8 +593,8 @@ public final class M6502 implements ClockDriven {
 		boolean trace;
 		boolean debug;
 		boolean pageCrossed;
-		Instruction instructionToExecute;
-		int cyclesToExecute;
+		Instruction currentInstruction;
+		int remainingCycles;
 
 		public static final long serialVersionUID = 2L;
 	}

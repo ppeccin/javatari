@@ -8,7 +8,7 @@ import general.av.video.VideoStandard;
 
 public final class VideoGenerator implements VideoSignal {
 
-	public boolean newLine(final int[] pixels, boolean vSynch) {
+	public boolean nextLine(final int[] pixels, boolean vSynch) {
 		if (monitor == null) return false;
 		return monitor.nextLine(pixels, vSynch);
 	}

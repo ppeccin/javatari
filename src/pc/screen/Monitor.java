@@ -115,12 +115,12 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 			line++;
 			if (videoStandardDetected == null) videoStandardDetectionLines++;
 			if (vSynchSignal) {
-				if (--VSYNCDetectionCount == 0) {
+				if (--vSyncDetectionCount == 0) {
 					if (videoStandardDetected == null) videoStandardDetectionNewFrame();
 					vSynced = newFrame();
 				}
 			} else
-				VSYNCDetectionCount = VSYNC_DETECTION;
+				vSyncDetectionCount = VSYNC_DETECTION;
 			return vSynced;
 		}
 	}
@@ -167,14 +167,14 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 
 	private boolean newFrame() {
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
-		// Copy only the contents needed (displayWidth x displayHight) to the frontBuffer
+		// Copy only the contents needed (displayWidth x displayHeight) to the frontBuffer
 		arrayCopyWithStride(
 				backBuffer, displayOriginY * signalWidth + displayOriginX, 
 				frontBuffer, 0, displayWidth * displayHeight, 
 				displayWidth, signalWidth
 		);
 		if (fps < 0) clock.interrupt();
-		cleanBackBuffer();
+		if (debug > 0) cleanBackBuffer();
 		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines", true);
 		line = 0;
 		return true;
@@ -189,17 +189,19 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	}
 	
 	private boolean signalState(boolean state) {
-		signalOn = state;
-		if (signalOn)
+		if (state) {
+			signalOn = true;
 			adjustToVideoSignal();
-		else 
+		} else { 
+			signalOn = false;
 			adjustToVideoSignalOff();
-		return signalOn;
+		}
+		return state;
 	}
 
 	private void cleanBackBuffer() {
 		// Clear screen if in debug mode, and put a nice green for detection of undrawn lines
-		if (debug > 0) Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
+		Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
 	}
 
 	private void videoStandardDetectionNewFrame() {
@@ -305,7 +307,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	}
 
 	private void adjustToVideoSignalOff() {
-		VSYNCDetectionCount = VSYNC_DETECTION;
+		vSyncDetectionCount = VSYNC_DETECTION;
 		line = 0;
 		display.displayClear();
 		paintLogo();
@@ -585,12 +587,12 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	}
 
 	private static void arrayCopyWithStride(int[] src, int srcPos, int dest[], int destPos, int length, int chunk, int stride) {
-		int total = 0;
-		while(total < length) {
+		int total = length;
+		while(total > 0) {
 			System.arraycopy(src, srcPos, dest, destPos, chunk);
 			srcPos += stride;
 			destPos += chunk;
-			total += chunk;
+			total -= chunk;
 		}
 	}
 	
@@ -654,7 +656,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	
 	private Image logoIcon;
 	
-	private int VSYNCDetectionCount = 0;
+	private int vSyncDetectionCount = 0;
 
 	private static final int VSYNC_DETECTION = 2;
 	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;

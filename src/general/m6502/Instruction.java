@@ -4,7 +4,7 @@ package general.m6502;
 
 import java.io.Serializable;
 
-public abstract class Instruction implements Serializable {
+public abstract class Instruction implements Serializable, Cloneable {
 
 	public Instruction(M6502 cpu) {
 		this.cpu = cpu;
@@ -14,6 +14,16 @@ public abstract class Instruction implements Serializable {
 
 	public abstract void execute();
 
+	@Override
+	protected Instruction clone() {
+		try { 
+			return (Instruction)super.clone(); 
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
+
+	
 	protected transient M6502 cpu;
 
 	

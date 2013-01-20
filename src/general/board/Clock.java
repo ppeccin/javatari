@@ -24,7 +24,10 @@ public final class Clock extends Thread {
 	public void pause() {
 		running = false;
 		interrupt();
-		synchronized (this) { /* Just wait for the running loop to pause */ }
+		synchronized (this) { 
+			// Just wait for the running loop to pause
+			// Also guarantee "happens-before" of state modified prior to the clock pause
+		}
 	}
 	
 	public void terminate() {
@@ -32,7 +35,9 @@ public final class Clock extends Thread {
 		running = false;
 		interrupt();
 		try {
-			join();		/* Just wait for the running loop to end */
+			// Just wait for the running loop to pause
+			// Also guarantee "happens-before" of state modified prior to the clock pause
+			join();
 		} catch (InterruptedException e) {
 			// No problem
 		}

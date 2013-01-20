@@ -206,7 +206,7 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 	}
 
-	protected ConsoleState saveState() {		// TODO Verify "screen bumps"
+	protected ConsoleState saveState() {
 		return new ConsoleState(
 			tia.saveState(),
 			pia.saveState(),
@@ -219,6 +219,19 @@ public class Console {
 
 	protected void powerFry() {
 		ram.powerFry();
+	}
+
+	private ConsoleState pauseAndSaveState() {
+		mainClockPause();
+		ConsoleState state = Console.this.saveState();
+		mainClockGo();
+		return state;
+	}
+
+	private void pauseAndLoadState(ConsoleState state) {
+		mainClockPause();
+		Console.this.loadState(state);
+		mainClockGo();
 	}
 
 
@@ -266,6 +279,9 @@ public class Console {
 					if (powerOn) powerOff();
 					else powerOn();
 					break;
+				case POWER_FRY:
+					powerFry();
+					break;
 				case SAVE_STATE_0: case SAVE_STATE_1: case SAVE_STATE_2: case SAVE_STATE_3: case SAVE_STATE_4: case SAVE_STATE_5: 
 				case SAVE_STATE_6: case SAVE_STATE_7: case SAVE_STATE_8: case SAVE_STATE_9: case SAVE_STATE_10: case SAVE_STATE_11: case SAVE_STATE_12:
 					saveStateSocket.saveState(control.slot);
@@ -296,9 +312,6 @@ public class Console {
 					Cartridge newCart = newOption.format.create(cartridge());
 					cartridgeSocket().insert(newCart, true);
 					showOSD(newOption.format.toString(), true);
-					break;
-				case POWER_FRY:
-					powerFry();
 			}
 		}
 		@Override
@@ -332,9 +345,7 @@ public class Console {
 		}
 		public void saveState(int slot) {
 			if (!powerOn || media == null) return;
-			mainClockPause();
-			ConsoleState state = Console.this.saveState();
-			mainClockGo();
+			ConsoleState state = pauseAndSaveState();
 			if (media.save(slot, state))
 				showOSD("State " + slot + " saved", true);
 			else 
@@ -347,12 +358,10 @@ public class Console {
 				showOSD("State " + slot + " load failed", true);
 				return;
 			}
-			mainClockPause();
-			Console.this.loadState(state);
-			mainClockGo();
+			pauseAndLoadState(state);
 			showOSD("State " + slot + " loaded", true);
 		}
 		private SaveStateMedia media;
 	}	
-	
+
 }

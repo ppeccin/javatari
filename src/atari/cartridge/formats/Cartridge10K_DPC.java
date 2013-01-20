@@ -204,13 +204,23 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 			String.format("DPC Audio Clock: ~%.1f kHz", 1194720f / audioClockDivider / 1000), true);
 	}
 
+	@Override
+	public Cartridge10K_DPC clone() {
+		Cartridge10K_DPC clone = (Cartridge10K_DPC)super.clone();
+		clone.fetcherPointer = fetcherPointer.clone();
+		clone.fetcherStart = fetcherStart.clone();
+		clone.fetcherEnd = fetcherEnd.clone();
+		clone.fetcherMask = fetcherMask.clone();
+		clone.audioMode = audioMode.clone();
+		return clone;
+	}
 	
 	private byte randomNumber = (byte) 0x00;
-	private final int[] fetcherPointer = new int[8];
-	private final byte[] fetcherStart = new byte[8];
-	private final byte[] fetcherEnd = new byte[8];
-	private final byte[] fetcherMask = new byte[8];
-	private final boolean[] audioMode = new boolean[8];
+	private int[] fetcherPointer = new int[8];
+	private byte[] fetcherStart = new byte[8];
+	private byte[] fetcherEnd = new byte[8];
+	private byte[] fetcherMask = new byte[8];
+	private boolean[] audioMode = new boolean[8];
 	private int audioClockDivider = AUDIO_CLOCK_DEFAULT_DIVIDER;
 	private int audioClockCounter = 0;
 	protected boolean audioChanged = true;
