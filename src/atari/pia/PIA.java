@@ -44,7 +44,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		decrementTimer();			// Timer immediately decrements after setting per specification
 	}
 
-	private void decrementTimer() {
+	private void decrementTimer() {	// TODO There might be an accuracy problem here
 		// Also check for overflow
 		if (--INTIM < 0) {
 			INSTAT |= 0xc0;								// Set bit 7 and 6 (Overflow since last INTIM read and since last TIMxx write)
@@ -57,7 +57,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void readFromINTIM() {
 		INSTAT &= 0xbf;									// Resets bit 6 (Overflow since last INTIM read)
 		// If fastDecrement was active (currentTimerInterval == 1), interval always returns to set value after read per specification
-		if (currentTimerInterval == 1 )	
+		if (currentTimerInterval == 1)	
 			timerCount = currentTimerInterval = lastSetTimerInterval;
 	}
 

@@ -56,7 +56,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		Arrays.fill(linePixels, HBLANK_COLOR);
 		Arrays.fill(debugPixels, 0);
 		initLatchesAtPowerOn();
-		observableChange();
+		observableChangeExtended();
 		powerOn = true;
 	}
 
@@ -109,7 +109,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Handle Paddles capacitor charging
 			if (paddle0Position >= 0 && !paddleCapacitorsGrounded) chargePaddleCapacitors();	// Only if paddles are connected (position >= 0)
 			// Send the finished line to the output
-			adjustLineAtEnd();
+			finishLine();
 			videoOutputVSynched = videoOutput.nextLine(linePixels, vSyncOn);
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
@@ -441,6 +441,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (missile0ScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
 			if (missile0ScanCounter > 7) missile0ScanCounter = 7 + (missile0ScanCounter - 7) / missile0ScanSpeed * speed;
+			// if a copy is being scanned, kill the scan
+			else if (missile0ScanCounter >= 0) missile0ScanCounter = -1;
 			missile0ScanSpeed = speed;
 		}
 		// Player size and copies
@@ -458,7 +460,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		}
 		if (player0ScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
-			if (player0ScanCounter > 31) player0ScanCounter = 31 + (player0ScanCounter - 31) / player0ScanSpeed * 4;
+			if (player0ScanCounter > 31) player0ScanCounter = 31 + (player0ScanCounter - 31) / player0ScanSpeed * speed;
+			// if a copy is being scanned, kill the scan
+			else if (player0ScanCounter >= 0) player0ScanCounter = -1;
 			player0ScanSpeed = speed;
 		}
 	}
@@ -474,6 +478,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (missile1ScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
 			if (missile1ScanCounter > 7) missile1ScanCounter = 7 + (missile1ScanCounter - 7) / missile1ScanSpeed * speed;
+			// if a copy is being scanned, kill the scan
+			else if (missile1ScanCounter >= 0) missile1ScanCounter = -1;
 			missile1ScanSpeed = speed;
 		}
 		// Player size and copies
@@ -490,8 +496,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			player1WideCopy =   (shape & 0x04) != 0;
 		}
 		if (player1ScanSpeed != speed) {
-			// if a copy is about to start, adjust for the new speed
-			if (player1ScanCounter > 31) player1ScanCounter = 31 + (player1ScanCounter - 31) / player1ScanSpeed * 4;
+			// if a copy is about to start, adjust to produce the same start position
+			if (player1ScanCounter > 31) player1ScanCounter = 31 + (player1ScanCounter - 31) / player1ScanSpeed * speed;
+			// if a copy is being scanned, kill the scan
+			else if (player1ScanCounter >= 0) player1ScanCounter = -1;
 			player1ScanSpeed = speed;
 		}
 	}
@@ -513,91 +521,160 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (ballScanSpeed != speed) {
 			// if a copy is about to start, adjust for the new speed
 			if (ballScanCounter > 7) ballScanCounter = 7 + (ballScanCounter - 7) / ballScanSpeed * speed;
+			// if a copy is being scanned, kill the scan
+			else if (ballScanCounter >= 0) ballScanCounter = -1;
 			ballScanSpeed = speed;
 		}
 	}
 
 	private void hitRESP0() {
-		observableChange();
+		observableChangeExtended();
 		if (debug) debugPixel(DEBUG_P0_RES_COLOR);
 
-		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8 : 0)) {
+		// Hit in last pixel of HBLANK or after
+		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8-1 : 0)) {
 			if (player0Counter != 155) player0RecentReset = true;				
 			player0Counter = 155;
+			return;
 		}
-		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4)
-			player0Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
-		else 
-			player0Counter = 157;	
+
+		// Hit before last pixel of HBLANK
+		int d = 0;									// No HMOVE, displacement = 0
+		if (hMoveHitBlank) {						// With HMOVE
+			if (clock >= HBLANK_DURATION)			// During extended HBLANK
+				d = (HBLANK_DURATION - clock) + 8;
+			else {
+				d = (clock - hMoveHitClock - 4) >> 2;
+				if (d > 8) d = 8;
+			}
+			player0RecentReset = true;
+		}
+		
+		player0Counter = 157 - d;	
 	}
 	
 	private void hitRESP1() {
-		observableChange();
+		observableChangeExtended();
 		if (debug) debugPixel(DEBUG_P1_RES_COLOR);
 
-		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8 : 0)) {
+		// Hit in last pixel of HBLANK or after
+		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8-1 : 0)) {
 			if (player1Counter != 155) player1RecentReset = true;				
 			player1Counter = 155;
-		} 
-		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4)
-			player1Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
-		else 
-			player1Counter = 157;	
+			return;
+		}
+
+		// Hit before last pixel of HBLANK
+		int d = 0;									// No HMOVE, displacement = 0
+		if (hMoveHitBlank) {						// With HMOVE
+			if (clock >= HBLANK_DURATION)			// During extended HBLANK
+				d = (HBLANK_DURATION - clock) + 8;
+			else {
+				d = (clock - hMoveHitClock - 4) >> 2;
+				if (d > 8) d = 8;
+			}
+			player1RecentReset = true;
+		}
+
+		player1Counter = 157 - d;	
 	}
 	
 	private void hitRESM0() {
-		observableChange();
+		observableChangeExtended();
 		if (debug) debugPixel(DEBUG_M0_COLOR);
 
-		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8 : 0)) {
-			if (missile0Counter != 155)	missile0RecentReset = true;
+		// Hit in last pixel of HBLANK or after
+		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8-1 : 0)) {
+			if (missile0Counter != 155) missile0RecentReset = true;				
 			missile0Counter = 155;
-		} 
-		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4)
-			missile0Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
-		else 
-			missile0Counter = 157;	
+			return;
+		}
+
+		// Hit before last pixel of HBLANK
+		int d = 0;									// No HMOVE, displacement = 0
+		if (hMoveHitBlank) {						// With HMOVE
+			if (clock >= HBLANK_DURATION)			// During extended HBLANK
+				d = (HBLANK_DURATION - clock) + 8;
+			else {
+				d = (clock - hMoveHitClock - 4) >> 2;
+				if (d > 8) d = 8;
+			}
+			missile0RecentReset = true;
+		}
+
+		missile0Counter = 157 - d;	
 	}
 	
 	private void hitRESM1() {
-		observableChange();
+		observableChangeExtended();
 		if (debug) debugPixel(DEBUG_M1_COLOR);
 
-		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8 : 0)) {
+		// Hit in last pixel of HBLANK or after
+		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8-1 : 0)) {
 			if (missile1Counter != 155) missile1RecentReset = true;				
 			missile1Counter = 155;
-		} else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4 )
-			missile1Counter = 157 - ((clock - hMoveHitClock - 4) >> 2);
-		else 
-			missile1Counter = 157;	
+			return;
+		}
+
+		// Hit before last pixel of HBLANK
+		int d = 0;									// No HMOVE, displacement = 0
+		if (hMoveHitBlank) {						// With HMOVE
+			if (clock >= HBLANK_DURATION)			// During extended HBLANK
+				d = (HBLANK_DURATION - clock) + 8;
+			else {
+				d = (clock - hMoveHitClock - 4) >> 2;
+				if (d > 8) d = 8;
+			}
+			missile1RecentReset = true;
+		}
+
+		missile1Counter = 157 - d;	
 	}
 	
 	private void hitRESBL() {
 		observableChange();
 		if (debug) debugPixel(DEBUG_BL_COLOR);
 
-		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8 : 0))
+		// Hit in last pixel of HBLANK or after
+		if (clock >= HBLANK_DURATION + (hMoveHitBlank ? 8-1 : 0)) {
 			ballCounter = 155;
-		else if (hMoveHitBlank && clock > hMoveHitClock + 4 && clock < hMoveHitClock + 4 + 15 * 4 )
-			ballCounter = 157 - ((clock - hMoveHitClock - 4) >> 2);
-		else 
-			ballCounter = 157;	
+			return;
+		}
+
+		// Hit before last pixel of HBLANK
+		int d = 0;				// No HMOVE, displacement = 0
+		if (hMoveHitBlank)		// With HMOVE
+			if (clock >= HBLANK_DURATION)				// During extended HBLANK
+				d = (HBLANK_DURATION - clock) + 8;
+			else {
+				d = (clock - hMoveHitClock - 4) >> 2;
+				if (d > 8) d = 8;
+			}
+
+		ballCounter = 157 - d;	
 	}
 	
 	private void hitHMOVE() {
 		if (debug) debugPixel(DEBUG_HMOVE_COLOR);
-		// 210 is maybe the minimum clock to hit HMOVE for effect in the next line
-		if (clock >= HBLANK_DURATION && clock < 210) {
-			debugInfo("Illegal HMOVE hit");
+		// Normal HMOVE
+		if (clock < HBLANK_DURATION) {
+			hMoveHitClock = clock;
+			hMoveHitBlank = true;
+			performHMOVE();
 			return;
 		}
-		if (clock < HBLANK_DURATION) {
-			hMoveHitBlank = true;
-			hMoveHitClock = clock;
-		} else {
-			hMoveHitBlank = false;
-			hMoveHitClock = clock - 160;
+		// Unsupported HMOVE
+		if (clock < 219) {
+			debugInfo("Unsupported HMOVE hit");
+			return;
 		}
+		// Late HMOVE: Clocks [219-224] hide HMOVE blank next line, clocks [225, 0] produce normal behavior next line
+		hMoveHitClock = 160 - clock;
+		hMoveLateHit = true;
+		hMoveLateHitBlank = clock >= 225;  
+	}
+	
+	private void performHMOVE() {
 		int add;
 		boolean vis = false;
 		add = (hMoveHitBlank ? HMP0 : HMP0 + 8); if (add != 0) { 
@@ -679,9 +756,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		observableChange();
 	}
 
-	private void adjustLineAtEnd() {
+	private void finishLine() {
+	 	// Fills the extended HBLANK portion of the current line if needed
 		if (hMoveHitBlank) {
-		 	// Fills the extended HBLANK portion of the line if needed
 			linePixels[HBLANK_DURATION] =
 			linePixels[HBLANK_DURATION + 1] =
 			linePixels[HBLANK_DURATION + 2] =
@@ -692,12 +769,29 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			linePixels[HBLANK_DURATION + 7] = hBlankColor;		// This is faster than Arrays.fill()
 			hMoveHitBlank = false;
 		}
+		// Perform late HMOVE hit if needed
+		if (hMoveLateHit) {
+			hMoveLateHit = false;
+			hMoveHitBlank = hMoveLateHitBlank;
+			performHMOVE();
+		}
+		// Extend pixel computation to the entire next line if needed
+		if (observableChangeExtended) {
+			lastObservableChangeClock = 227;
+			observableChangeExtended = false;
+		}
+		// Inject debugging information in the line if needed
 		if (debugLevel >= 2) processDebugPixelsInLine();
 	}
 	
 	private void observableChange() {
 		lastObservableChangeClock = clock;
 		if (repeatLastLine) repeatLastLine = false;	
+	}
+
+	private void observableChangeExtended() {
+		observableChange();
+		observableChangeExtended = true;	
 	}
 
 	private void debug(int level) {
@@ -917,6 +1011,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		TIAState state = new TIAState();
 		state.linePixels					   =  linePixels.clone();
 		state.lastObservableChangeClock		   =  lastObservableChangeClock;
+		state.observableChangeExtended		   =  observableChangeExtended;
 		state.repeatLastLine 				   =  repeatLastLine;
 		state.vSyncOn                     	   =  vSyncOn;                    
 		state.vBlankOn                    	   =  vBlankOn;
@@ -1010,6 +1105,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public void loadState(TIAState state) {
 		linePixels						 =  state.linePixels;
 		lastObservableChangeClock		 =	state.lastObservableChangeClock;
+		observableChangeExtended		 =  state.observableChangeExtended;
 		repeatLastLine 					 =	state.repeatLastLine;
 		vSyncOn                     	 =  state.vSyncOn;                     
 		vBlankOn                    	 =  state.vBlankOn;
@@ -1130,6 +1226,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private int[] linePixels = new int[LINE_WIDTH];
 	private int lastObservableChangeClock = -1;
+	private boolean observableChangeExtended = false;
 	private boolean repeatLastLine;
 
 	private boolean vSyncOn = false;
@@ -1140,6 +1237,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private boolean hMoveHitBlank = false;
 	private int hMoveHitClock = -1;
+	private boolean hMoveLateHit = false;
+	private boolean hMoveLateHitBlank = false;
 	
 	private boolean[] playfieldPattern = new boolean[40];
 	private boolean playfieldPatternInvalid = true;
@@ -1332,6 +1431,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	public static class TIAState implements Serializable {
 		int[] linePixels;
 		int lastObservableChangeClock;
+		boolean observableChangeExtended;
 		boolean repeatLastLine;
 		boolean vSyncOn;
 		boolean vBlankOn;

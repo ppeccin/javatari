@@ -78,7 +78,9 @@ import general.m6502.instructions.uSHX;
 import general.m6502.instructions.uSHY;
 import general.m6502.instructions.uSLO;
 import general.m6502.instructions.uSRE;
+
 import java.io.Serializable;
+
 import utils.Debugger;
 
 public final class M6502 implements ClockDriven {
@@ -107,7 +109,7 @@ public final class M6502 implements ClockDriven {
 			remainingCycles = 0;
 			return;
 		}
-		if (!RDY) return;						// CPU is halted
+		if (!RDY) return;					// CPU is halted
 		if (remainingCycles-- > 0) return;		// CPU is still "executing" remaining instruction cycles
 		// if (trace) showDebug(">>> TRACE");
 		currentInstruction = instructions[toUnsignedByte(bus.readByte(PC++))];	// Reads the instruction to be executed
@@ -267,7 +269,7 @@ public final class M6502 implements ClockDriven {
 		state.RDY = RDY;
 		state.trace = trace; state.debug = debug;
 		state.pageCrossed = pageCrossed;
-		state.currentInstruction = currentInstruction.clone();
+		if (currentInstruction != null) state.currentInstruction = currentInstruction.clone();
 		state.remainingCycles = remainingCycles;
 		return state;
 	}
@@ -280,8 +282,7 @@ public final class M6502 implements ClockDriven {
 		trace = state.trace; debug = state.debug;
 		pageCrossed = state.pageCrossed;
 		currentInstruction = state.currentInstruction;
-		if (currentInstruction != null)
-			currentInstruction.cpu = this;
+		if (currentInstruction != null)	currentInstruction.cpu = this;
 		remainingCycles = state.remainingCycles;
 	}
 
