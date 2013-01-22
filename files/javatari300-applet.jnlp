@@ -1,6 +1,6 @@
 <jnlp spec="6.0+"
 	codebase="http://javatari.org/files/"
-	href="javatari202-applet.jnlp" >
+	href="javatari300-applet.jnlp" >
 	<information>
 		<title>javatari Applet</title>
 		<vendor>Paulo Augusto Peccin</vendor>
@@ -14,7 +14,7 @@
 	</security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari202-signed.jar" main="true" />
+		<jar href="javatari300-signed.jar" main="true" />
 	</resources>
 	<applet-desc 
         name="javatari"
