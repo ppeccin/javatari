@@ -129,7 +129,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 
 	private void setPixelValue() {
-		// No need to calculate all possibilities in vSync/vBlank. TODO No collisions will be detected
+		// No need to calculate all possibilities in vSync/vBlank. TODO No collisions will be detected then
 		if (vSyncOn) { linePixels[clock] = vSyncColor; return; }
 		if (vBlankOn) { linePixels[clock] = vBlankColor; return; }
 		// Updates the current PlayFiled pixel to draw only each 4 pixels, or at the first calculated pixel after stopped using cached line
@@ -547,10 +547,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				d = (clock - hMoveHitClock - 4) >> 2;
 				if (d > 8) d = 8;
 			}
-			player0RecentReset = true;
 		}
 		
 		player0Counter = 157 - d;	
+		player0RecentReset = player0Counter <= 155;
 	}
 	
 	private void hitRESP1() {
@@ -573,10 +573,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				d = (clock - hMoveHitClock - 4) >> 2;
 				if (d > 8) d = 8;
 			}
-			player1RecentReset = true;
 		}
 
 		player1Counter = 157 - d;	
+		player1RecentReset = player1Counter <= 155;
 	}
 	
 	private void hitRESM0() {
@@ -599,10 +599,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				d = (clock - hMoveHitClock - 4) >> 2;
 				if (d > 8) d = 8;
 			}
-			missile0RecentReset = true;
 		}
 
 		missile0Counter = 157 - d;	
+		missile0RecentReset = missile0Counter <= 155;
 	}
 	
 	private void hitRESM1() {
@@ -625,10 +625,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				d = (clock - hMoveHitClock - 4) >> 2;
 				if (d > 8) d = 8;
 			}
-			missile1RecentReset = true;
 		}
 
 		missile1Counter = 157 - d;	
+		missile1RecentReset = missile1Counter <= 155;
 	}
 	
 	private void hitRESBL() {

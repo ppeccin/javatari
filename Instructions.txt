@@ -14,6 +14,8 @@ Alt + C:       Toggle Collisions
 Alt + V:       Toggle NTSC/PAL
 Alt + P:       Toggle Pause
 Alt + F:       Next Frame (during Pause)
+Alt + B:       Cycle through ROM formats
+Alt + G:       Show info
 
 F5:            Load Cartridge from file
 F6:            Load Cartridge from URL
@@ -29,6 +31,9 @@ Alt + 1-0:     Load State
 Shft + Arrows: Screen Size	
 Backspace:     Default Screen Size
 
+Alt + HOME:    DPC audio clock up
+Alt + END:     DPC audio clock down
+
 TAB:           Fast Speed
 
 
@@ -37,7 +42,7 @@ simply double-click the executable javatari.jar file, or:
 $ java -jar javatari.jar
 
 Multiplayer Server and Client modes can be controlled in the emulator UI.
-But you can start the emulator directly in Multiplayer modes with:
+Also, you can start the emulator directly in Multiplayer modes with:
 
 $ java -cp javatari.jar main.MultiplayerServer
 or

@@ -1,14 +1,23 @@
-You can find executables in the downloads section.
+Visit http://javatari.org for downloads and online play
 
-Visit http://javatari.org
+Version 3.00
+============
+- Added support for all major ROM formats/bankswitching schemes
+  - Format selectable in the Settings Dialog
+  - Cycle through compatible options in realtime with ALT + B
+  - DPC support, with enhanced audio option
+  - Adjustable DPC audio clock (ALT + HOME, ALT + END)
+  - Several homebrew ROMs now work correctly
+- Many accuracy improvements 
+- Better performance
+
+
+Previous Versions:
 
 Version 2.03
 ============
 - Support for additional ROM formats
 - Better support for ROMs from the Demo Scene 
-
-
-Previous Versions:
 
 Version 2.02
 ============
@@ -91,6 +100,3 @@ Version 1.01
 - Added SuperChip support.
 - Improved ROM format detection.
 - Better compatibility for batari Basic ROMs.
-
-
-
