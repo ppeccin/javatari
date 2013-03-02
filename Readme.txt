@@ -1,5 +1,16 @@
 Visit http://javatari.org for downloads and online play
 
+Version 3.10
+============
+- Added Joystick support (Windows and Linux)
+  - Fully selectable axes with deadzone adjustment
+  - Paddles analog emulation with adjustable sensitivity and centering
+  - Other console controls can be mapped to Joystick buttons
+- Better compatibility in Linux and Mac OSX
+
+
+Previous Versions:
+
 Version 3.00
 ============
 - Added support for all major ROM formats/bankswitching schemes
@@ -10,9 +21,6 @@ Version 3.00
   - Several homebrew ROMs now work correctly
 - Many accuracy improvements 
 - Better performance
-
-
-Previous Versions:
 
 Version 2.03
 ============

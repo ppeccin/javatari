@@ -1,4 +1,5 @@
-bin/
-saves/
-javatarisaves/
-deploy/
+javatari/bin/
+javatari/deploy/MakeSignedJAR.xml
+javatari/javatarisaves/
+joy/bin/
+

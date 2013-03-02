@@ -3,8 +3,9 @@ Controls
 
 P1 Controls:   Arrow Keys / Space: Fire
 P2 Controls:   F,T,G,H / A: Fire
-Alt + J:       Swap P1<>P2 Controls
+Alt + K:       Swap P1<>P2 Controls
 Alt + L:       Connect/Disconnect Paddles
+Alt + J:       Toggle Joystick modes
 
 Alt + ENTER:   Toggle FullScreen
 Alt + R:       Toggle CRT modes
