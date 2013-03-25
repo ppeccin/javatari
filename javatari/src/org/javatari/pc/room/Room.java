@@ -2,6 +2,8 @@
 
 package org.javatari.pc.room;
 
+import java.util.ArrayList;
+
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.console.Console;
 import org.javatari.atari.network.ClientConsole;
@@ -9,6 +11,7 @@ import org.javatari.atari.network.RemoteReceiver;
 import org.javatari.atari.network.RemoteTransmitter;
 import org.javatari.atari.network.ServerConsole;
 import org.javatari.parameters.Parameters;
+import org.javatari.pc.cartridge.BuiltInROM;
 import org.javatari.pc.cartridge.ROMLoader;
 import org.javatari.pc.controls.AWTConsoleControls;
 import org.javatari.pc.controls.JoystickConsoleControls;
@@ -161,7 +164,7 @@ public class Room {
 		currentConsole = console;
 		screen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
 		speaker.connect(currentConsole.audioOutput());
-		awtControls.connect(currentConsole.controlsSocket());
+		awtControls.connect(currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
 		stateMedia.connect(currentConsole.saveStateSocket());
 	}
 	
@@ -174,9 +177,19 @@ public class Room {
 	private void loadCartridgeProvided() {
 		if (triedToLoadCartridgeProvided) return;
 		triedToLoadCartridgeProvided = true;
-		if (isClientMode() || Parameters.mainArg == null) return;
-		cartridgeProvided = ROMLoader.load(Parameters.mainArg);
-		if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
+		if (isClientMode()) return;
+		// First try to load the Cartridge passed as a parameter
+		if (Parameters.mainArg != null) {
+			cartridgeProvided = ROMLoader.load(Parameters.mainArg);
+			if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
+		} else {
+			// If none, try to load the first built-in ROM
+			ArrayList<String> fileNames = BuiltInROM.allROMFileNames();
+			if (fileNames.size() > 0) {
+				cartridgeProvided = ROMLoader.loadBuiltIn(fileNames.get(0));
+				if (cartridgeProvided == null) Terminator.terminate();	// Error loading Cartridge
+			}
+		}
 	}
 
 	private Console buildAndPlugStandaloneConsole() {

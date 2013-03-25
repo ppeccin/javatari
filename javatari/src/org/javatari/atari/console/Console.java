@@ -4,20 +4,22 @@ package org.javatari.atari.console;
 
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.javatari.atari.board.BUS;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.CartridgeInsertedListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.cartridge.formats.CartridgeDatabase;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.console.savestate.SaveStateMedia;
 import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.atari.controls.ConsoleControls;
+import org.javatari.atari.controls.ConsoleControls.Control;
 import org.javatari.atari.controls.ConsoleControlsInput;
 import org.javatari.atari.controls.ConsoleControlsSocket;
-import org.javatari.atari.controls.ConsoleControls.Control;
 import org.javatari.atari.pia.PIA;
 import org.javatari.atari.pia.RAM;
 import org.javatari.atari.tia.TIA;
@@ -116,6 +118,7 @@ public class Console {
 	protected void cartridge(Cartridge cartridge) {
 		controlsSocket.removeForwardedInput(cartridge());
 		bus.cartridge(cartridge);
+		cartridgeSocket.cartridgeInserted(cartridge);
 		if (cartridge != null) controlsSocket.addForwardedInput(cartridge);
 	}
 
@@ -341,6 +344,20 @@ public class Console {
 		public Cartridge inserted() {
 			return cartridge();
 		}
+		@Override
+		public void cartridgeInserted(Cartridge cartridge) {
+			for (CartridgeInsertedListener listener : cartridgeInsertedListeners)
+				listener.cartridgeInserted(cartridge);
+		}
+		@Override
+		public void addCartridgeInsertedListener(CartridgeInsertedListener listener) {
+			if (!cartridgeInsertedListeners.contains(listener)) cartridgeInsertedListeners.add(listener);
+		}
+		@Override
+		public void removeCartridgeInsertedListener(CartridgeInsertedListener listener) {
+			cartridgeInsertedListeners.remove(listener);
+		}
+		private List<CartridgeInsertedListener> cartridgeInsertedListeners = new ArrayList<CartridgeInsertedListener>();
 	}	
 	
 	protected class SaveStateSocketAdapter implements SaveStateSocket {

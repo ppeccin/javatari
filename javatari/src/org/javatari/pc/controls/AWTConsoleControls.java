@@ -2,20 +2,23 @@
 
 package org.javatari.pc.controls;
 
-
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.javatari.atari.cartridge.Cartridge;
+import org.javatari.atari.cartridge.CartridgeInsertedListener;
+import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.cartridge.formats.CartridgeDatabase;
 import org.javatari.atari.controls.ConsoleControls;
-import org.javatari.atari.controls.ConsoleControlsInput;
+import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.parameters.Parameters;
 import org.javatari.utils.KeyFilteredRepeatsAdapter;
 
 
-public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implements ConsoleControls {
+public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implements ConsoleControls, CartridgeInsertedListener {
 	
 	public AWTConsoleControls(VideoMonitor monitor) {
 		super();
@@ -24,9 +27,12 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		initKeys();
 	}
 
-	public void connect(ConsoleControlsInput input) {
-		consoleControlsInput = input;
-		joystickControls.connect(input);
+	public void connect(ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+		if (cartridgeSocket != null) cartridgeSocket.removeCartridgeInsertedListener(this);
+		this.cartridgeSocket = cartridgeSocket;
+		this.cartridgeSocket.addCartridgeInsertedListener(this);
+		consoleControlsSocket = controlsSocket;
+		joystickControls.connect(controlsSocket);
 	}
 
 	public void addInputComponents(Component... inputs) {
@@ -38,10 +44,19 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 
 	public void powerOn() {
 		joystickControls.powerOn();
+		if (PADDLES_MODE == 0) paddleMode(false);
+		else if (PADDLES_MODE == 1) paddleMode(true);
 	}
 	
 	public void powerOff() {
 		joystickControls.powerOff();
+	}
+
+	@Override
+	public void cartridgeInserted(Cartridge cartridge) {
+		if (cartridge == null || Parameters.PADDLES_MODE >= 0) return;	// Does not interfere if Paddle Mode is forced
+		boolean usePaddles = CartridgeDatabase.getInfo(cartridge).usePaddles;
+		if (paddleMode != usePaddles) paddleMode(usePaddles);
 	}
 
 	public void toggleP1ControlsMode() {
@@ -55,15 +70,19 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	}
 	
 	public void togglePaddleMode() {
-		paddleMode = !paddleMode;
+		paddleMode(!paddleMode);
+	}
+	
+	public void paddleMode(boolean mode) {
+		paddleMode = mode;
 		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
 		paddle0Speed = paddle1Speed = 2;
 		paddle0Position = paddle1Position = (paddleMode ? 190 : -1);	// -1 = disconnected, won't charge POTs
 		// Reset all controls to default state
 		for (Control control : playerDigitalControls)
-			consoleControlsInput.controlStateChanged(control, false);
-		consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
-		consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+			consoleControlsSocket.controlStateChanged(control, false);
+		consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+		consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
 		joystickControls.paddleMode(paddleMode);
 		showModeOSD();
 		if (paddleMode) paddlesUpdateActive();
@@ -92,7 +111,7 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		Boolean state = controlStateMap.get(control);
 		if (state == null || state != press) {
 			controlStateMap.put(control, press);
-			consoleControlsInput.controlStateChanged(control, press);
+			consoleControlsSocket.controlStateChanged(control, press);
 		}
 	}
 
@@ -189,23 +208,23 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 			if (!paddle0MovingLeft) {
 				paddle0Position -= paddle0Speed;
 				if (paddle0Position < 0) paddle0Position = 0;
-				consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+				consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
 			}
 		} else if (paddle0MovingLeft) {
 			paddle0Position += paddle0Speed;
 			if (paddle0Position > 380) paddle0Position = 380;
-			consoleControlsInput.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+			consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
 		}
 		if (paddle1MovingRight) {
 			if (!paddle1MovingLeft) {
 				paddle1Position -= paddle1Speed;
 				if (paddle1Position < 0) paddle1Position = 0;
-				consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+				consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
 			}
 		} else if (paddle1MovingLeft) {
 			paddle1Position += paddle1Speed;
 			if (paddle1Position > 380) paddle1Position = 380;
-			consoleControlsInput.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+			consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
 		}
 	}
 
@@ -309,16 +328,17 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	public boolean p1ControlsMode = false;
 	public boolean paddleMode = false;
 
-	private ConsoleControlsInput consoleControlsInput; 
+	private ConsoleControlsSocket consoleControlsSocket; 
+	private CartridgeSocket cartridgeSocket; 
 	private final VideoMonitor videoMonitor;
 	private final JoystickConsoleControls joystickControls;
 
 	private int paddle0Position = 0;			// 380 = LEFT, 190 = MIDDLE, 0 = RIGHT
-	private int paddle0Speed = 2;				// 1 to 10
+	private int paddle0Speed = 3;				// 1 to 10
 	private boolean paddle0MovingLeft = false;
 	private boolean paddle0MovingRight = false;
 	private int paddle1Position = 0;
-	private int paddle1Speed = 2;				
+	private int paddle1Speed = 3;				
 	private boolean paddle1MovingLeft = false;
 	private boolean paddle1MovingRight = false;
 	private PaddlesPositionUpdater paddlePositionUpdater;
@@ -367,7 +387,8 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 
 	private static final int KEY_CARTRIDGE_CLOCK_DEC = KeyEvent.VK_END;
 	private static final int KEY_CARTRIDGE_CLOCK_INC = KeyEvent.VK_HOME;
-
+	
+	private static final int PADDLES_MODE = Parameters.PADDLES_MODE;
 	
 	private class PaddlesPositionUpdater extends Thread {
 		public PaddlesPositionUpdater() {

@@ -47,7 +47,7 @@ public class ConsoleControlsSocket implements ConsoleControlsInput {
 			listener.controlsStatesRedefined();
 	}
 	
-	
+
 	private List<ConsoleControlsInput> forwardedInputs = new ArrayList<ConsoleControlsInput>();
 	private List<ConsoleControlsRedefinitionListener> redefinitonListener = new ArrayList<ConsoleControlsRedefinitionListener>();
 

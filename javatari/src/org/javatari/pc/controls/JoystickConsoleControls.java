@@ -2,20 +2,18 @@
 
 package org.javatari.pc.controls;
 
-
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-
 import org.javatari.atari.controls.ConsoleControls;
-import org.javatari.atari.controls.ConsoleControlsInput;
+import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.parameters.Parameters;
 import org.joy.Joy;
-import org.joy.Joystick;
 import org.joy.Joy.Info;
+import org.joy.Joystick;
 
 
 public final class JoystickConsoleControls implements ConsoleControls {
@@ -26,8 +24,8 @@ public final class JoystickConsoleControls implements ConsoleControls {
 		this.awtControls = awtControls;
 	}
 
-	public void connect(ConsoleControlsInput input) {
-		consoleControlsInput = input;
+	public void connect(ConsoleControlsSocket socket) {
+		consoleControlsSocket = socket;
 	}
 
 	public void powerOn() {
@@ -237,7 +235,7 @@ public final class JoystickConsoleControls implements ConsoleControls {
 			else if (newPosition > 380) newPosition = 380;
 			if (newPosition != joyState.xPosition) {
 				joyState.xPosition = newPosition;
-				consoleControlsInput.controlStateChanged(player0 ? Control.PADDLE0_POSITION : Control.PADDLE1_POSITION, newPosition);
+				consoleControlsSocket.controlStateChanged(player0 ? Control.PADDLE0_POSITION : Control.PADDLE1_POSITION, newPosition);
 			}
 		}
 		// Joystick direction (Analog or POV) and Paddle Digital (Analog or POV)
@@ -340,7 +338,7 @@ public final class JoystickConsoleControls implements ConsoleControls {
 	
 	private final VideoMonitor videoMonitor;
 	private final AWTConsoleControls awtControls;
-	private ConsoleControlsInput consoleControlsInput; 
+	private ConsoleControlsSocket consoleControlsSocket; 
 
 	private List<Info> devices = new Vector<Info>();
 	private Vector<DeviceOption> joystick0DeviceOptions = new Vector<DeviceOption>();

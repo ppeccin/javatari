@@ -1,0 +1,13 @@
+##########################################################################################
+# This file is a listing of the built-in ROMs inside the "roms" folder
+# Each line represents a Game in the format: [<Game Name> @] <Rom File Name>
+# Example:
+#     Pitfall! @ pitfall.bin
+#     Pitfall II @ pitfall2.bin
+#     Enduro.bin
+#
+# The first line, if present, will cause the Emulator to auto-load the specified ROM
+# In the current release, only one (the first) ROM will be loaded
+# In future releases, the user will be able to select any of the built-in ROMs from a list 
+##########################################################################################
+

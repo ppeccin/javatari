@@ -72,6 +72,16 @@ public final class ClientConsole extends Console implements ClockDriven {
 		tia.clockPulse();
 	}
 
+	@Override
+	protected void cycleCartridgeFormat() {
+		// Ignore, the new Cartridge state will come from the Server
+	}
+
+	@Override
+	protected void powerFry() {
+		// Ignore, the new RAM state will come from the Server
+	}
+
 	void connected() {
 		showOSD("Connected to Player 1 Server", true);
 	}
@@ -117,7 +127,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 		@Override
 		public void controlStateChanged(Control control, boolean state) {
 			if (DISABLED_CONTROLS.contains(control)) {
-				showOSD("Option disabled in Player 2 Client", true);
+				showOSD("Only the Server can change Cartridge Formats", true);
 				return;
 			}
 			synchronized (queuedChanges) {

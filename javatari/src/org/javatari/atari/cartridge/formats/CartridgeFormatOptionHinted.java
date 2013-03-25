@@ -8,7 +8,7 @@ import org.javatari.atari.cartridge.CartridgeFormatOption;
 public final class CartridgeFormatOptionHinted extends CartridgeFormatOption {
 
 	CartridgeFormatOptionHinted(int priority, CartridgeFormat format, String contentName) {
-		super(CartridgeDatabase.priorityBoosted(priority, format ,contentName), format);
+		super(CartridgeDatabase.priorityBoosted(priority, format, contentName), format);
 	}
 
 }

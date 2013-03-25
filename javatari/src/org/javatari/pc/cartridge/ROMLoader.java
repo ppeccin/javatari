@@ -70,6 +70,13 @@ public final class ROMLoader {
 		}
 	}
 	
+	public static Cartridge loadBuiltIn(String fileName) {
+		URL url = BuiltInROM.urlForFileName(fileName);
+		if (url != null) return load(url);
+		errorMessage(new IllegalArgumentException("Built-in ROM file not found"), fileName);
+		return null;
+	}
+
 	public static Cartridge load(InputStream stream, String location, String name) {
 		System.out.println("Loading Cartridge from: " + location);
 		BufferedInputStream buffer = bufferedStream(stream);

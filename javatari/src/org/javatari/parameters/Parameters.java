@@ -97,7 +97,7 @@ public final class Parameters {
 
 	private static void loadPropertiesFile() {
 		InputStream is = Thread.currentThread().getContextClassLoader().
-				getResourceAsStream("org/javatari/parameters/javatari.properties");
+				getResourceAsStream("javatari.properties");
 		try {
 			try {
 				props.load(is);
@@ -105,7 +105,7 @@ public final class Parameters {
 				is.close();
 			}
 		} catch (Exception ex) {
-			System.out.println("parameters/javatari.properties not found, using defaults");
+			System.out.println("javatari.properties not found, using defaults");
 		}
 		// Try to replace properties by ones set via command line -D
 		try {
@@ -291,6 +291,7 @@ public final class Parameters {
 			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
 			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
 
+			val = props.getProperty("PADDLES_MODE"); if (val != null) PADDLES_MODE = Integer.valueOf(val);
 			val = props.getProperty("JOYSTICK_UPDATE_RATE"); if (val != null) JOYSTICK_UPDATE_RATE = Integer.valueOf(val);
 		} catch(Exception ex) {
 			System.out.println("Error processing properties:\n" + ex);
@@ -300,7 +301,7 @@ public final class Parameters {
 
 
 	// Main Emulator Version
-	public static final String VERSION = "version 3.10";
+	public static final String VERSION = "version 3.12";
 
 	
 	// Cartridge URL to load passed as argument
@@ -318,14 +319,14 @@ public final class Parameters {
 	public static double	VIDEO_NTSC_FPS = 60;
 	public static double	VIDEO_PAL_FPS = 50.384615;
 	
-	public static int 		RAM_FRY_ZERO_BITS = 100;						// Quantity of bits to change
+	public static int 		RAM_FRY_ZERO_BITS = 120;						// Quantity of bits to change
 	public static int 		RAM_FRY_ONE_BITS = 25;
 	public static float 	RAM_FRY_VARIANCE = 0.3f;
 	public static boolean 	BUS_DATA_RETENTION = true;
-	public static int		CONSOLE_FAST_SPEED_FACTOR = 8;
+	public static int		CONSOLE_FAST_SPEED_FACTOR = 15;
 
 	public static double	SCREEN_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
-	public static int 		SCREEN_DEFAULT_ORIGIN_X = 10;
+	public static int 		SCREEN_DEFAULT_ORIGIN_X = 68;
 	public static double 	SCREEN_DEFAULT_ORIGIN_Y_PCT = 12;				// Percentage of height	
 	public static int 		SCREEN_DEFAULT_WIDTH = 160;
 	public static double 	SCREEN_DEFAULT_HEIGHT_PCT = 81.5;				// Percentage of height
@@ -334,7 +335,7 @@ public final class Parameters {
 	public static float 	SCREEN_DEFAULT_SCALE_ASPECT_X = 2;				// X = 2 * Y
 	public static int 		SCREEN_BORDER_SIZE = 3;
 	public static int 		SCREEN_OSD_FRAMES = 160;
-	public static int 		SCREEN_VSYNC_TOLERANCE = 10;
+	public static int 		SCREEN_VSYNC_TOLERANCE = 20;
 	public static boolean 	SCREEN_QUALITY_RENDERING = false;
 	public static int	 	SCREEN_CRT_MODE = 0;
 	public static float	 	SCREEN_CRT_RETENTION_ALPHA = 0.75f;
@@ -342,7 +343,7 @@ public final class Parameters {
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;
 	public static int	 	SCREEN_BUFFER_VSYNC = -1;
-	public static float		SCREEN_FRAME_ACCELERATION = 0;
+	public static float		SCREEN_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
 	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
@@ -352,9 +353,9 @@ public final class Parameters {
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
-	public static int		SPEAKER_OUTPUT_BUFFER_SIZE = 768;				// In frames (samples)
+	public static int		SPEAKER_OUTPUT_BUFFER_SIZE = 1024;				// In frames (samples)
 	public static int		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = 5;		// In milliseconds
-	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 20;				// In milliseconds
+	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 10;				// In milliseconds
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static boolean 	MULTIPLAYER_UI = true;
@@ -362,6 +363,7 @@ public final class Parameters {
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
 
+	public static int		PADDLES_MODE = -1;								// -1 = AUTO, 0 = Force OFF, 1 = Force ON
 	public static int		JOYSTICK_UPDATE_RATE = 120;						// In Hz
 
 	public static String 	OFFICIAL_WEBSITE = "http://javatari.org";
@@ -404,8 +406,8 @@ public final class Parameters {
 	public static final int DEFAULT_JOY_FAST_SPPED    = 4;
 	public static final int DEFAULT_JOY_PAUSE  		  = 5;
 	public static final int DEFAULT_JOY_DEADZONE      = 30;
-	public static final int DEFAULT_JOY_PADDLE_CENTER = 30;
-	public static final int DEFAULT_JOY_PADDLE_SENS   = 45;
+	public static final int DEFAULT_JOY_PADDLE_CENTER = 0;
+	public static final int DEFAULT_JOY_PADDLE_SENS   = 90;
 
 	// The following parameters can be customized as user preferences, not via properties file or command line
 
