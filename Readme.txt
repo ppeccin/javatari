@@ -1,4 +1,15 @@
 Visit http://javatari.org for downloads and online play
+Discuss at http://groups.google.com/group/javatari
+
+Version 3.12
+============
+- Preliminary support for built-in ROMs
+- Auto-load of built-in ROMs
+- Auto-detection of Paddles Mode per ROM
+- Option to start with Paddles Mode ON
+
+
+Previous Versions:
 
 Version 3.10
 ============
@@ -7,9 +18,6 @@ Version 3.10
   - Paddles analog emulation with adjustable sensitivity and centering
   - Other console controls can be mapped to Joystick buttons
 - Better compatibility in Linux and Mac OSX
-
-
-Previous Versions:
 
 Version 3.00
 ============

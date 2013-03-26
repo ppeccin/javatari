@@ -31,7 +31,7 @@ public class BuiltInROM {
 				stream.close();
 			}
 		} catch (IOException e) {
-			// give p
+			// give up
 		}
 		
 		return result;
