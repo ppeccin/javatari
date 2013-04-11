@@ -271,13 +271,13 @@ public final class Parameters {
 			val = props.getProperty("SCREEN_MULTI_BUFFERING"); if (val != null) SCREEN_MULTI_BUFFERING = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_PAGE_FLIPPING"); if (val != null) SCREEN_PAGE_FLIPPING = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_BUFFER_VSYNC"); if (val != null) SCREEN_BUFFER_VSYNC = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_CONSOLE_PANEL"); if (val != null) SCREEN_CONSOLE_PANEL = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FRAME_ACCELERATION"); if (val != null) SCREEN_FRAME_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_INTERM_FRAME_ACCELERATION"); if (val != null) SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_SCANLINES_ACCELERATION"); if (val != null) SCREEN_SCANLINES_ACCELERATION = Float.valueOf(val);
-			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
-			val = props.getProperty("SCREEN_CONSOLE_PANEL"); if (val != null) SCREEN_CONSOLE_PANEL = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FIXED_SIZE"); if (val != null) SCREEN_FIXED_SIZE = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FULLSCREEN"); if (val != null) SCREEN_FULLSCREEN = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
 
 			val = props.getProperty("SPEAKER_DEFAULT_FPS"); if (val != null) SPEAKER_DEFAULT_FPS = Double.valueOf(val);
 			val = props.getProperty("SPEAKER_INPUT_BUFFER_SIZE"); if (val != null) SPEAKER_INPUT_BUFFER_SIZE = Integer.valueOf(val);
@@ -291,8 +291,19 @@ public final class Parameters {
 			val = props.getProperty("SERVER_MAX_UPDATES_PENDING"); if (val != null) SERVER_MAX_UPDATES_PENDING = Integer.valueOf(val);
 			val = props.getProperty("CLIENT_MAX_UPDATES_PENDING"); if (val != null) CLIENT_MAX_UPDATES_PENDING = Integer.valueOf(val);
 
-			val = props.getProperty("PADDLES_MODE"); if (val != null) PADDLES_MODE = Integer.valueOf(val);
-			val = props.getProperty("JOYSTICK_UPDATE_RATE"); if (val != null) JOYSTICK_UPDATE_RATE = Integer.valueOf(val);
+			val = props.getProperty("CARTRIDGE_NAME"); if (val != null && !val.isEmpty()) CARTRIDGE_NAME = String.valueOf(val);
+			val = props.getProperty("CARTRIDGE_LABEL"); if (val != null && !val.isEmpty()) CARTRIDGE_LABEL = String.valueOf(val);
+			val = props.getProperty("CARTRIDGE_LABEL_COLORS"); if (val != null && !val.isEmpty()) CARTRIDGE_LABEL_COLORS = String.valueOf(val);
+			val = props.getProperty("CARTRIDGE_PADDLES"); if (val != null && !val.isEmpty()) CARTRIDGE_PADDLES = Integer.valueOf(val);
+			val = props.getProperty("CARTRIDGE_CRT_MODE"); if (val != null && !val.isEmpty()) CARTRIDGE_CRT_MODE = Integer.valueOf(val);
+			val = props.getProperty("CARTRIDGE_FORMAT"); if (val != null && !val.isEmpty()) CARTRIDGE_FORMAT = String.valueOf(val);
+
+			val = props.getProperty("PADDLES_MODE"); if (val != null && !val.isEmpty()) PADDLES_MODE = Integer.valueOf(val);
+			val = props.getProperty("JOYSTICK_UPDATE_RATE"); if (val != null && !val.isEmpty()) JOYSTICK_UPDATE_RATE = Integer.valueOf(val);
+			
+			if (CARTRIDGE_LABEL_COLORS != null) {
+				setCartridgeLabelColors(CARTRIDGE_LABEL_COLORS);
+			}
 		} catch(Exception ex) {
 			System.out.println("Error processing properties:\n" + ex);
 			Terminator.terminate();
@@ -300,8 +311,20 @@ public final class Parameters {
 	}
 
 
+	public static void setCartridgeLabelColors(String colorsSpec) {
+		try {
+			String[] colors = colorsSpec.trim().split("\\s");
+			CARTRIDGE_LABEL_COLOR = (colors.length >= 1) ? Integer.valueOf(colors[0], 16) : -1;
+			CARTRIDGE_BACK_COLOR = (colors.length >= 2) ? Integer.valueOf(colors[1], 16) : -1;
+			CARTRIDGE_BORDER_COLOR = (colors.length >= 3) ? Integer.valueOf(colors[2], 16) : -1;
+		} catch (Exception e) {
+			System.out.println("Error parsing CARTRIDGE_LABEL_COLORS: " + e.getMessage());
+		}
+	}
+
+
 	// Main Emulator Version
-	public static final String VERSION = "version 3.12";
+	public static final String VERSION = "version 3.2";
 
 	
 	// Cartridge URL to load passed as argument
@@ -343,13 +366,13 @@ public final class Parameters {
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;
 	public static int	 	SCREEN_BUFFER_VSYNC = -1;
+	public static boolean 	SCREEN_CONSOLE_PANEL = true;
 	public static float		SCREEN_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
-	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
-	public static boolean 	SCREEN_CONSOLE_PANEL = true;
 	public static boolean 	SCREEN_FIXED_SIZE = false;
 	public static boolean 	SCREEN_FULLSCREEN = false;
+	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
@@ -362,6 +385,20 @@ public final class Parameters {
 	public static int 		SERVER_SERVICE_PORT = 9998;
 	public static int 		SERVER_MAX_UPDATES_PENDING = 20;
 	public static int 		CLIENT_MAX_UPDATES_PENDING = 20;
+
+	public static String 	CARTRIDGE_NAME = null;
+	public static String 	CARTRIDGE_LABEL = null;
+	public static String	CARTRIDGE_LABEL_COLORS = null;
+	public static int		CARTRIDGE_LABEL_COLOR = -1;
+	public static int		CARTRIDGE_BACK_COLOR = -1;
+	public static int 		CARTRIDGE_BORDER_COLOR = -1;
+	public static int	 	CARTRIDGE_PADDLES = -1;
+	public static int	 	CARTRIDGE_CRT_MODE = -1;
+	public static String 	CARTRIDGE_FORMAT = null;
+
+	public static String 	DEFAULT_CARTRIDGE_LABEL = "JAVATARI 2600";
+	public static int	 	DEFAULT_CARTRIDGE_LABEL_COLOR = 0xeb2820;
+	public static int	 	DEFAULT_CARTRIDGE_BACK_COLOR = 0x141414;
 
 	public static int		PADDLES_MODE = -1;								// -1 = AUTO, 0 = Force OFF, 1 = Force ON
 	public static int		JOYSTICK_UPDATE_RATE = 120;						// In Hz

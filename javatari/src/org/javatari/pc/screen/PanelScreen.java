@@ -32,7 +32,7 @@ public final class PanelScreen extends JPanel implements Screen {
 	@Override
 	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		monitorPanel.connect(videoSignal, controlsSocket, cartridgeSocket);
-		if (consolePanel != null) consolePanel.connect(controlsSocket);
+		if (consolePanel != null) consolePanel.connect(controlsSocket, cartridgeSocket);
 	}
 	
 	@Override

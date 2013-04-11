@@ -9,10 +9,10 @@ import java.util.Map;
 
 import org.javatari.atari.board.BUS;
 import org.javatari.atari.cartridge.Cartridge;
+import org.javatari.atari.cartridge.CartridgeDatabase;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
-import org.javatari.atari.cartridge.CartridgeInsertedListener;
+import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
-import org.javatari.atari.cartridge.formats.CartridgeDatabase;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.console.savestate.SaveStateMedia;
 import org.javatari.atari.console.savestate.SaveStateSocket;
@@ -130,11 +130,9 @@ public class Console {
 
 	protected void videoStandardAutoDetectionStart() {
 		if (!videoStandardAuto || videoStandardAutoDetectionInProgress) return;
-		// If the Cartridge has suggested a VideoStandard, use it
-		VideoStandard suggestedStandard = bus.cartridge != null
-				? bus.cartridge.suggestedVideoStandard() : VideoStandard.NTSC;
-		if (suggestedStandard != null) {
-			videoStandard(suggestedStandard);
+		// If no Cartridge present, use NTSC
+		if (bus.cartridge == null) {
+			videoStandard(VideoStandard.NTSC);
 			return;
 		}
 		// Otherwise use the VideoStandard detected by the monitor
@@ -226,7 +224,7 @@ public class Console {
 			showOSD("NO CARTRIDGE INSERTED!", true);
 			return;
 		}
-		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptionsUnhinted(cartridge());
+		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cartridge().rom());
 		if (options.isEmpty()) return;
 		CartridgeFormatOption currOption = null;
 		for (CartridgeFormatOption option : options)
@@ -234,7 +232,7 @@ public class Console {
 		int pos = options.indexOf(currOption) + 1;		// cycle through options
 		if (pos >= options.size()) pos = 0;
 		CartridgeFormatOption newOption = options.get(pos);
-		Cartridge newCart = newOption.format.create(cartridge());
+		Cartridge newCart = newOption.format.createCartridge(cartridge().rom());
 		cartridgeSocket().insert(newCart, true);
 		showOSD(newOption.format.toString(), true);
 	}
@@ -251,9 +249,14 @@ public class Console {
 	}
 
 	private void pauseAndLoadState(ConsoleState state) {
-		mainClockPause();
-		Console.this.loadState(state);
-		mainClockGo();
+		if (powerOn) {
+			mainClockPause();
+			Console.this.loadState(state);
+			mainClockGo();
+		} else {
+			powerOn();
+			pauseAndLoadState(state);
+		}
 	}
 
 
@@ -346,18 +349,18 @@ public class Console {
 		}
 		@Override
 		public void cartridgeInserted(Cartridge cartridge) {
-			for (CartridgeInsertedListener listener : cartridgeInsertedListeners)
+			for (CartridgeInsertionListener listener : insertionListeners)
 				listener.cartridgeInserted(cartridge);
 		}
 		@Override
-		public void addCartridgeInsertedListener(CartridgeInsertedListener listener) {
-			if (!cartridgeInsertedListeners.contains(listener)) cartridgeInsertedListeners.add(listener);
+		public void addInsertionListener(CartridgeInsertionListener listener) {
+			if (!insertionListeners.contains(listener)) insertionListeners.add(listener);
 		}
 		@Override
-		public void removeCartridgeInsertedListener(CartridgeInsertedListener listener) {
-			cartridgeInsertedListeners.remove(listener);
+		public void removeInsertionListener(CartridgeInsertionListener listener) {
+			insertionListeners.remove(listener);
 		}
-		private List<CartridgeInsertedListener> cartridgeInsertedListeners = new ArrayList<CartridgeInsertedListener>();
+		private List<CartridgeInsertionListener> insertionListeners = new ArrayList<CartridgeInsertionListener>();
 	}	
 	
 	protected class SaveStateSocketAdapter implements SaveStateSocket {
@@ -374,7 +377,7 @@ public class Console {
 				showOSD("State " + slot + " save failed", true);
 		}
 		public void loadState(int slot) {
-			if (!powerOn || media == null) return;
+			if (media == null) return;
 			ConsoleState state = media.load(slot);
 			if (state == null) {
 				showOSD("State " + slot + " load failed", true);

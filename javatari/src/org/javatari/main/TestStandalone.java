@@ -2,9 +2,7 @@
 
 package org.javatari.main;
 
-import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.parameters.Parameters;
-import org.javatari.pc.cartridge.ROMLoader;
 import org.javatari.pc.room.Room;
 import org.javatari.utils.Environment;
 
@@ -19,12 +17,11 @@ public final class TestStandalone {
 		// Load Parameters from properties file and process arguments
 		Parameters.init(args);
 		
+	 	// Force test Cartridge as main argument
+		Parameters.mainArg = "file:///C:/cartridges/Hero.bin";
+		
 		// Build a Room for Standalone play
 		final Room room = Room.buildStandaloneRoom();
-
-	 	// Insert test Cartridge
-		final Cartridge cart = ROMLoader.load("file:///C:/cartridges/Hero.bin");
-		if (cart != null) room.currentConsole().cartridgeSocket().insert(cart, false);
 
 		// Turn everything on
 		room.powerOn();

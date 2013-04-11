@@ -61,7 +61,7 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	@Override
 	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		monitor.connect(videoSignal, cartridgeSocket);
-		if (consolePanelWindow != null) consolePanelWindow.connect(controlsSocket);
+		if (consolePanelWindow != null) consolePanelWindow.connect(controlsSocket, cartridgeSocket);
 	}
 
 	@Override

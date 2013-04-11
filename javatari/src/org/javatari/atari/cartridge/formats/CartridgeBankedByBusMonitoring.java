@@ -3,14 +3,15 @@
 package org.javatari.atari.cartridge.formats;
 
 import org.javatari.atari.cartridge.CartridgeFormat;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements generic bank switching using unmasked address access via bus monitoring (outside Cart area)
  */
 public abstract class CartridgeBankedByBusMonitoring extends CartridgeBanked {
 
-	protected CartridgeBankedByBusMonitoring(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format);
+	protected CartridgeBankedByBusMonitoring(ROM rom, CartridgeFormat format) {
+		super(rom, format);
 	}
 
 	@Override

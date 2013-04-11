@@ -30,7 +30,7 @@ public final class ROMTransferHandlerUtil {
 	public static Cartridge importCartridgeData(Transferable transf) {
 		// First try String URL
 		String url = getSingleURL(transf);
-		if (url != null) return ROMLoader.load(url);
+		if (url != null) return ROMLoader.load(url, false);
 		// Then try File
 		File file = getSingleFile(transf);
 		if (file != null) return ROMLoader.load(file);

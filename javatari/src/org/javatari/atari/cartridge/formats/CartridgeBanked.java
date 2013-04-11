@@ -4,6 +4,7 @@ package org.javatari.atari.cartridge.formats;
 
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the generic bank switching method with address offset
@@ -11,8 +12,8 @@ import org.javatari.atari.cartridge.CartridgeFormat;
  */
 public abstract class CartridgeBanked extends Cartridge {
 
-	protected CartridgeBanked(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format);
+	protected CartridgeBanked(ROM rom, CartridgeFormat format) {
+		super(rom, format);
 	}
 
 	@Override

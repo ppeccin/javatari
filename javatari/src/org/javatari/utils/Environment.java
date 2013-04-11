@@ -2,7 +2,9 @@
 
 package org.javatari.utils;
 
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.InputStream;
 import java.util.Locale;
 
 import javax.swing.SwingUtilities;
@@ -35,6 +37,19 @@ public class Environment {
 						if (font.equals("LIBERATION SANS")) LIBERATION_FONT = true; 
 					}
 				} catch (Exception e) {}
+
+				// Create font used to render Cartridge Labels
+				try {
+					InputStream fontStream = Environment.class.getClassLoader()
+							.getResourceAsStream("org/javatari/pc/screen/images/LiberationSans-Bold.ttf");
+					if (fontStream != null) {
+						try {
+							cartridgeLabelFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 15f);
+						} finally {
+							fontStream.close();
+						}
+					}
+				} catch (Exception e) {}
 			}});
 		} catch (Exception e) {}
 	}
@@ -50,5 +65,7 @@ public class Environment {
 	public static boolean NIMBUS_LAF = false;
 	public static boolean ARIAL_FONT = false;
 	public static boolean LIBERATION_FONT = false;
+	
+	public static Font cartridgeLabelFont = null;
 
 }

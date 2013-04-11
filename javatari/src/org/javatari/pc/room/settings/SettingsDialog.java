@@ -54,9 +54,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.javatari.atari.cartridge.Cartridge;
+import org.javatari.atari.cartridge.CartridgeDatabase;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
-import org.javatari.atari.cartridge.formats.CartridgeDatabase;
 import org.javatari.atari.console.Console;
 import org.javatari.atari.controls.ConsoleControls.Control;
 import org.javatari.atari.network.ConnectionStatusListener;
@@ -69,7 +69,6 @@ import org.javatari.pc.controls.JoystickConsoleControls.JoystickButtonDetectionL
 import org.javatari.pc.room.Room;
 import org.javatari.utils.Environment;
 import org.javatari.utils.GraphicsDeviceHelper;
-
 
 public final class SettingsDialog extends JDialog implements ConnectionStatusListener, JoystickButtonDetectionListener {
 
@@ -259,9 +258,9 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			defaultsB.setVisible(false);
 		} else {
 			Cartridge cart = room.currentConsole().cartridgeSocket().inserted();
-			romNameTf.setText(cart.contentName());
+			romNameTf.setText(cart.rom().info.name);
 			romNameTf.setCaretPosition(0);
-			ArrayList<CartridgeFormatOption> formatOptions = CartridgeDatabase.getFormatOptionsUnhinted(cart);
+			ArrayList<CartridgeFormatOption> formatOptions = CartridgeDatabase.getFormatOptions(cart.rom());
 			ArrayList<CartridgeFormat> formats = new ArrayList<CartridgeFormat>();
 			for (CartridgeFormatOption option : formatOptions)
 				formats.add(option.format);
@@ -726,7 +725,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 		Console console = room.currentConsole();
 		Cartridge cart = console.cartridgeSocket().inserted();
 		if (cart == null || cart.format().equals(format)) return;
-		Cartridge newCart = format.create(cart);
+		Cartridge newCart = format.createCartridge(cart.rom());
 		console.cartridgeSocket().insert(newCart, true);
 	}
 	
@@ -734,9 +733,9 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 		Console console = room.currentConsole();
 		Cartridge cart = console.cartridgeSocket().inserted();
 		if (cart == null) return;
-		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cart);
+		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cart.rom());
 		if (options.isEmpty()) return;
-		Cartridge newCart = options.get(0).format.create(cart);
+		Cartridge newCart = options.get(0).format.createCartridge(cart.rom());
 		console.cartridgeSocket().insert(newCart, true);
 		refreshCartridge();
 	}
@@ -887,7 +886,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 				}
 			});
 			clientServerAddressTf.setFont(fontLabel);
-			clientServerAddressTf.setBounds(335, 85, 121, 25);
+			clientServerAddressTf.setBounds(335, 85, 121, 27);
 			multiplayerPanel.add(clientServerAddressTf);
 			clientServerAddressTf.setColumns(10);
 			
@@ -906,7 +905,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			serverPortTf.setFont(fontLabel);
 			serverPortTf.setHorizontalAlignment(SwingConstants.RIGHT);
 			serverPortTf.setColumns(10);
-			serverPortTf.setBounds(41, 85, 66, 25);
+			serverPortTf.setBounds(41, 85, 66, 27);
 			multiplayerPanel.add(serverPortTf);
 			
 			JLabel lblPort = new JLabel("Server port");
@@ -1544,8 +1543,8 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			cartridgePanel.setPreferredSize(INTERNAL_TAB_SIZE);
 			
 			JLabel txtpnRomName = new JLabel();
-			txtpnRomName.setBounds(16, 6, 446, 21);
-			txtpnRomName.setText("ROM Name");
+			txtpnRomName.setBounds(15, 6, 153, 21);
+			txtpnRomName.setText("Cartridge");
 			txtpnRomName.setOpaque(false);
 			txtpnRomName.setFont(fontLabelBold);
 			cartridgePanel.add(txtpnRomName);
@@ -1553,19 +1552,19 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			romNameTf = new JTextFieldNim();
 			romNameTf.setFont(fontLabel);
 			romNameTf.setEditable(false);
-			romNameTf.setBounds(14, 24, 445, 25);
+			romNameTf.setBounds(14, 24, 445, 27);
 			cartridgePanel.add(romNameTf);
 			romNameTf.setColumns(10);
 			
 			JLabel txtpnRomFormat = new JLabel();
-			txtpnRomFormat.setText("ROM Format");
+			txtpnRomFormat.setText("Cartridge Format");
 			txtpnRomFormat.setOpaque(false);
 			txtpnRomFormat.setFont(fontLabelBold);
-			txtpnRomFormat.setBounds(15, 53, 446, 21);
+			txtpnRomFormat.setBounds(15, 53, 447, 21);
 			cartridgePanel.add(txtpnRomFormat);
 			
 			JScrollPane scrollPane = new JScrollPane();
-			scrollPane.setBounds(15, 73, 284, 177);
+			scrollPane.setBounds(14, 73, 285, 177);
 			cartridgePanel.add(scrollPane);
 			
 			romFormatLb = new JList();
@@ -1596,6 +1595,12 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnAltbCycle.setEditable(false);
 			txtpnAltbCycle.setBounds(306, 201, 165, 61);
 			cartridgePanel.add(txtpnAltbCycle);
+			
+			JLabel lbLibInfo = new JLabel("(Based on Rom Hunter's collection)");
+			lbLibInfo.setHorizontalAlignment(SwingConstants.TRAILING);
+			lbLibInfo.setFont(fontLabel);
+			lbLibInfo.setBounds(170, 6, 285, 20);
+			cartridgePanel.add(lbLibInfo);
 			txtpnAltbCycle.addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
@@ -1699,7 +1704,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 					JLabel lblOfficialHomepage = new JLabel("official homepage:");
 					lblOfficialHomepage.setHorizontalAlignment(SwingConstants.CENTER);
 					lblOfficialHomepage.setFont(fontLabelMedium);
-					lblOfficialHomepage.setBounds(259, 130, 137, 21);
+					lblOfficialHomepage.setBounds(259, 124, 137, 21);
 					aboutPanel.add(lblOfficialHomepage);
 				}
 				{
@@ -1717,7 +1722,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 					lblHttpjavatariorg.setHorizontalAlignment(SwingConstants.CENTER);
 					lblHttpjavatariorg.setForeground(new Color(40,100,230));
 					lblHttpjavatariorg.setFont(fontLabelLarge);
-					lblHttpjavatariorg.setBounds(250, 152, 154, 19);
+					lblHttpjavatariorg.setBounds(250, 146, 154, 19);
 					aboutPanel.add(lblHttpjavatariorg);
 				}
 				{
@@ -1956,6 +1961,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 	
 	private static final long serialVersionUID = 1L;
 	private JLabel vmInfo;
+
 }
 
 class JTextFieldNim extends JTextField {

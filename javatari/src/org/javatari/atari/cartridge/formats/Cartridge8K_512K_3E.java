@@ -5,6 +5,7 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 
 /**
@@ -12,8 +13,8 @@ import org.javatari.atari.cartridge.CartridgeFormatOption;
  */
 public final class Cartridge8K_512K_3E extends Cartridge8K_512K_3F {
 
-	private Cartridge8K_512K_3E(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	private Cartridge8K_512K_3E(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -83,13 +84,13 @@ public final class Cartridge8K_512K_3E extends Cartridge8K_512K_3F {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("3E", "8K-512K Tigervision (+RAM)") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_512K_3E(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_512K_3E(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length % BANK_SIZE != 0 || content.length < MIN_SIZE || content.length > MAX_SIZE) return null;
-			return new CartridgeFormatOptionHinted(111, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length % BANK_SIZE != 0 || rom.content.length < MIN_SIZE || rom.content.length > MAX_SIZE) return null;
+			return new CartridgeFormatOption(111, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

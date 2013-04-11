@@ -2,7 +2,7 @@
 
 package org.javatari.atari.cartridge;
 
-public interface CartridgeInsertedListener {
+public interface CartridgeInsertionListener {
 
 	public void cartridgeInserted(Cartridge cartridge);
 	

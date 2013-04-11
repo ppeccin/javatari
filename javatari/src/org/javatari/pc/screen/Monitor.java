@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import org.javatari.atari.cartridge.Cartridge;
+import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.general.av.video.VideoSignal;
@@ -41,7 +42,7 @@ import org.javatari.utils.Environment;
 import org.javatari.utils.GraphicsDeviceHelper;
 
 
-public final class Monitor implements ClockDriven, VideoMonitor {
+public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsertionListener {
 	
 	public Monitor() {
 		super();
@@ -51,6 +52,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 
 	public void connect(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) {
 		this.cartridgeSocket = cartridgeSocket;
+		cartridgeSocket.addInsertionListener(this);
 		this.videoSignal = videoSignal;
 		videoSignal.connectMonitor(this);
 		adjustToVideoSignal();
@@ -171,6 +173,12 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		display.displayRequestFocus();
 	};
 
+	@Override
+	public void cartridgeInserted(Cartridge cartridge) {
+		if (crtMode == 0 || crtMode == 1)
+			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == 1 ? 1 : 0);
+	}
+
 	private boolean newFrame() {
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
 		// Copy only the contents needed (displayWidth x displayHeight) to the frontBuffer
@@ -181,7 +189,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		);
 		if (fps < 0) clock.interrupt();
 		if (debug > 0) cleanBackBuffer();
-		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines", true);
+		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode " + (crtMode == 0 ? "off" : crtMode), true);
 		line = 0;
 		return true;
 	}
@@ -257,7 +265,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 
 	private void init() {
 		monitorControls = new MonitorControls(this);
-		prepareImages();	 	
+		prepareResources();	 	
 		adjustToVideoStandard(VideoStandard.NTSC);
 		setDisplayDefaultSize();	
 		clock = new Clock("Video Monitor", this, fps);
@@ -265,7 +273,7 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		paintLogo();
 	}
 
-	private void prepareImages() {
+	private void prepareResources() {
 		// Prepare the Logo image
 		try {
 			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Logo.png");
@@ -274,8 +282,8 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 		osdComponent = new JLabel();
 		osdComponent.setForeground(Color.GREEN);
 		osdComponent.setBackground(new Color(0x50000000, true));
-		osdComponent.setFont(new Font(
-				Environment.ARIAL_FONT ? "Arial" : Environment.LIBERATION_FONT ? "Liberation Sans" : "SansSerif", Font.BOLD, 15));
+		osdComponent.setFont(new Font(Environment.ARIAL_FONT ? "Arial" 
+				: Environment.LIBERATION_FONT ? "Liberation Sans" : "SansSerif", Font.BOLD, 15));
 		osdComponent.setBorder(new EmptyBorder(5, 12, 5, 12));
 		osdComponent.setOpaque(true);
 		// Prepare CRT mode 2 texture
@@ -522,9 +530,14 @@ public final class Monitor implements ClockDriven, VideoMonitor {
 	}
 
 	private void crtModeToggle() {
+		setCrtMode(crtMode + 1);
+	}
+
+	private void setCrtMode(int mode) {
 		synchronized (refreshMonitor) {
-			crtMode++;
-			if (crtMode > 4) crtMode = 0;
+			int newMode = mode > 4 || mode < 0 ? 0 : mode;
+			if (crtMode == newMode) return;
+			crtMode = newMode;
 			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode, true);
 		}
 	}

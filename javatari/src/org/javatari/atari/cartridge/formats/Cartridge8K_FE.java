@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 8K "FE" Robotank/Decathlon format
  */
 public final class Cartridge8K_FE extends CartridgeBanked {
 
-	private Cartridge8K_FE(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	private Cartridge8K_FE(ROM rom) {
+		super(rom, FORMAT);
 		bankAddressOffset = BANK_SIZE;
 	}
 
@@ -39,13 +40,13 @@ public final class Cartridge8K_FE extends CartridgeBanked {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("FE", "8K Robotank/Decathlon") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_FE(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_FE(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(103, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(103, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

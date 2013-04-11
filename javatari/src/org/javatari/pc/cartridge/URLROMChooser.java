@@ -20,7 +20,7 @@ public final class URLROMChooser {
 		lastURLChosen = opt.trim();
 		Parameters.LAST_ROM_URL_CHOSEN = lastURLChosen;
 		Parameters.savePreferences();
-		return ROMLoader.load(opt);
+		return ROMLoader.load(opt, false);
 	}
 
 	private static String lastURLChosen;

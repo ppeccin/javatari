@@ -178,17 +178,17 @@ public class Room {
 		if (triedToLoadCartridgeProvided) return;
 		triedToLoadCartridgeProvided = true;
 		if (isClientMode()) return;
-		// First try to load the Cartridge passed as a parameter
-		if (Parameters.mainArg != null) {
-			cartridgeProvided = ROMLoader.load(Parameters.mainArg);
+		// First try to load the first built-in ROM
+		ArrayList<BuiltInROM> builtInROMs = BuiltInROM.all();
+		if (builtInROMs.size() > 0) {
+			cartridgeProvided = ROMLoader.load(builtInROMs.get(0));
 			if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
 		} else {
-			// If none, try to load the first built-in ROM
-			ArrayList<String> fileNames = BuiltInROM.allROMFileNames();
-			if (fileNames.size() > 0) {
-				cartridgeProvided = ROMLoader.loadBuiltIn(fileNames.get(0));
+			// If none try to load the Cartridge passed as argument
+			if (Parameters.mainArg != null) {
+				cartridgeProvided = ROMLoader.load(Parameters.mainArg, true);
 				if (cartridgeProvided == null) Terminator.terminate();	// Error loading Cartridge
-			}
+			}			
 		}
 	}
 

@@ -1,13 +1,15 @@
-##########################################################################################
+#############################################################################################
 # This file is a listing of the built-in ROMs inside the "roms" folder
-# Each line represents a Game in the format: [<Game Name> @] <Rom File Name>
+# Each line represents a Game in the format: [Game Label [% Label Colors] @] <Rom File Name>
+# Game Label: will be displayed at the Console Panel
+# Label Colors: 1 up to 3 6-digit Hex RGB colors for Label, Background and Border
 # Example:
 #     Pitfall! @ pitfall.bin
-#     Pitfall II @ pitfall2.bin
+#     Pitfall II % f0f0f0 40b040 @ pitfall2.bin
 #     Enduro.bin
 #
 # The first line, if present, will cause the Emulator to auto-load the specified ROM
 # In the current release, only one (the first) ROM will be loaded
-# In future releases, the user will be able to select any of the built-in ROMs from a list 
-##########################################################################################
+# In future releases, the user will be able to select any of the built-in ROMs 
+##############################################################################################
 

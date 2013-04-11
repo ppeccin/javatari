@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements as Enhanced version of Pitfall2 with TIA audio updates every DPC audio clock!
  */
 public class CartridgePitfall2EnhancedDPCAudio extends Cartridge10K_DPC {
 
-	private CartridgePitfall2EnhancedDPCAudio(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	private CartridgePitfall2EnhancedDPCAudio(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -26,13 +27,13 @@ public class CartridgePitfall2EnhancedDPCAudio extends Cartridge10K_DPC {
 	
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("DPCa", "10K DPC (Pitfall 2 Enhanced Audio)") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new CartridgePitfall2EnhancedDPCAudio(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new CartridgePitfall2EnhancedDPCAudio(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length < ROM_SIZE || content.length > ROM_SIZE + SIZE_TOLERANCE) return null;
-			return new CartridgeFormatOptionHinted(111, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length < ROM_SIZE || rom.content.length > ROM_SIZE + SIZE_TOLERANCE) return null;
+			return new CartridgeFormatOption(111, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

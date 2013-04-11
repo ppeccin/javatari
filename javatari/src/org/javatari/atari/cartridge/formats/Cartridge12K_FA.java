@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 12K "FA" CBS RAM Plus format
  */
 public final class Cartridge12K_FA extends CartridgeBankedByMaskedRange {
 
-	private Cartridge12K_FA(byte[] content, String contentName) {
-		super(content, contentName, FORMAT, BASE_BANKSW_ADDRESS, true, 256);		// SuperChip always ON, 256 RAM
+	private Cartridge12K_FA(ROM rom) {
+		super(rom, FORMAT, BASE_BANKSW_ADDRESS, true, 256);		// SuperChip always ON, 256 RAM
 	}
 
 
@@ -21,13 +22,13 @@ public final class Cartridge12K_FA extends CartridgeBankedByMaskedRange {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("FA", "12K CBS RAM Plus") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge12K_FA(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge12K_FA(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte[] content, String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(101, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(101, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 64K "X07" AtariAge format
  */
 public class Cartridge64K_X07 extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge64K_X07(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	protected Cartridge64K_X07(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -30,13 +31,13 @@ public class Cartridge64K_X07 extends CartridgeBankedByBusMonitoring {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("X07", "64K AtariAge") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge64K_X07(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge64K_X07(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(102, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(102, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

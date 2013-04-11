@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 8K "F8" and "F8SC" formats
  */
 public final class Cartridge8K_F8 extends CartridgeBankedByMaskedRange {
 
-	private Cartridge8K_F8(byte[] content, String contentName) {
-		super(content, contentName, FORMAT, BASE_BANKSW_ADDRESS, null, 128);		// 128 RAM if SC mode ON
+	private Cartridge8K_F8(ROM rom) {
+		super(rom, FORMAT, BASE_BANKSW_ADDRESS, null, 128);		// 128 RAM if SC mode ON
 	}
 
 	
@@ -21,13 +22,13 @@ public final class Cartridge8K_F8 extends CartridgeBankedByMaskedRange {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("F8", "8K Atari (+RAM)") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_F8(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_F8(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(101, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(101, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

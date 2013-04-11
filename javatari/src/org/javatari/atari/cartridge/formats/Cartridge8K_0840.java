@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 8K "0840" Econobanking format
  */
 public class Cartridge8K_0840 extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge8K_0840(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	protected Cartridge8K_0840(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -31,13 +32,13 @@ public class Cartridge8K_0840 extends CartridgeBankedByBusMonitoring {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("0840", "8K Econobanking") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_0840(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_0840(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(116, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(116, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

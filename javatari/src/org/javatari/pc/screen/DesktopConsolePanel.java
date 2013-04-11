@@ -23,6 +23,7 @@ import java.util.Arrays;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.utils.GraphicsDeviceHelper;
 import org.javatari.utils.slickframe.HotspotManager;
@@ -41,8 +42,8 @@ public final class DesktopConsolePanel extends SlickFrame {
 		buildGUI();
 	}
 
-	public void connect(ConsoleControlsSocket controlsSocket) {
-		consolePanel.connect(controlsSocket);
+	public void connect(ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
+		consolePanel.connect(controlsSocket, cartridgeSocket);
 	}
 
 	@Override

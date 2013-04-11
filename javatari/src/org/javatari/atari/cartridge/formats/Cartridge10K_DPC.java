@@ -5,6 +5,7 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 import org.javatari.atari.controls.ConsoleControls.Control;
 
 /**
@@ -12,8 +13,8 @@ import org.javatari.atari.controls.ConsoleControls.Control;
  */
 public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 
-	protected Cartridge10K_DPC(byte[] content, String contentName, CartridgeFormat format) {
-		super(content, contentName, format, BASE_BANKSW_ADDRESS, false, 0);		// SuperChip always OFF, no RAM
+	protected Cartridge10K_DPC(ROM rom, CartridgeFormat format) {
+		super(rom, format, BASE_BANKSW_ADDRESS, false, 0);		// SuperChip always OFF, no RAM
 	}
 
 	@Override
@@ -238,13 +239,13 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("DPC", "10K DPC (Pitfall 2)") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge10K_DPC(content, contentName, this);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge10K_DPC(rom, this);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length < ROM_SIZE || content.length > ROM_SIZE + SIZE_TOLERANCE) return null;
-			return new CartridgeFormatOptionHinted(101, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length < ROM_SIZE || rom.content.length > ROM_SIZE + SIZE_TOLERANCE) return null;
+			return new CartridgeFormatOption(101, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

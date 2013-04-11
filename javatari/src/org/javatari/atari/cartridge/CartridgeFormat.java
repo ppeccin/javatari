@@ -13,13 +13,9 @@ public abstract class CartridgeFormat implements Serializable {
 		this.name = name;
 	}
 	
-	public Cartridge create(Cartridge cartridge) {
-		return create(cartridge.content(), cartridge.contentName());
-	}
-	
-	public abstract Cartridge create(byte[] content, String contentName);
+	public abstract Cartridge createCartridge(ROM rom);
 
-	public abstract CartridgeFormatOption getOption(byte content[], String contentName);
+	public abstract CartridgeFormatOption getOption(ROM rom);
 	
 	@Override
 	public String toString() {

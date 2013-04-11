@@ -5,7 +5,7 @@ package org.javatari.atari.cartridge;
 
 public class CartridgeFormatOption implements Comparable<CartridgeFormatOption> {
 
-	public CartridgeFormatOption(int priority, CartridgeFormat format) {
+	public CartridgeFormatOption(int priority, CartridgeFormat format, ROM rom) {
 		super();
 		this.priority = priority;
 		this.format = format;

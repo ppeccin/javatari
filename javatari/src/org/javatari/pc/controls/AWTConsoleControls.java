@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.javatari.atari.cartridge.Cartridge;
-import org.javatari.atari.cartridge.CartridgeInsertedListener;
+import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
-import org.javatari.atari.cartridge.formats.CartridgeDatabase;
 import org.javatari.atari.controls.ConsoleControls;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoMonitor;
@@ -18,7 +17,7 @@ import org.javatari.parameters.Parameters;
 import org.javatari.utils.KeyFilteredRepeatsAdapter;
 
 
-public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implements ConsoleControls, CartridgeInsertedListener {
+public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implements ConsoleControls, CartridgeInsertionListener {
 	
 	public AWTConsoleControls(VideoMonitor monitor) {
 		super();
@@ -28,9 +27,9 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	}
 
 	public void connect(ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
-		if (cartridgeSocket != null) cartridgeSocket.removeCartridgeInsertedListener(this);
+		if (cartridgeSocket != null) cartridgeSocket.removeInsertionListener(this);
 		this.cartridgeSocket = cartridgeSocket;
-		this.cartridgeSocket.addCartridgeInsertedListener(this);
+		this.cartridgeSocket.addInsertionListener(this);
 		consoleControlsSocket = controlsSocket;
 		joystickControls.connect(controlsSocket);
 	}
@@ -54,8 +53,8 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 
 	@Override
 	public void cartridgeInserted(Cartridge cartridge) {
-		if (cartridge == null || Parameters.PADDLES_MODE >= 0) return;	// Does not interfere if Paddle Mode is forced
-		boolean usePaddles = CartridgeDatabase.getInfo(cartridge).usePaddles;
+		if (cartridge == null || PADDLES_MODE >= 0) return;	// Does not interfere if Paddle Mode is forced
+		boolean usePaddles = cartridge.getInfo().paddles == 1;
 		if (paddleMode != usePaddles) paddleMode(usePaddles);
 	}
 

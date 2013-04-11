@@ -5,18 +5,20 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 2K "CV" Commavid + 1K RAM format
  */
 public final class Cartridge2K_CV extends Cartridge {
 
-	private Cartridge2K_CV(byte[] content, String contentName) {
-		// Always use a 4K ROM image, duplicating 2K ROMs
-		super(new byte[SIZE * 2], contentName, FORMAT);
-		int len = content.length;
-		for (int pos = 0; pos < SIZE * 2; pos += len)
-			System.arraycopy(content, 0, bytes, pos, len);
+	private Cartridge2K_CV(ROM rom) {
+		super(rom, FORMAT);
+		// Always use a 4K ROM image, multiplying the ROM internally
+		bytes = new byte[SIZE * 2];
+		int len = rom.content.length;
+		for (int pos = 0; pos < bytes.length; pos += len)
+			System.arraycopy(rom.content, 0, bytes, pos, len);
 	}
 
 	@Override
@@ -52,13 +54,13 @@ public final class Cartridge2K_CV extends Cartridge {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("CV", "2K Commavid +RAM") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge2K_CV(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge2K_CV(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE && content.length != SIZE * 2) return null;	// Also accepts 4K ROMs
-			return new CartridgeFormatOptionHinted(102, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE && rom.content.length != SIZE * 2) return null;	// Also accepts 4K ROMs
+			return new CartridgeFormatOption(102, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

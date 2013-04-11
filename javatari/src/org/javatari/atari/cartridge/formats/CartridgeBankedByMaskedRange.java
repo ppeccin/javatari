@@ -5,6 +5,7 @@ package org.javatari.atari.cartridge.formats;
 import java.util.Arrays;
 
 import org.javatari.atari.cartridge.CartridgeFormat;
+import org.javatari.atari.cartridge.ROM;
 
 
 /**
@@ -14,10 +15,10 @@ import org.javatari.atari.cartridge.CartridgeFormat;
  */
 public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 
-	protected CartridgeBankedByMaskedRange(byte[] content, String contentName, CartridgeFormat format, 
+	protected CartridgeBankedByMaskedRange(ROM rom, CartridgeFormat format, 
 			int baseBankSwitchAddress, Boolean superChip, int extraRAMSize) {
-		super(content, contentName, format);
-		this.numBanks = content.length / BANK_SIZE;
+		super(rom, format);
+		this.numBanks = bytes.length / BANK_SIZE;
 		this.baseBankSwitchAddress = baseBankSwitchAddress;
 		this.topBankSwitchAddress = baseBankSwitchAddress + numBanks - 1;
 		this.extraRAMSize = extraRAMSize;

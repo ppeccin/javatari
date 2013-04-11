@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 8K "E0" Parker Bros. format
  */
 public final class Cartridge8K_E0 extends CartridgeBanked {
 
-	private Cartridge8K_E0(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	private Cartridge8K_E0(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -55,13 +56,13 @@ public final class Cartridge8K_E0 extends CartridgeBanked {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("E0", "8K Parker Bros.") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_E0(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_E0(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(102, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(102, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

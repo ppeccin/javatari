@@ -5,14 +5,15 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 64K "F0" Dynacom Megaboy format
  */
 public final class Cartridge64K_F0 extends CartridgeBanked {
 
-	private Cartridge64K_F0(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
+	private Cartridge64K_F0(ROM rom) {
+		super(rom, FORMAT);
 	}
 
 	@Override
@@ -30,13 +31,13 @@ public final class Cartridge64K_F0 extends CartridgeBanked {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("F0", "64K Dynacom Megaboy") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge64K_F0(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge64K_F0(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length != SIZE) return null;
-			return new CartridgeFormatOptionHinted(101, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length != SIZE) return null;
+			return new CartridgeFormatOption(101, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

@@ -5,15 +5,16 @@ package org.javatari.atari.cartridge.formats;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROM;
 
 /**
  * Implements the 8K-512K "SB" Superbanking format
  */
 public class Cartridge8K_512K_SB extends CartridgeBankedByBusMonitoring {
 
-	protected Cartridge8K_512K_SB(byte[] content, String contentName) {
-		super(content, contentName, FORMAT);
-		maxBank = content.length / BANK_SIZE - 1;
+	protected Cartridge8K_512K_SB(ROM rom) {
+		super(rom, FORMAT);
+		maxBank = bytes.length / BANK_SIZE - 1;
 	}
 
 	@Override
@@ -34,13 +35,13 @@ public class Cartridge8K_512K_SB extends CartridgeBankedByBusMonitoring {
 
 	public static final CartridgeFormat FORMAT = new CartridgeFormat("SB", "8K-512K Superbanking") {
 		@Override
-		public Cartridge create(byte[] content, String contentName) {
-			return new Cartridge8K_512K_SB(content, contentName);
+		public Cartridge createCartridge(ROM rom) {
+			return new Cartridge8K_512K_SB(rom);
 		}
 		@Override
-		public CartridgeFormatOption getOption(byte content[], String contentName) {
-			if (content.length % BANK_SIZE != 0 || content.length < MIN_SIZE || content.length > MAX_SIZE) return null;
-			return new CartridgeFormatOptionHinted(113, this, contentName);
+		public CartridgeFormatOption getOption(ROM rom) {
+			if (rom.content.length % BANK_SIZE != 0 || rom.content.length < MIN_SIZE || rom.content.length > MAX_SIZE) return null;
+			return new CartridgeFormatOption(113, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

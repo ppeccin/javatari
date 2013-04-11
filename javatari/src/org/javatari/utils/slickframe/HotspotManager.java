@@ -25,12 +25,20 @@ public final class HotspotManager {
 		init();
 	}
 
-	public void addHotspot(Rectangle area, Runnable activationAction) {
-		hotspots.add(new HotspotAction(area, activationAction));
+	public HotspotAction addHotspot(Rectangle area, Runnable activationAction) {
+		HotspotAction h = new HotspotAction(area, activationAction);
+		hotspots.add(h);
+		return h;
 	}
 	
-	public void addHotspot(Rectangle area, Runnable activationAction, Runnable deactivationAction) {
-		hotspots.add(new HotspotAction(area, activationAction, deactivationAction));
+	public HotspotAction addHotspot(Rectangle area, Runnable activationAction, Runnable deactivationAction) {
+		HotspotAction h = new HotspotAction(area, activationAction, deactivationAction);
+		hotspots.add(h);
+		return h;
+	}
+
+	public void removeHotspot(HotspotAction hotspot) {
+		hotspots.remove(hotspot);
 	}
 
 	public MousePressAndMotionListener detachMouseListener() {
@@ -131,7 +139,7 @@ public final class HotspotManager {
 
 	public static final long serialVersionUID = 1L;
 
-	private class HotspotAction {
+	public class HotspotAction {
 		public HotspotAction(Rectangle area, Runnable activationAction) {
 			this(area, activationAction, null);
 		}
