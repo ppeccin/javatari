@@ -103,12 +103,15 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 				? new LineBorder(new Color((int)(b.getRed() * bf), (int)(b.getGreen() * bf), (int)(b.getBlue() * bf)), 1) 
 				: new LineBorder(new Color(bord), 1));
 
-		hotspots.removeHotspot(cartridgeHotspot);
-		cartridgeHotspot = hotspots.addHotspot(
-			cartridgeInserted ? cartridgeInsertedHotspotArea : cartridgeMissingHotspotArea,
-			new Runnable() { @Override public void run() {
-				screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
-		}});
+		hotspots.removeHotspot(cartridgeInsertedHotspot);
+		hotspots.removeHotspot(cartridgeMissingHotspot);
+		hotspots.addHotspot(cartridgeInserted ? cartridgeInsertedHotspot : cartridgeMissingHotspot);
+		hotspots.removeHotspot(fileHotspot);
+		hotspots.removeHotspot(urlHotspot);
+		if (screen.isCartridgeChangeEnabled()) {
+			hotspots.addHotspot(fileHotspot);
+			hotspots.addHotspot(urlHotspot);
+		}
 		if (isVisible()) repaint();
 	}
 
@@ -185,18 +188,26 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.DIFFICULTY1, true);
 			}});
-		if (CARTRIDGE_CHANGE) {
-			hotspots.addHotspot(
-				new Rectangle(172, 52 - 86, 30, 29),
+		cartridgeInsertedHotspot = hotspots.new HotspotAction(
+				new Rectangle(145, 52 - 144, 180, 46),
 				new Runnable() { @Override public void run() {
 					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
-				}});
-			hotspots.addHotspot(
-				new Rectangle(266, 52 - 86, 30, 29),
+			}});
+		cartridgeMissingHotspot = hotspots.new HotspotAction(
+				new Rectangle(153, 52 - 135, 164, 42),
 				new Runnable() { @Override public void run() {
-					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_URL);
-				}});
-		}
+					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
+			}});
+		fileHotspot = hotspots.new HotspotAction(
+			new Rectangle(172, 52 - 86, 30, 29),
+			new Runnable() { @Override public void run() {
+				screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
+			}});
+		urlHotspot = hotspots.new HotspotAction(
+			new Rectangle(266, 52 - 86, 30, 29),
+			new Runnable() { @Override public void run() {
+				screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_URL);
+			}});
 	}
 
 	private Dimension desiredSize() {
@@ -233,7 +244,7 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 			);
 		}
 		// Cartridge change keys
-		if (CARTRIDGE_CHANGE && initialHeight < HEIGHT - 10) g.drawImage(changeCartKeysImage, ins.left + 174, panelBottom - 32, null);
+		if (screen.isCartridgeChangeEnabled() && initialHeight < HEIGHT - 10) g.drawImage(changeCartKeysImage, ins.left + 174, panelBottom - 32, null);
 		// Controls state
 		if (controlsStateReport.isEmpty()) return;
 		if (!controlsStateReport.get(Control.POWER)) g.drawImage(powerDownImage, ins.left + 33, panelBottom - 87, null);
@@ -246,7 +257,6 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 
 
 	private HotspotManager hotspots;
-	
 	private BufferedImage panelImage;
 	private BufferedImage powerDownImage;
 	private BufferedImage colorDownImage;
@@ -258,26 +268,22 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 	private BufferedImage cartridgeImage;
 	private JLabel cartridgeLabelComponent;
 	private boolean cartridgeInserted = false;
-	private HotspotAction cartridgeHotspot;
-	private Rectangle cartridgeMissingHotspotArea = new Rectangle(153, 52 - 135, 164, 42);
-	private Rectangle cartridgeInsertedHotspotArea = new Rectangle(145, 52 - 144, 180, 46);
+	private HotspotAction cartridgeInsertedHotspot, cartridgeMissingHotspot, fileHotspot, urlHotspot;
 
-	
 	private final Monitor screen;
-	
 	private ConsoleControlsSocket consoleControlsSocket;
-	private Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();
+	private final Map<ConsoleControls.Control, Boolean> controlsStateReport = new HashMap<ConsoleControls.Control, Boolean>();
 	
+
 	public static final int WIDTH = 465;
 	public static final int HEIGHT = 137;
 	
 	private static final Set<Control> visibleControls = new HashSet<Control>(
 		Arrays.asList(new Control[] { Control.POWER, Control.BLACK_WHITE, Control.SELECT, Control.RESET, Control.DIFFICULTY0, Control.DIFFICULTY1 }));
 	
-	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
-	private static String DEFAULT_CARTRIDGE_LABEL = Parameters.DEFAULT_CARTRIDGE_LABEL;
-	private static int DEFAULT_CARTRIDGE_LABEL_COLOR = Parameters.DEFAULT_CARTRIDGE_LABEL_COLOR;
-	private static int DEFAULT_CARTRIDGE_BACK_COLOR = Parameters.DEFAULT_CARTRIDGE_BACK_COLOR;
+	private static final String DEFAULT_CARTRIDGE_LABEL = Parameters.DEFAULT_CARTRIDGE_LABEL;
+	private static final int DEFAULT_CARTRIDGE_LABEL_COLOR = Parameters.DEFAULT_CARTRIDGE_LABEL_COLOR;
+	private static final int DEFAULT_CARTRIDGE_BACK_COLOR = Parameters.DEFAULT_CARTRIDGE_BACK_COLOR;
 	
 	public static final long serialVersionUID = 1L;
 

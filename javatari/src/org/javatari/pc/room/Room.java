@@ -98,22 +98,22 @@ public class Room {
 	public void morphToStandaloneMode() {
 		if (isStandaloneMode()) return;
 		powerOff();
-		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
+		Cartridge lastCartridge = isClientMode() ? cartridgeProvided : currentConsole.cartridgeSocket().inserted();
 		if (standaloneConsole == null) buildAndPlugStandaloneConsole();
 		else plugConsole(standaloneConsole);
 		adjustPeripheralsToStandaloneOrServerOperation();
-		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
+		currentConsole.cartridgeSocket().insert(lastCartridge, false);
 		powerOn();
 	}
 
 	public void morphToServerMode() {
 		if (isServerMode()) return;
 		powerOff();
-		Cartridge lastCartridge = isClientMode() ? null : currentConsole.cartridgeSocket().inserted();
+		Cartridge lastCartridge = isClientMode() ? cartridgeProvided : currentConsole.cartridgeSocket().inserted();
 		if (serverConsole == null) buildAndPlugServerConsole();
 		else plugConsole(serverConsole);
 		adjustPeripheralsToStandaloneOrServerOperation();
-		if (lastCartridge != null) currentConsole.cartridgeSocket().insert(lastCartridge, false);
+		currentConsole.cartridgeSocket().insert(lastCartridge, false);
 		powerOn();
 	}
 
@@ -183,6 +183,8 @@ public class Room {
 		if (builtInROMs.size() > 0) {
 			cartridgeProvided = ROMLoader.load(builtInROMs.get(0));
 			if (cartridgeProvided == null) Terminator.terminate();		// Error loading Cartridge
+			Parameters.SCREEN_CARTRIDGE_CHANGE = false;					// Disable manual Cartridge change
+			screen.monitor().setCartridgeChangeEnabled(false);
 		} else {
 			// If none try to load the Cartridge passed as argument
 			if (Parameters.mainArg != null) {

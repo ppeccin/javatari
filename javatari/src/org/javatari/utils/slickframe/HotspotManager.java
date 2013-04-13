@@ -27,16 +27,19 @@ public final class HotspotManager {
 
 	public HotspotAction addHotspot(Rectangle area, Runnable activationAction) {
 		HotspotAction h = new HotspotAction(area, activationAction);
+		return addHotspot(h);
+	}
+
+	public HotspotAction addHotspot(Rectangle area, Runnable activationAction, Runnable deactivationAction) {
+		HotspotAction h = new HotspotAction(area, activationAction, deactivationAction);
+		return addHotspot(h);
+	}
+
+	public HotspotAction addHotspot(HotspotAction h) {
 		hotspots.add(h);
 		return h;
 	}
 	
-	public HotspotAction addHotspot(Rectangle area, Runnable activationAction, Runnable deactivationAction) {
-		HotspotAction h = new HotspotAction(area, activationAction, deactivationAction);
-		hotspots.add(h);
-		return h;
-	}
-
 	public void removeHotspot(HotspotAction hotspot) {
 		hotspots.remove(hotspot);
 	}
