@@ -1,15 +1,22 @@
 Visit http://javatari.org for downloads and online play
 Discuss at http://groups.google.com/group/javatari
 
+Version 3.20
+============
+- Console Panel now shows the inserted Cartridge 
+- Customizable, dynamically rendered Cartridge Labels
+- Built-in ROM information, based on Rom Hunter's collection
+- Better auto-detection of Paddles and CRT modes per ROM
+
+
+Previous Versions:
+
 Version 3.12
 ============
 - Preliminary support for built-in ROMs
 - Auto-load of built-in ROMs
 - Auto-detection of Paddles Mode per ROM
 - Option to start with Paddles Mode ON
-
-
-Previous Versions:
 
 Version 3.10
 ============
