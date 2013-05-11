@@ -9,9 +9,9 @@
 		<icon kind="shortcut" href="javatari-icon.png" />
 	</information>
 	<update check="always" policy="always" />
- 	<_security>
+ 	<security>
 		<all-permissions />
-	</_security>
+	</security>
 	<resources>
 		<j2se version="1.6+" />
 		<jar href="javatari330n-signed.jar" main="true" />
