@@ -15,12 +15,14 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
+
+import org.javatari.utils.SwingHelper;
 
 public final class DesktopScreenFullWindow extends JFrame implements MonitorDisplay {
 
 	public DesktopScreenFullWindow(DesktopScreenWindow window) {
-		super();
+		// Creates our Window at the correct GraphicsConfig from the owner's location 
+		super(SwingHelper.getGraphicsConfigurationForCurrentLocation(window));
 		this.window = window;
 		init();
 	}
@@ -41,7 +43,7 @@ public final class DesktopScreenFullWindow extends JFrame implements MonitorDisp
 		super.setVisible(visible);
 		if (visible) {
 			canvasSetRenderingMode();
-			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			SwingHelper.edtInvokeLater(new Runnable() {  @Override public void run() {
 				repaint();
 			}});
 		}

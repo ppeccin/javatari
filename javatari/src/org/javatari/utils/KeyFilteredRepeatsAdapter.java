@@ -12,7 +12,7 @@ public abstract class KeyFilteredRepeatsAdapter implements KeyListener {
 	private final Runnable trigger = new Runnable() {
 		@Override
 		public void run() {
-			if (pendingRelease != null) SwingUtilities.invokeLater(sender);
+			if (pendingRelease != null) SwingHelper.edtInvokeLater(sender);
 		}
 	};
 	

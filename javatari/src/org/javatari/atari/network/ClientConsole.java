@@ -3,6 +3,7 @@
 package org.javatari.atari.network;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,28 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	@Override
+	public synchronized void go() {
+		// Clock is controlled remotely, but signal unpause to unblock clock pulses
+		isPaused = false;
+	}
+	
+	@Override
+	public synchronized void pause() {
+		// Clock is controlled remotely, but signal pause to block clock pulses
+		isPaused = true;
+	}
+	
+	@Override
+	public void extendedPowerOff() {
+		try {
+			remoteReceiver.disconnect();
+		} catch (IOException e) {
+			// Ignore
+		}
+		super.extendedPowerOff();
+	}
+	
+	@Override
 	protected void mainClockCreate() {
 		// Ignore, the clock is controlled remotely
 	}
@@ -42,16 +65,6 @@ public final class ClientConsole extends Console implements ClockDriven {
 		// Ignore, the clock is controlled remotely
 	}
 
-	@Override
-	protected void mainClockGo() {
-		// Ignore, the clock is controlled remotely
-	}
-	
-	@Override
-	protected void mainClockPause() {
-		// Ignore, the clock is controlled remotely
-	}
-	
 	@Override
 	protected void mainClockDestroy() {
 		// Ignore, the clock is controlled remotely
@@ -69,7 +82,14 @@ public final class ClientConsole extends Console implements ClockDriven {
 
 	@Override
 	public void clockPulse() {
-		tia.clockPulse();
+		// Block clock pulses until Console is unpaused (go) or turned off
+		while(isPaused && powerOn) try {
+			Thread.sleep(1000/60);
+		} catch (InterruptedException e) {}
+
+		synchronized(this) {
+			tia.clockPulse();
+		}
 	}
 
 	@Override
@@ -87,6 +107,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	void disconnected(){
+		powerOff();
 		showOSD("Disconnected from Player 1 Server", true);
 	}
 
@@ -121,7 +142,8 @@ public final class ClientConsole extends Console implements ClockDriven {
 
 
 	private RemoteReceiver remoteReceiver;
-
+	private boolean isPaused = false;		// To control the pause/go mechanism
+	
 	
 	private class ClientConsoleControlsSocketAdapter extends ConsoleControlsSocket {
 		@Override

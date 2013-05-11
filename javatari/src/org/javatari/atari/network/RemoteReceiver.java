@@ -130,6 +130,7 @@ public final class RemoteReceiver {
 	}
 	
 	private void resetUpdatesPending() {
+		console.controlChangesToSend();		// Will clear any remaining entries
 		synchronized (updates) {
 			updates.clear();
 			updates.notifyAll();

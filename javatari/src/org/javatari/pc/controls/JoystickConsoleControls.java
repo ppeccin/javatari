@@ -11,6 +11,7 @@ import org.javatari.atari.controls.ConsoleControls;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.parameters.Parameters;
+import org.javatari.pc.screen.Screen;
 import org.joy.Joy;
 import org.joy.Joy.Info;
 import org.joy.Joystick;
@@ -18,14 +19,17 @@ import org.joy.Joystick;
 
 public final class JoystickConsoleControls implements ConsoleControls {
 	
-	public JoystickConsoleControls(VideoMonitor monitor, AWTConsoleControls awtControls) {
+	public JoystickConsoleControls(AWTConsoleControls awtControls) {
 		super();
-		videoMonitor = monitor;
 		this.awtControls = awtControls;
 	}
 
 	public void connect(ConsoleControlsSocket socket) {
 		consoleControlsSocket = socket;
+	}
+
+	public void connectScreen(Screen screen) {
+		videoMonitor = screen.monitor();
 	}
 
 	public void powerOn() {
@@ -336,8 +340,8 @@ public final class JoystickConsoleControls implements ConsoleControls {
 	public boolean swappedMode = false;
 	public boolean paddleMode = false;
 	
-	private final VideoMonitor videoMonitor;
 	private final AWTConsoleControls awtControls;
+	private VideoMonitor videoMonitor;
 	private ConsoleControlsSocket consoleControlsSocket; 
 
 	private List<Info> devices = new Vector<Info>();

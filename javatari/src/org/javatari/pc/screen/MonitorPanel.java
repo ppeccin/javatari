@@ -7,6 +7,7 @@ import java.awt.BufferCapabilities;
 import java.awt.BufferCapabilities.FlipContents;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -14,40 +15,33 @@ import java.awt.Graphics2D;
 import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
-
-import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.parameters.Parameters;
+import org.javatari.pc.room.EmbeddedRoom;
 import org.javatari.pc.room.Room;
-import org.javatari.utils.GraphicsDeviceHelper;
-import org.javatari.utils.Terminator;
-import org.javatari.utils.slickframe.HotspotManager;
+import org.javatari.utils.SwingHelper;
+import org.javatari.utils.slickframe.HotspotPanel;
 
 
-public final class MonitorPanel extends JPanel implements MonitorDisplay {
+public final class MonitorPanel extends HotspotPanel implements MonitorDisplay {
 
 	public MonitorPanel() {
 		super();
-		init();
+		setup();
+		addHotspots();
 		monitor = new Monitor();
 		monitor.setDisplay(this);
-		// Does not add control components. Its the parent responsibility to do so.
 	}
 
 	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
@@ -59,7 +53,7 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 	}
 
 	public void powerOn() {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+		SwingHelper.edtSmartInvokeAndWait(new Runnable() { @Override public void run() {
 			setVisible(true);
 			monitor.powerOn();
 		}});
@@ -73,7 +67,7 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 		monitor.destroy();
 	}
 
-	private void init() {
+	private void setup() {
 		loadImages();
 		setBackground(Color.BLACK);
 		setIgnoreRepaint(true);
@@ -84,9 +78,8 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 		canvas.setFocusTraversalKeysEnabled(false);
 		add(canvas);
 		positionCanvas();
-		addKeyListener(new AppletScreenControlKeyListener());
-		setTransferHandler(new ROMDropTransferHandler());
-		addHotspots();
+		addInputComponents(keyControlsInputComponents());
+		popupEnabled = EMBEDDED_POPUP && Room.currentRoom() instanceof EmbeddedRoom;
 	}
 		
 	@Override
@@ -97,41 +90,14 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
 			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
 			canvasSetRenderingMode();
-			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			SwingHelper.edtInvokeLater(new Runnable() {  @Override public void run() {
 				repaint();
 			}});
 		}
 	}
 	
-	@Override
-	public synchronized void addKeyListener(KeyListener l) {
-		super.addKeyListener(l);
-		canvas.addKeyListener(l);
-	}
-	@Override
-	public synchronized void removeKeyListener(KeyListener l) {
-		super.removeKeyListener(l);
-		canvas.removeKeyListener(l);
-	}
-	@Override
-	public synchronized void addMouseListener(MouseListener l) {
-		super.addMouseListener(l);
-		canvas.addMouseListener(l);
-	}
-	@Override
-	public synchronized void addMouseMotionListener(MouseMotionListener l) {
-		super.addMouseMotionListener(l);
-		canvas.addMouseMotionListener(l);
-	}
-	@Override
-	public synchronized void removeMouseListener(MouseListener l) {
-		super.removeMouseListener(l);
-		canvas.removeMouseListener(l);
-	}
-	@Override
-	public synchronized void removeMouseMotionListener(MouseMotionListener l) {
-		super.removeMouseMotionListener(l);
-		canvas.removeMouseMotionListener(l);
+	public List<Component> keyControlsInputComponents() {
+		return Arrays.asList((Component)this, canvas);
 	}
 
 	@Override
@@ -246,6 +212,12 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 			} catch (Exception ex) {}
 	}
 
+	private void addInputComponents(List<Component> inputs) {
+		MonitorPanelControlKeyListener lis = new MonitorPanelControlKeyListener();
+		for (Component component : inputs)
+			component.addKeyListener(lis);
+	}
+
 	private Dimension panelDimensionForCanvasDimension(Dimension size) {
 		return new Dimension(
 			size.width + totalCanvasHorizPadding,
@@ -260,40 +232,41 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 	}
 
 	private void addHotspots() {
-		hotspots = new HotspotManager(this);
-		hotspots.addHotspot(
-			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
+		addHotspot(
+			new Rectangle(HotspotPanel.CENTER_HOTSPOT, -27, 24, 28),
 			new Runnable() { @Override public void run() { 
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-28, -24, 17, 19),
+		addHotspot(
+			new Rectangle(-30, -25, 21, 20), "Open Settings",
 			new Runnable() { @Override public void run() {
-				Room.currentRoom().openSettings();
+				Room.currentRoom().openSettings(MonitorPanel.this);
 				requestFocus();
 			}});
+		if (popupEnabled)
+			addHotspot(
+				new Rectangle(7, -25, 23, 20), "Detach Screen",
+				new Runnable() { @Override public void run() { 
+						((EmbeddedRoom) Room.currentRoom()).popUpScreen(false);		// Not in Fullscreen
+				}});
 	}
 
 	private void loadImages() {
 		try {
-			topLeft = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopLeft.png");
-			bottomLeft = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeft.png");
-			topRight = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopRight.png");
-			bottomRight = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRight.png");
-			top = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Top.png");
-			bottomLeftBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBar.png");
-			bottomLeftBarNoPower = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBarNoPower.png");
-			bottomRightBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBar.png");
-			bottomRightBarFixedSize = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBarFixedSize.png");
-			bottomBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomBar.png");
-			logoBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/LogoBar.png");
+			topLeft = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopLeft.png");
+			bottomLeft = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeft.png");
+			topRight = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopRight.png");
+			bottomRight = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRight.png");
+			top = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Top.png");
+			bottomLeftBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBar.png");
+			bottomLeftBarNoPower = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBarNoPower.png");
+			bottomRightBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBar.png");
+			bottomRightBarFixedSize = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBarFixedSize.png");
+			bottomBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomBar.png");
+			logoBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/LogoBar.png");
+			popup = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Popup.png");
 		} catch (IOException ex) {
 			System.out.println("Screen Window: unable to load images\n" + ex);
 		}
-	}
-	
-	private void exit() {
-		// Close program
-		Terminator.terminate();
 	}
 	
 	@Override
@@ -316,13 +289,17 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 		g.drawImage(topRight, w - 4, 0, null);
 		for (int x = 512; x < w - 512; x += 256) 
 			g.drawImage(bottomBar, x, h - 30, x + 256, h, 0, 0, 256, 30, null);
-		g.drawImage(logoBar, halfW - 12, h - 30, null);
 		BufferedImage bLeftBar = monitor.isFixedSize() ? bottomLeftBarNoPower : bottomLeftBar;
 		g.drawImage(bLeftBar, 0, h - 30, maxHalfW, h, 0, 0, maxHalfW, 30, null);
 		BufferedImage bRightBar = monitor.isFixedSize() ? bottomRightBarFixedSize : bottomRightBar;
 		g.drawImage(bRightBar, w - maxHalfW, h - 30, w, h, 512 - maxHalfW, 0, 512, 30, null);
+		g.drawImage(logoBar, halfW - 12, h - 30, null);
 		g.drawImage(bottomLeft, 0, halfH, 4, h - 30, 0, 600 - halfH, 4, 600, null);
 		g.drawImage(bottomRight, w - 4, halfH, w, h - 30, 0, 600 - halfH, 4, 600, null);
+		if (popupEnabled) g.drawImage(popup, 11, h - 22, null);
+		
+		paintHotspots(g);
+		
 		g.dispose();
 	}
 	
@@ -330,63 +307,39 @@ public final class MonitorPanel extends JPanel implements MonitorDisplay {
 	private Canvas canvas;
 
 	private BufferStrategy bufferStrategy;
-	private HotspotManager hotspots;
+	private boolean popupEnabled;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
-		bottomBar, bottomLeftBar, bottomLeftBarNoPower, bottomRightBar, bottomRightBarFixedSize, logoBar;
+		bottomBar, bottomLeftBar, bottomLeftBarNoPower, bottomRightBar, bottomRightBarFixedSize, logoBar, popup;
 	
-	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
-
 	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
 	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
 
 	private static final Insets SLICK_INSETS = new Insets(4, 4, 30, 4);
 
+	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
+	private static final boolean EMBEDDED_POPUP = Parameters.SCREEN_EMBEDDED_POPUP;
+
 	public static final long serialVersionUID = 1L;
 
 
-	private class AppletScreenControlKeyListener extends KeyAdapter {
+	private class MonitorPanelControlKeyListener extends KeyAdapter {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			int code = e.getKeyCode();
 			switch (e.getModifiersEx()) {
-			case 0:
-				if (code == KEY_EXIT) exit();
-				return;
-			case KeyEvent.ALT_DOWN_MASK:
-				switch (code) {
-					case KEY_HELP: return;
-				}
+				case 0:
+					if (code == KEY_EXIT)
+						Room.currentRoom().currentConsole().powerOff();
+					return;
+				case KeyEvent.ALT_DOWN_MASK:
+					if (popupEnabled && code == KEY_FULL_SCR)
+						((EmbeddedRoom) Room.currentRoom()).popUpScreen(true);	// in Fullscreen
 			}
 		}
 		static final int KEY_EXIT     = KeyEvent.VK_ESCAPE;
-		static final int KEY_HELP     = KeyEvent.VK_H;
+		static final int KEY_FULL_SCR = KeyEvent.VK_ENTER;
 	}
 
 	
-	// To handle drag and drop of ROM files and links
-	class ROMDropTransferHandler extends TransferHandler {
-		@Override
-		public boolean canImport(TransferSupport support) {
-			if (!monitor.isCartridgeChangeEnabled()) return false;
-			Transferable transf = support.getTransferable();
-			if (!ROMTransferHandlerUtil.canAccept(transf)) return false;
-			if (support.isDrop() && support.getUserDropAction() != LINK) support.setDropAction(COPY);
-			return true;
-		}
-		@Override
-		public boolean importData(TransferSupport support) {
-			if (!canImport(support)) return false;
-			monitor.showOSD("LOADING CARTRIDGE...", true);
-			Cartridge cart = ROMTransferHandlerUtil.importCartridgeData(support.getTransferable());
-			monitor.showOSD(null, true);
-			if (cart == null) return false;
-			// LINK Action means load Cartridge without auto power! :-)
-			boolean autoPower = !support.isDrop() || support.getDropAction() != LINK;
-			monitor.cartridgeInsert(cart, autoPower);
-			return true;
-		}
-		private static final long serialVersionUID = 1L;
-	}
-
 }

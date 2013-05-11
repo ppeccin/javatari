@@ -277,6 +277,8 @@ public final class Parameters {
 			val = props.getProperty("SCREEN_SCANLINES_ACCELERATION"); if (val != null) SCREEN_SCANLINES_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_FIXED_SIZE"); if (val != null) SCREEN_FIXED_SIZE = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FULLSCREEN"); if (val != null) SCREEN_FULLSCREEN = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_USE_FSEM"); if (val != null) SCREEN_USE_FSEM = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_EMBEDDED_POPUP"); if (val != null) SCREEN_EMBEDDED_POPUP = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_CARTRIDGE_CHANGE"); if (val != null) SCREEN_CARTRIDGE_CHANGE = Boolean.valueOf(val);
 
 			val = props.getProperty("SPEAKER_DEFAULT_FPS"); if (val != null) SPEAKER_DEFAULT_FPS = Double.valueOf(val);
@@ -322,13 +324,12 @@ public final class Parameters {
 		}
 	}
 
-
-	// Main Emulator Version
-	public static final String VERSION = "version 3.20";
-
 	
 	// Cartridge URL to load passed as argument
 	public static String mainArg = null;
+
+	// Main Emulator Version
+	public static final String VERSION = "version 3.30";
 
 	// DEFAULTS
 
@@ -372,6 +373,8 @@ public final class Parameters {
 	public static float		SCREEN_SCANLINES_ACCELERATION = -1;
 	public static boolean 	SCREEN_FIXED_SIZE = false;
 	public static boolean 	SCREEN_FULLSCREEN = false;
+	public static int	 	SCREEN_USE_FSEM = -1;
+	public static boolean 	SCREEN_EMBEDDED_POPUP = true;
 	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)

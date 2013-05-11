@@ -2,7 +2,7 @@
 
 package org.javatari.atari.network;
 
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +31,20 @@ public final class ServerConsole extends Console implements ClockDriven {
 	public void powerOff() {
 		// The server clock is always running
 		super.powerOff();
-		mainClockGo();
+		go();
 	}
 
+	@Override
+	public void extendedPowerOff() {
+		super.powerOff();
+		try {
+			remoteTransmitter.stop();
+		} catch (IOException e) {
+			// Ignore
+		}
+		super.extendedPowerOff();
+	}
+	
 	@Override
 	protected void mainClockCreate() {
 		// The server clock is always running

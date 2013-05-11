@@ -7,7 +7,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.InputStream;
 import java.util.Locale;
 
-import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 
@@ -21,12 +21,14 @@ public class Environment {
 				Locale.setDefault(Locale.ENGLISH);
 			} catch (Exception ex)  {}
 
-			SwingUtilities.invokeAndWait( new Runnable() { public void run() {
+			SwingHelper.edtSmartInvokeAndWait(new Runnable() { @Override public void run() {
 				// Set Look and Feel
 				try {
 					UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");	// 215, 220, 221
 					NIMBUS_LAF = true;
 				} catch (Exception ex) {}
+
+				ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
 				// Grab info about installed fonts
 				try {

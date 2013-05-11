@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
@@ -35,28 +34,26 @@ import org.javatari.atari.controls.ConsoleControlsRedefinitionListener;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.parameters.Parameters;
 import org.javatari.utils.Environment;
-import org.javatari.utils.GraphicsDeviceHelper;
-import org.javatari.utils.slickframe.HotspotManager;
-import org.javatari.utils.slickframe.HotspotManager.HotspotAction;
+import org.javatari.utils.SwingHelper;
+import org.javatari.utils.slickframe.HotspotPanel;
 import org.javatari.utils.slickframe.MousePressAndMotionListener;
 
-
-public final class ConsolePanel extends JPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener, CartridgeInsertionListener {
+public final class ConsolePanel extends HotspotPanel implements ConsoleControls, ConsoleControlsInput, ConsoleControlsRedefinitionListener, CartridgeInsertionListener {
 
 	public ConsolePanel(Monitor screen, MousePressAndMotionListener forwardListener) {
 		super();
 		this.screen = screen;
-		buildGUI();
-		addHotspots(forwardListener);
+		setup();
+		setForwardListener(forwardListener);
+		addHotspots();
 		cartridgeInserted(null);
 	}
 
 	public void connect(ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
 		consoleControlsSocket = controlsSocket;
 		consoleControlsSocket.addForwardedInput(this);
-		consoleControlsSocket.addRedefinitionListener(this);
-		cartridgeSocket.addInsertionListener(this);
-		updateVisibleControlsState();
+		consoleControlsSocket.addRedefinitionListener(this);	// Will fire a redefinition event
+		cartridgeSocket.addInsertionListener(this);				// Will fire a insertion event
 	}
 
 	@Override
@@ -103,39 +100,38 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 				? new LineBorder(new Color((int)(b.getRed() * bf), (int)(b.getGreen() * bf), (int)(b.getBlue() * bf)), 1) 
 				: new LineBorder(new Color(bord), 1));
 
-		hotspots.removeHotspot(cartridgeInsertedHotspot);
-		hotspots.removeHotspot(cartridgeMissingHotspot);
-		hotspots.addHotspot(cartridgeInserted ? cartridgeInsertedHotspot : cartridgeMissingHotspot);
-		hotspots.removeHotspot(fileHotspot);
-		hotspots.removeHotspot(urlHotspot);
+		removeHotspot(cartridgeInsertedHotspot);
+		removeHotspot(cartridgeMissingHotspot);
+		addHotspot(cartridgeInserted ? cartridgeInsertedHotspot : cartridgeMissingHotspot);
+		removeHotspot(fileHotspot);
+		removeHotspot(urlHotspot);
 		if (screen.isCartridgeChangeEnabled()) {
-			hotspots.addHotspot(fileHotspot);
-			hotspots.addHotspot(urlHotspot);
+			addHotspot(fileHotspot);
+			addHotspot(urlHotspot);
 		}
 		if (isVisible()) repaint();
 	}
 
-	private void buildGUI() {
+	private void setup() {
 		prepareResources();
 		Dimension size = desiredSize();
 		setSize(size);
 		setPreferredSize(size);
 		setMaximumSize(size);
-		setFocusable(false);
 	}
 
 	private void prepareResources() {
 		try {
 			// Images
-			panelImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Panel.png");
-			cartridgeImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Cartridge.png");
-			changeCartKeysImage = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/CartridgeChangeKeys.png");
-			powerDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PowerDown.png");
-			colorDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/ColorDown.png");
-			selectDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/SelectDown.png");
-			resetDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/ResetDown.png");
-			p0DiffDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/P0DiffDown.png");
-			p1DiffDownImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/P1DiffDown.png");
+			panelImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Panel.png");
+			cartridgeImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Cartridge.png");
+			changeCartKeysImage = SwingHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/CartridgeChangeKeys.png");
+			powerDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PowerDown.png");
+			colorDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/ColorDown.png");
+			selectDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/SelectDown.png");
+			resetDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/ResetDown.png");
+			p0DiffDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/P0DiffDown.png");
+			p1DiffDownImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/P1DiffDown.png");
 			// Component to render Cartridge Labels
 			cartridgeLabelComponent = new JLabel();
 			if (Environment.cartridgeLabelFont != null) cartridgeLabelComponent.setFont(Environment.cartridgeLabelFont);
@@ -150,19 +146,18 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 		}
 	}
 
-	private void addHotspots(MousePressAndMotionListener forwardListener) {
-		hotspots = forwardListener != null ?  new HotspotManager(this, forwardListener) : new HotspotManager(this);
-		hotspots.addHotspot(
+	private void addHotspots() {
+		addHotspot(
 			new Rectangle(31, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.POWER, true);
 			}});
-		hotspots.addHotspot(
+		addHotspot(
 			new Rectangle(95, 52 - 137, 24, 46), 
 			new Runnable() { @Override public void run() { 
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.BLACK_WHITE, true);
 			}});
-		hotspots.addHotspot(
+		addHotspot(
 			new Rectangle(351, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.SELECT, true);
@@ -170,7 +165,7 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.SELECT, false);
 			}});
-		hotspots.addHotspot(
+		addHotspot(
 			new Rectangle(414, 52 - 137, 24, 46),
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.RESET, true);
@@ -178,35 +173,37 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.RESET, false);
 			}});
-		hotspots.addHotspot(
+		addHotspot(
 			new Rectangle(161, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.DIFFICULTY0, true);
 			}});
-		hotspots.addHotspot(
+		addHotspot(
 			new Rectangle(274, 4 - 137, 34, 21),
 			new Runnable() { @Override public void run() {
 				if (consoleControlsSocket != null) consoleControlsSocket.controlStateChanged(Control.DIFFICULTY1, true);
 			}});
-		cartridgeInsertedHotspot = hotspots.new HotspotAction(
+		cartridgeInsertedHotspot = new HotspotAction(
 				new Rectangle(145, 52 - 144, 180, 46),
 				new Runnable() { @Override public void run() {
 					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
 			}});
-		cartridgeMissingHotspot = hotspots.new HotspotAction(
+		cartridgeMissingHotspot = new HotspotAction(
 				new Rectangle(153, 52 - 135, 164, 42),
 				new Runnable() { @Override public void run() {
 					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
 			}});
-		fileHotspot = hotspots.new HotspotAction(
-			new Rectangle(172, 52 - 86, 30, 29),
+		fileHotspot = new HotspotAction(
+			new Rectangle(171, 52 - 86, 30, 29),
 			new Runnable() { @Override public void run() {
-				screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
+				if (getHeight() >= HEIGHT)
+					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_FILE);
 			}});
-		urlHotspot = hotspots.new HotspotAction(
-			new Rectangle(266, 52 - 86, 30, 29),
+		urlHotspot = new HotspotAction(
+			new Rectangle(267, 52 - 86, 30, 29),
 			new Runnable() { @Override public void run() {
-				screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_URL);
+				if (getHeight() >= HEIGHT)
+					screen.controlActivated(org.javatari.pc.screen.Monitor.Control.LOAD_CARTRIDGE_URL);
 			}});
 	}
 
@@ -244,7 +241,10 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 			);
 		}
 		// Cartridge change keys
-		if (screen.isCartridgeChangeEnabled() && initialHeight < HEIGHT - 10) g.drawImage(changeCartKeysImage, ins.left + 174, panelBottom - 32, null);
+		if (screen.isCartridgeChangeEnabled() && initialHeight < HEIGHT - 10) g.drawImage(changeCartKeysImage, ins.left + 173, panelBottom - 32, null);
+
+		paintHotspots(g);
+		
 		// Controls state
 		if (controlsStateReport.isEmpty()) return;
 		if (!controlsStateReport.get(Control.POWER)) g.drawImage(powerDownImage, ins.left + 33, panelBottom - 87, null);
@@ -256,7 +256,6 @@ public final class ConsolePanel extends JPanel implements ConsoleControls, Conso
 	}
 
 
-	private HotspotManager hotspots;
 	private BufferedImage panelImage;
 	private BufferedImage powerDownImage;
 	private BufferedImage colorDownImage;

@@ -8,15 +8,19 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Transparency;
+import java.awt.Window;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.SwingUtilities;
 
-public final class GraphicsDeviceHelper {
+public final class SwingHelper {
 
 	public static BufferedImage loadImage(String fileName) throws IOException {
 		URL url = Thread.currentThread().getContextClassLoader().getResource(fileName);
@@ -79,6 +83,37 @@ public final class GraphicsDeviceHelper {
 		if (dev == null)
 			throw new UnsupportedOperationException("Could not get Default Graphics Device");
 		return dev;
+	}
+	
+	public static void edtInvokeLater(Runnable block) {
+		SwingUtilities.invokeLater(block);
+	}
+
+	public static void edtSmartInvokeAndWait(Runnable block) {
+		if (!SwingUtilities.isEventDispatchThread())
+			try {
+				SwingUtilities.invokeAndWait(block);
+			} catch (InterruptedException e) {} catch (InvocationTargetException e) {}
+		else
+			block.run();
+	}
+	
+	public static GraphicsConfiguration getGraphicsConfigurationForCurrentLocation(Window window) {
+		GraphicsConfiguration ownedConfig = window.getGraphicsConfiguration();
+		Point currLocation = window.getLocation();
+		// Shortcut for "owned" case
+		if (ownedConfig.getBounds().contains(currLocation))
+			return ownedConfig;
+		
+		// Search for the right screen
+		GraphicsDevice[] screens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+		for (GraphicsDevice screen : screens)
+			for (GraphicsConfiguration config : screen.getConfigurations())
+				if (config.getBounds().contains(currLocation)) 
+					return config;
+		
+		// If none found, lets return the "owned" one
+		return ownedConfig;
 	}
 	
 }

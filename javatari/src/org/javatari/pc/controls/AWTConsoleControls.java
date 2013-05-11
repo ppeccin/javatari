@@ -5,6 +5,7 @@ package org.javatari.pc.controls;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.javatari.atari.cartridge.Cartridge;
@@ -14,15 +15,15 @@ import org.javatari.atari.controls.ConsoleControls;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.parameters.Parameters;
+import org.javatari.pc.screen.Screen;
 import org.javatari.utils.KeyFilteredRepeatsAdapter;
 
 
 public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implements ConsoleControls, CartridgeInsertionListener {
 	
-	public AWTConsoleControls(VideoMonitor monitor) {
+	public AWTConsoleControls() {
 		super();
-		videoMonitor = monitor;
-		joystickControls = new JoystickConsoleControls(monitor, this);
+		joystickControls = new JoystickConsoleControls(this);
 		initKeys();
 	}
 
@@ -34,28 +35,31 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		joystickControls.connect(controlsSocket);
 	}
 
-	public void addInputComponents(Component... inputs) {
-		for (int i = 0; i < inputs.length; i++) {
-			inputs[i].setFocusTraversalKeysEnabled(false);
-			inputs[i].addKeyListener(this);
-		}
+	public void connectScreen(Screen screen) {
+		videoMonitor = screen.monitor();
+		joystickControls.connectScreen(screen);
+		addInputComponents(screen.keyControlsInputComponents());
 	}
-
+	
 	public void powerOn() {
 		joystickControls.powerOn();
-		if (PADDLES_MODE == 0) paddleMode(false);
-		else if (PADDLES_MODE == 1) paddleMode(true);
+		if (PADDLES_MODE == 0) paddleMode(false, false);
+		else if (PADDLES_MODE == 1) paddleMode(true, false);
 	}
 	
 	public void powerOff() {
+		paddleMode(false, false);
 		joystickControls.powerOff();
 	}
 
+	public void destroy() {
+	}
+	
 	@Override
 	public void cartridgeInserted(Cartridge cartridge) {
 		if (cartridge == null || PADDLES_MODE >= 0) return;	// Does not interfere if Paddle Mode is forced
 		boolean usePaddles = cartridge.getInfo().paddles == 1;
-		if (paddleMode != usePaddles) paddleMode(usePaddles);
+		if (paddleMode != usePaddles) paddleMode(usePaddles, false);
 	}
 
 	public void toggleP1ControlsMode() {
@@ -69,10 +73,10 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	}
 	
 	public void togglePaddleMode() {
-		paddleMode(!paddleMode);
+		paddleMode(!paddleMode, true);
 	}
 	
-	public void paddleMode(boolean mode) {
+	public void paddleMode(boolean mode, boolean showOSD) {
 		paddleMode = mode;
 		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
 		paddle0Speed = paddle1Speed = 2;
@@ -83,7 +87,7 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
 		consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
 		joystickControls.paddleMode(paddleMode);
-		showModeOSD();
+		if (showOSD) showModeOSD();
 		if (paddleMode) paddlesUpdateActive();
 		else paddlesUpdateInactive();
 	}
@@ -114,6 +118,13 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		}
 	}
 
+	private void addInputComponents(List<Component> inputs) {
+		for (Component component : inputs) {
+			component.setFocusTraversalKeysEnabled(false);
+			component.addKeyListener(this);
+		}
+	}
+		
 	private void showModeOSD() {
 		videoMonitor.showOSD("Controllers: " + (paddleMode ? "Paddles" : "Joysticks") + (p1ControlsMode ? ", Swapped" : ""), true);
 	}
@@ -329,7 +340,7 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 
 	private ConsoleControlsSocket consoleControlsSocket; 
 	private CartridgeSocket cartridgeSocket; 
-	private final VideoMonitor videoMonitor;
+	private VideoMonitor videoMonitor;
 	private final JoystickConsoleControls joystickControls;
 
 	private int paddle0Position = 0;			// 380 = LEFT, 190 = MIDDLE, 0 = RIGHT

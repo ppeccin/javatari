@@ -1,15 +1,22 @@
 Visit http://javatari.org for downloads and online play
 Discuss at http://groups.google.com/group/javatari
 
+Version 3.30
+============
+- Applets can now be detached from the browser window
+- Once detached, all features are available including Full Screen
+- Full Screen is now multi-monitor aware
+- Updated, cleaner looks
+
+
+Previous Versions:
+
 Version 3.20
 ============
 - Console Panel now shows the inserted Cartridge 
 - Customizable, dynamically rendered Cartridge Labels
 - Built-in ROM information, based on Rom Hunter's collection
 - Better auto-detection of Paddles and CRT modes per ROM
-
-
-Previous Versions:
 
 Version 3.12
 ============

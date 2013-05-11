@@ -39,16 +39,19 @@ public class ConsoleControlsSocket implements ConsoleControlsInput {
 		forwardedInputs.remove(input);
 	}
 	public void addRedefinitionListener(ConsoleControlsRedefinitionListener listener) {
-		redefinitonListener.add(listener);
+		if (!redefinitonListeners.contains(listener)) {
+			redefinitonListeners.add(listener);
+			listener.controlsStatesRedefined();		// Fire a redefinition event
+		}
 	}
 	
 	public void controlsStatesRedefined() {
-		for (ConsoleControlsRedefinitionListener listener : redefinitonListener)
+		for (ConsoleControlsRedefinitionListener listener : redefinitonListeners)
 			listener.controlsStatesRedefined();
 	}
 	
 
 	private List<ConsoleControlsInput> forwardedInputs = new ArrayList<ConsoleControlsInput>();
-	private List<ConsoleControlsRedefinitionListener> redefinitonListener = new ArrayList<ConsoleControlsRedefinitionListener>();
+	private List<ConsoleControlsRedefinitionListener> redefinitonListeners = new ArrayList<ConsoleControlsRedefinitionListener>();
 
 }

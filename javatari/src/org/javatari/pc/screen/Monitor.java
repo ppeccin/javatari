@@ -22,6 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -39,7 +40,7 @@ import org.javatari.parameters.Parameters;
 import org.javatari.pc.cartridge.FileROMChooser;
 import org.javatari.pc.cartridge.URLROMChooser;
 import org.javatari.utils.Environment;
-import org.javatari.utils.GraphicsDeviceHelper;
+import org.javatari.utils.SwingHelper;
 
 
 public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsertionListener {
@@ -81,19 +82,21 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		return cartridgeChangeEnabled;
 	}
 
-	public void addControlInputComponents(Component... inputs) {
+	public void addControlInputComponents(List<Component> inputs) {
 		monitorControls.addInputComponents(inputs);
 	}
 	
 	public void powerOn() {
+		cleanBackBuffer();
 		paintLogo();
+		line = 0;
 		clock.go();
 	}
 
 	public void powerOff() {
 		synchronized(refreshMonitor) {
 			clock.pause();
-			paintLogo();
+			signalState(false);
 		}
 	}
 
@@ -147,11 +150,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	@Override
 	public void synchOutput() {
-		try {
-			SwingUtilities.invokeAndWait(refresher);
-		} catch (Throwable e) {
-			// ignore
-		}
+		SwingHelper.edtSmartInvokeAndWait(refresher);
 	}
 
 	@Override
@@ -276,7 +275,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private void prepareResources() {
 		// Prepare the Logo image
 		try {
-			logoIcon = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Logo.png");
+			logoIcon = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Logo.png");
 		} catch (IOException e) {}
 		// Prepare the OSD paint component
 		osdComponent = new JLabel();
@@ -336,7 +335,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			int w = ces.width;
 			int h = ces.height;
 			canvasGraphics.setBackground(Color.BLACK);
-			canvasGraphics.clearRect(0, 0, w, h);
+			canvasGraphics.clearRect(0, 0, w, h);	// TODO Flickers when not using multi buffering
 			int lw = logoIcon.getWidth(null);
 			int lh = logoIcon.getHeight(null);
 			float r = h < lh ? (float)h / lh : 1;

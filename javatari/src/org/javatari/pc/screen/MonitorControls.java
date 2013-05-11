@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.javatari.pc.screen.Monitor.Control;
@@ -18,9 +19,9 @@ public final class MonitorControls implements KeyListener {
 		init();
 	}
 
-	public void addInputComponents(Component... inputs) {
-		for (int i = 0; i < inputs.length; i++)
-			inputs[i].addKeyListener(this);
+	public void addInputComponents(List<Component> inputs) {
+		for (Component component : inputs)
+			component.addKeyListener(this);
 	}
 	
 	private void init() {

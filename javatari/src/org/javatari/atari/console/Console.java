@@ -69,13 +69,13 @@ public class Console {
 		tia.powerOn();
 		powerOn = true;
 		controlsSocket.controlsStatesRedefined();
-		mainClockGo();
+		go();
 		videoStandardAutoDetectionStart();
 		if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!", true);
 	}
 
 	public void powerOff() {
-		mainClockPause();
+		pause();
 		tia.powerOff();
 		pia.powerOff();
 		cpu.powerOff();
@@ -85,7 +85,12 @@ public class Console {
 		controlsSocket.controlsStatesRedefined();
 	}
 
+	public void extendedPowerOff() {
+		powerOff();
+	}
+	
 	public void destroy() {
+		extendedPowerOff();
 		mainClockDestroy();
 	}
 	
@@ -106,6 +111,14 @@ public class Console {
 		showOSD((videoStandardAuto ? "AUTO: " : "") + videoStandard.toString(), false);
 	}
 
+	public void go() {
+		mainClock.go();
+	}
+	
+	public void pause() {
+		mainClock.pause();
+	}
+	
 	// For debug purposes
 	public Clock mainClock() {
 		return mainClock;
@@ -177,14 +190,6 @@ public class Console {
 		mainClock.speed(tia.desiredClockForVideoStandard() * FAST_SPEED_FACTOR);
 	}
 
-	protected void mainClockGo() {
-		mainClock.go();
-	}
-	
-	protected void mainClockPause() {
-		mainClock.pause();
-	}
-	
 	protected void mainClockDestroy() {
 		mainClock.terminate();
 	}
@@ -242,17 +247,17 @@ public class Console {
 	}
 
 	private ConsoleState pauseAndSaveState() {
-		mainClockPause();
+		pause();
 		ConsoleState state = Console.this.saveState();
-		mainClockGo();
+		go();
 		return state;
 	}
 
 	private void pauseAndLoadState(ConsoleState state) {
 		if (powerOn) {
-			mainClockPause();
+			pause();
 			Console.this.loadState(state);
-			mainClockGo();
+			go();
 		} else {
 			powerOn();
 			pauseAndLoadState(state);
@@ -354,7 +359,11 @@ public class Console {
 		}
 		@Override
 		public void addInsertionListener(CartridgeInsertionListener listener) {
-			if (!insertionListeners.contains(listener)) insertionListeners.add(listener);
+			if (!insertionListeners.contains(listener)) { 
+				insertionListeners.add(listener);
+				listener.cartridgeInserted(inserted());		// Fire a insertion event
+				
+			}
 		}
 		@Override
 		public void removeInsertionListener(CartridgeInsertionListener listener) {

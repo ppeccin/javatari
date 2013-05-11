@@ -4,11 +4,13 @@ package org.javatari.pc.room.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -68,7 +70,7 @@ import org.javatari.pc.controls.JoystickConsoleControls.DeviceOption;
 import org.javatari.pc.controls.JoystickConsoleControls.JoystickButtonDetectionListener;
 import org.javatari.pc.room.Room;
 import org.javatari.utils.Environment;
-import org.javatari.utils.GraphicsDeviceHelper;
+import org.javatari.utils.SwingHelper;
 
 public final class SettingsDialog extends JDialog implements ConnectionStatusListener, JoystickButtonDetectionListener {
 
@@ -77,7 +79,6 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 		loadImages();
 		buildGUI();
 		pack();
-		setLocationRelativeTo(null);
 		setEscActionListener();
 		buildControlsFieldsLists();
 		setControlsFieldsKeyListeners();
@@ -85,9 +86,13 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 		vmInfo.setText(Environment.vmInfo());
 		mainTabbedPane.setSelectedIndex(5);
 		mainTabbedPane.setEnabledAt(0, Parameters.MULTIPLAYER_UI);
+		GlassPane gp = new GlassPane();
+		gp.setOpaque(false);
+		setGlassPane(gp);
 	}
 
-	public void open() {
+	public void open(Component parent) {
+		setLocationRelativeTo(parent);
 		setupConnectionStatusListeners();
 		mainTabbedPaneChanged();
 		setVisible(true);
@@ -645,21 +650,26 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 	
 	private void serverStartAction() {
 		if (!room.isServerMode()) {		// Will try to START
+			gray(true);
 			room.morphToServerMode();
-			setupConnectionStatusListeners();
-			try {
-				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
-				String portString = serverPortTf.getText().trim();
+			SwingHelper.edtInvokeLater(new Runnable() { @Override public void run() {
+				setupConnectionStatusListeners();
 				try {
-					if (portString.isEmpty()) transmitter.start();
-					else transmitter.start(Integer.valueOf(portString));
-				} catch (NumberFormatException e) {
-					throw new IllegalArgumentException("Invalid port number: " + portString);
+					RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
+					String portString = serverPortTf.getText().trim();
+					try {
+						if (portString.isEmpty()) transmitter.start();
+						else transmitter.start(Integer.valueOf(portString));
+					} catch (NumberFormatException e) {
+						throw new IllegalArgumentException("Invalid port number: " + portString);
+					}
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not start Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
+					room.morphToStandaloneMode();
 				}
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Could not start Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
-				room.morphToStandaloneMode();
-			}
+				refreshMultiplayer();
+				gray(false);
+			}});
 		} else {	// Will try to STOP
 			try {
 				RemoteTransmitter transmitter = room.serverCurrentConsole().remoteTransmitter();
@@ -668,24 +678,29 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(null, "Error stopping Server:\n" + ex, "javatari P1 Server", JOptionPane.ERROR_MESSAGE);
 			}
+			refreshMultiplayer();
 		}			
-		refreshMultiplayer();
 	}
 	
 	private void clientConnectAction() {
 		if (!room.isClientMode()) {		// Will try to CONNECT
+			gray(true);
 			room.morphToClientMode();
-			setupConnectionStatusListeners();
-			String serverAddress = "";
-			try {
-				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
-				serverAddress = clientServerAddressTf.getText().trim();
-				receiver.connect(serverAddress);
-				closeAction();
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Connection failed: " + serverAddress + "\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
-				room.morphToStandaloneMode();
-			}
+			SwingHelper.edtInvokeLater(new Runnable() { @Override public void run() {
+				setupConnectionStatusListeners();
+				String serverAddress = "";
+				try {
+					RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
+					serverAddress = clientServerAddressTf.getText().trim();
+					receiver.connect(serverAddress);
+					closeAction();
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Connection failed: " + serverAddress + "\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
+					room.morphToStandaloneMode();
+				}
+				refreshMultiplayer();
+				gray(false);
+			}});
 		} else {	// Will try to DISCONNECT 
 			try {
 				RemoteReceiver receiver = room.clientCurrentConsole().remoteReceiver();
@@ -694,10 +709,16 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(null, "Error disconnecting from Server:\n" + ex, "javatari P2 Client", JOptionPane.ERROR_MESSAGE);
 			}
+			refreshMultiplayer();
 		}
-		refreshMultiplayer();
 	}
 	
+	private void gray(boolean state) {
+		setEnabled(!state);
+		getGlassPane().setVisible(state);
+		repaint();
+	}
+
 	private void defaultsAction() {
 		switch(mainTabbedPane.getSelectedIndex()) {
 			case 0:
@@ -742,10 +763,10 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 
 	private void loadImages() {
 		try {
-			BufferedImage image = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/room/settings/images/Joystick.png");
+			BufferedImage image = SwingHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/room/settings/images/Joystick.png");
 			joystickIcon = new ImageIcon(image);
 			joystickIconGrayed = new ImageIcon(GrayFilter.createDisabledImage(image));
-			image = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/room/settings/images/Paddle.png");
+			image = SwingHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/room/settings/images/Paddle.png");
 			paddleIcon = new ImageIcon(image);
 			paddleIconGrayed = new ImageIcon(GrayFilter.createDisabledImage(image));
 		} catch (IOException ex) {
@@ -1635,7 +1656,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnAltF.setOpaque(false);
 			txtpnAltF.setBackground(noBackground);
 			txtpnAltF.setEditable(false);
-			txtpnAltF.setText("ALT + F1:\r\n\r\nALT + F5:\r\nALT + F6:\r\nF7:\r\n\r\nDrag/Drop or Copy/Paste of files and URLs\r\n\r\nCTR-ALT + Arrows:\r\nCTR-SHT + Arrows:\r\nALT-SHT + Arrows:\r\n\r\nBACKSPACE:");
+			txtpnAltF.setText("ALT + F1:\r\n\r\nALT + F5:\r\nALT + F6:\r\nF7:\r\n\r\nDrag/Drop or Copy/Paste of files and URLs\r\n\r\nSHIFT + Arrows:\r\nSHIFT-ALT + Arrows:\r\nCTR-SHIFT + Arrows:\r\nCTR-ALT + Arrows:\r\nBACKSPACE:");
 			txtpnAltF.setFont(fontLabel);
 			txtpnAltF.setBounds(201, 39, 309, 226);
 			helpPanel.add(txtpnAltF);
@@ -1653,9 +1674,9 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnDisplayOriginDisplay.setOpaque(false);
 			txtpnDisplayOriginDisplay.setBackground(noBackground);
 			txtpnDisplayOriginDisplay.setEditable(false);
-			txtpnDisplayOriginDisplay.setText("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nDisplay Origin\r\nDisplay Size\r\nDisplay Scale\r\n\r\nDisplay Defaults");
+			txtpnDisplayOriginDisplay.setText("\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\nScreen Size\r\nScreen Scale\r\nViewport Size\r\nViewport Origin\r\nScreen Defaults");
 			txtpnDisplayOriginDisplay.setFont(fontLabel);
-			txtpnDisplayOriginDisplay.setBounds(332, 39, 139, 226);
+			txtpnDisplayOriginDisplay.setBounds(340, 39, 139, 226);
 			helpPanel.add(txtpnDisplayOriginDisplay);
 			
 			JLabel lblHotKeys = new JLabel();
@@ -1962,6 +1983,14 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 	private static final long serialVersionUID = 1L;
 	private JLabel vmInfo;
 
+}
+
+class GlassPane extends JPanel {
+	public void paintComponent(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 120));
+        g.fillRect(0, 0, getWidth(), getHeight());
+	}
+	private static final long serialVersionUID = 1L;
 }
 
 class JTextFieldNim extends JTextField {

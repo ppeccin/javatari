@@ -2,17 +2,13 @@
 
 package org.javatari.utils;
 
-import java.security.AccessControlException;
+import org.javatari.pc.room.Room;
 
 public final class Terminator {
 
 	public static void terminate() {
-		System.out.println("<<<<<<<<<<<<  EXIT   >>>>>>>>>>>>>");
-		try {
-			System.exit(0);
-		} catch(AccessControlException ex) {
-			// Ignore
-		}
+		if (Room.currentRoom() != null) Room.currentRoom().exit();
+		throw new IllegalStateException("Emulator terminated");
 	}
 	
 }

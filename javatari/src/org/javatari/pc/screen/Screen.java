@@ -2,13 +2,12 @@
 
 package org.javatari.pc.screen;
 
-
 import java.awt.Component;
+import java.util.List;
 
 import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
-
 
 public interface Screen {
 
@@ -16,10 +15,11 @@ public interface Screen {
 
 	public Monitor monitor();
 
-	public Component[] controlsInputComponents();
+	public List<Component> keyControlsInputComponents();
 	
 	public void powerOn();
 	public void powerOff();
+	public void close();
 	public void destroy();
 
 }

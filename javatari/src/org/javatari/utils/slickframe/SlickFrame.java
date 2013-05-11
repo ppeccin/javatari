@@ -3,6 +3,7 @@
 package org.javatari.utils.slickframe;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -18,8 +19,13 @@ public class SlickFrame extends JFrame {
 
 	public SlickFrame(boolean resizable) throws HeadlessException {
 		super();
-		init();
+		setUndecorated(true);
+		setResizable(false);
 		this.resizable = resizable;
+		contentHotspotPanel = new HotspotPanel();
+		setContentPane(contentHotspotPanel);
+		init();
+		setupMoveAndResizeListener();
 	}
 
 	public void minimunResize(Dimension minSize) {
@@ -27,17 +33,14 @@ public class SlickFrame extends JFrame {
 	}
 
 	public MousePressAndMotionListener detachMouseListener() {
-		removeMouseListener(mouseListener);
-		removeMouseMotionListener(mouseListener);
-		return mouseListener;
+		return contentHotspotPanel.detachMouseListener();
+	}
+	
+	public HotspotPanel getContentHotspotPanel() {
+		return contentHotspotPanel;
 	}
 	
 	protected void init() {
-		setUndecorated(true);
-		setResizable(false);
-		mouseListener = buildMouseListener();
-		addMouseListener(mouseListener);
-		addMouseMotionListener(mouseListener);
 	}
 
 	protected void movingTo(int x, int y) {
@@ -54,6 +57,13 @@ public class SlickFrame extends JFrame {
 	protected void finishedResizing() {
 	}
 
+	private void setupMoveAndResizeListener() {
+		MousePressAndMotionListener moveAndResizeListener = buildMouseListener();
+		addMouseListener(moveAndResizeListener);
+		addMouseMotionListener(moveAndResizeListener);
+		contentHotspotPanel.setForwardListener(moveAndResizeListener);
+	}
+	
 	private MousePressAndMotionListener buildMouseListener() {
 		return new MousePressAndMotionAdapter() {
 			@Override
@@ -97,9 +107,11 @@ public class SlickFrame extends JFrame {
 		};
 	}
 	
+	public void paintHotspots(Graphics g) {
+		contentHotspotPanel.paintHotspots(g);
+	}
 	
-	private MousePressAndMotionListener mouseListener;
-
+	private HotspotPanel contentHotspotPanel;
 	private final boolean resizable;
 	private Point clickPosition = null;
 	private Point startingLocation = null;
@@ -109,5 +121,6 @@ public class SlickFrame extends JFrame {
 	private static final int RESIZE_CORNER_SIZE = 18;
 
 	public static final long serialVersionUID = 1L;
+
 
 }

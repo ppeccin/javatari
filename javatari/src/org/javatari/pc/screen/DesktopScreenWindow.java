@@ -12,27 +12,26 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.ImageCapabilities;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 import org.javatari.atari.cartridge.Cartridge;
@@ -40,10 +39,10 @@ import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.parameters.Parameters;
+import org.javatari.pc.room.EmbeddedRoom;
 import org.javatari.pc.room.Room;
-import org.javatari.utils.GraphicsDeviceHelper;
-import org.javatari.utils.Terminator;
-import org.javatari.utils.slickframe.HotspotManager;
+import org.javatari.utils.SwingHelper;
+import org.javatari.utils.slickframe.HotspotPanel;
 import org.javatari.utils.slickframe.SlickFrame;
 
 
@@ -51,10 +50,6 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	public DesktopScreenWindow() {
 		super();
-		monitor = new Monitor();
-		if (CONSOLE_PANEL) consolePanelWindow = new DesktopConsolePanel(this, monitor);
-		fullWindow = new DesktopScreenFullWindow(this);
-		monitor.addControlInputComponents(this.controlsInputComponents());
 		setup();
 	}
 
@@ -66,24 +61,34 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	@Override
 	public void powerOn() {
-		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
-			fullScreen(FULLSCREEN);
+		powerOn(FULLSCREEN);
+	}
+		
+	public void powerOn(final boolean fullScreen) {
+		SwingHelper.edtSmartInvokeAndWait(new Runnable() { @Override public void run() {
+			fullScreen(fullScreen);
 			monitor.powerOn();
 		}});
 	}
-	
+
 	@Override
 	public void powerOff() {
-//		SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+		SwingHelper.edtSmartInvokeAndWait(new Runnable() { @Override public void run() {
 			if (fullScreen) fullScreen(false);
 			monitor.powerOff();
-//		}});
+			setVisible(false);
+		}});
 	}
 
 	@Override
 	public void destroy() {
-		setVisible(false);
+		close();
 		monitor.destroy();
+	}
+
+	@Override
+	public void close() {
+		setVisible(false);
 	}
 
 	@Override
@@ -112,38 +117,33 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (visible) {
-			// Considers this window actual insets, they may not be zero if its still decorated for some reason
+			// Consider this window actual insets, they may not be zero if its still decorated for some reason
 			Insets ins = getInsets();
 			totalCanvasHorizPadding = ins.left + ins.right + SLICK_INSETS.left + SLICK_INSETS.right + BORDER_SIZE * 2;
 			totalCanvasVertPadding = ins.top + ins.bottom + SLICK_INSETS.top + SLICK_INSETS.bottom + BORDER_SIZE * 2;
 			if (consolePanelWindow != null) consolePanelWindow.setVisible(true);
 			canvasSetRenderingMode();
-			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			SwingHelper.edtInvokeLater(new Runnable() {  @Override public void run() {
 				repaint();
 			}});
 		} else
 			if (consolePanelWindow != null) consolePanelWindow.setVisible(false);
 	}
 	
-	@Override
-	public Component[] controlsInputComponents() {
-		return new Component[] { this };
+	public void fullScreen(boolean state) {
+		synchronized (monitor.refreshMonitor) {
+			if (state) openFullWindow();
+			else openWindow();
+		}
 	}
 
 	@Override
-	public synchronized void addKeyListener(KeyListener l) {
-		super.addKeyListener(l);
-		canvas.addKeyListener(l);
-		fullWindow.addKeyListener(l);
-		if (consolePanelWindow != null) consolePanelWindow.addKeyListener(l);
+	public List<Component> keyControlsInputComponents() {
+		List<Component> comps = new ArrayList<Component>(Arrays.asList((Component)this, canvas, fullWindow));
+		if (consolePanelWindow != null) comps.add(consolePanelWindow);
+		return comps;
 	}
-	@Override
-	public synchronized void removeKeyListener(KeyListener l) {
-		super.removeKeyListener(l);
-		canvas.removeKeyListener(l);
-		fullWindow.removeKeyListener(l);
-		if (consolePanelWindow != null) consolePanelWindow.removeKeyListener(l);
-	}
+
 	@Override
 	public synchronized void addMouseListener(MouseListener l) {
 		super.addMouseListener(l);
@@ -153,16 +153,6 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	public synchronized void addMouseMotionListener(MouseMotionListener l) {
 		super.addMouseMotionListener(l);
 		canvas.addMouseMotionListener(l);
-	}
-	@Override
-	public synchronized void removeMouseListener(MouseListener l) {
-		super.removeMouseListener(l);
-		canvas.removeMouseListener(l);
-	}
-	@Override
-	public synchronized void removeMouseMotionListener(MouseMotionListener l) {
-		super.removeMouseMotionListener(l);
-		canvas.removeMouseMotionListener(l);
 	}
 
 	@Override
@@ -182,9 +172,9 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	@Override
 	public void displayCenter() {
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		int x = (tk.getScreenSize().width - getWidth()) / 2;
-		int y = (tk.getScreenSize().height - getHeight() - DesktopConsolePanel.EXPANDED_HEIGHT) / 4;
+		Rectangle bounds = SwingHelper.getGraphicsConfigurationForCurrentLocation(this).getBounds();
+		int x = (bounds.width - getWidth()) / 2 + bounds.x;
+		int y = (bounds.height - getHeight() - DesktopConsolePanel.EXPANDED_HEIGHT) / 4 + bounds.y;
 		setLocation(x, y);
 	}
 
@@ -239,45 +229,71 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	}
 
 	private void setup() {
+		popinEnabled = EMBEDDED_POPUP && Room.currentRoom() instanceof EmbeddedRoom;
+		addHotspots();
+		monitor = new Monitor();
+		fullWindow = new DesktopScreenFullWindow(this);
+		monitor.addControlInputComponents(this.keyControlsInputComponents());
 		addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				if (e.getComponent() == DesktopScreenWindow.this) positionCanvas();
 			}});		
 		getRootPane().setTransferHandler(new ROMDropTransferHandler());
-		addHotspots();
-		addKeyListener(new DesktopScreenControlKeyListener());
+		if (CONSOLE_PANEL) {
+			consolePanelWindow = new DesktopConsolePanel(this, monitor);
+			consolePanelWindow.setTransferHandler(new ROMDropTransferHandler());
+		}
+		addInputComponents(keyControlsInputComponents());
 		monitor.setDisplay(this);
 		displayCenter();
 	}
 
-	private void fullScreen(boolean state) {
-		synchronized (monitor.refreshMonitor) {
-			if (state)
-				if (openFullWindow()) return;
-			openWindow();
-		}
+	private void addInputComponents(List<Component> inputs) {
+		DesktopScreenControlKeyListener lis = new DesktopScreenControlKeyListener();
+		for (Component component : inputs)
+			component.addKeyListener(lis);
 	}
 
 	private void openWindow() {
 		if (isVisible()) return;
-		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (dev.isFullScreenSupported() && dev.getFullScreenWindow() != null) dev.setFullScreenWindow(null);
-		fullWindow.setVisible(false);
+		// Exist FullScreen mode, if that was the case
+		if (fullWindow != null && fullWindow.isVisible()) {
+			try {
+				GraphicsConfiguration graphicsConfig = 
+						SwingHelper.getGraphicsConfigurationForCurrentLocation(fullWindow);
+				graphicsConfig.getDevice().setFullScreenWindow(null);
+			} catch (Exception e) {
+				// Ignore. Probably FSEM is not supported
+			}
+			fullWindow.setVisible(false);
+		}
 		setVisible(true);
-		fullScreen = false;
+		toFront();
+		requestFocus();
 		monitor.setDisplay(this);
+		fullScreen = false;
 	}
 
-	private boolean openFullWindow() {
-		if (fullWindow.isVisible()) return true;
-		GraphicsDevice dev = GraphicsDeviceHelper.defaultScreenDevice(); 
-		if (!dev.isFullScreenSupported()) return false;
+	private void openFullWindow() {
+		if (fullWindow.isVisible()) return;
+		// Try to set full screen in the monitor we are currently in
+		GraphicsConfiguration graphicsConfig = 
+				SwingHelper.getGraphicsConfigurationForCurrentLocation(this);
 		setVisible(false);
+		fullWindow.setBounds(graphicsConfig.getBounds());
 		fullWindow.setVisible(true);
-		dev.setFullScreenWindow(fullWindow);
-		fullScreen = true;
+		// Try to enter FullScreen Exclusive mode if desired
+		if (USE_FSEM != 0) {
+			try {
+				graphicsConfig.getDevice().setFullScreenWindow(fullWindow);
+			} catch (Exception e) {
+				// Ignore. Probably FSEM is not supported
+			}
+		}
+		fullWindow.toFront();
+		fullWindow.requestFocus();
 		monitor.setDisplay(fullWindow);
-		return true;
+		fullScreen = true;
 	}
 
 	public void canvasSetRenderingMode() {
@@ -340,67 +356,71 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	}
 
 	private void addHotspots() {
-		hotspots = new HotspotManager(this, detachMouseListener());
-		hotspots.addHotspot(
-			new Rectangle(8, -25, 19, 19), 
-			new Runnable() { @Override public void run() { 
-				exit();
-			}});
-		hotspots.addHotspot(
-			new Rectangle(HotspotManager.CENTER_HOTSPOT, -27, 24, 28), 	// Logo. Horizontally centered
+		HotspotPanel hotspotPanel = getContentHotspotPanel();
+		hotspotPanel.addHotspot(
+			new Rectangle(HotspotPanel.CENTER_HOTSPOT, -27, 24, 28), "Toggle Console Controls",
 			new Runnable() { @Override public void run() { 
 				if (consolePanelWindow != null) consolePanelWindow.toggle();
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-74 -44, -20, 13, 15), 
+		hotspotPanel.addHotspot(
+			new Rectangle(-70 -44, -20, 13, 15), "Minimize",
 			new Runnable() { @Override public void run() { 
 				setState(ICONIFIED);
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-55 - 44, -21, 12, 16), 
+		hotspotPanel.addHotspot(
+			new Rectangle(-52 - 44, -21, 12, 16), "Decrease Size", 
 			new Runnable() { @Override public void run() { 
 				monitor.controlActivated(Monitor.Control.SIZE_MINUS);
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-40 - 44, -24, 14, 19), 
+		hotspotPanel.addHotspot(
+			new Rectangle(-35 - 44, -24, 14, 19), "Increase Size", 
 			new Runnable() { @Override public void run() { 
 				monitor.controlActivated(Monitor.Control.SIZE_PLUS);
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-20 -44, -24, 17, 19), 
+		hotspotPanel.addHotspot(
+			new Rectangle(-16 -44, -24, 17, 19), "Go Full Screen", 
 			new Runnable() { @Override public void run() { 
 				fullScreen(!fullScreen);
 			}});
-		hotspots.addHotspot(
-			new Rectangle(-41, -24, 17, 19),
+		hotspotPanel.addHotspot(
+			new Rectangle(-37, -24, 16, 19), "Open Settings",
 			new Runnable() { @Override public void run() {
-				Room.currentRoom().openSettings();
+				Room.currentRoom().openSettings(DesktopScreenWindow.this);
 				requestFocus();
 			}});
+		if (popinEnabled)
+			hotspotPanel.addHotspot(
+				new Rectangle(7, -25, 23, 20), "Re-attach Screen",
+				new Runnable() { @Override public void run() { 
+					((EmbeddedRoom) Room.currentRoom()).reembedScreen();
+				}});
+		else
+			hotspotPanel.addHotspot(
+				new Rectangle(8, -25, 19, 19), "Shutdown",
+				new Runnable() { @Override public void run() { 
+					Room.currentRoom().exit();
+				}});
 	}
 
 	private void loadImages() {
 		try {
-			topLeft = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopLeft.png");
-			bottomLeft = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeft.png");
-			topRight = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopRight.png");
-			bottomRight = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRight.png");
-			top = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Top.png");
-			bottomLeftBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBar.png");
-			bottomRightBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBar.png");
-			bottomBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomBar.png");
-			logoBar = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/LogoBar.png");
-			favicon = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Favicon.png");
-			icon64 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/LogoIcon64.png");
-			icon32 = GraphicsDeviceHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/LogoIcon32.png");
+			topLeft = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopLeft.png");
+			bottomLeft = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeft.png");
+			topRight = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/TopRight.png");
+			bottomRight = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRight.png");
+			top = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Top.png");
+			bottomLeftBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBar.png");
+			bottomLeftBarNoPower = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomLeftBarNoPower.png");
+			bottomRightBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomRightBar.png");
+			bottomBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/BottomBar.png");
+			logoBar = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/LogoBar.png");
+			popin = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Popin.png");
+			favicon = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Favicon.png");
+			icon64 = SwingHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/LogoIcon64.png");
+			icon32 = SwingHelper.loadAsCompatibleTranslucentImage("org/javatari/pc/screen/images/LogoIcon32.png");
 		} catch (IOException ex) {
 			System.out.println("Screen Window: unable to load images\n" + ex);
 		}
-	}
-	
-	private void exit() {
-		// Close program
-		Terminator.terminate();
 	}
 	
 	@Override
@@ -422,11 +442,15 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 		g.drawImage(topRight, w - 4, 0, null);
 		for (int x = 512; x < w - 512; x += 256) 
 			g.drawImage(bottomBar, x, h - 30, x + 256, h, 0, 0, 256, 30, null);
-		g.drawImage(logoBar, halfW - 12, h - 30, null);
-		g.drawImage(bottomLeftBar, 0, h - 30, maxHalfW, h, 0, 0, maxHalfW, 30, null);
+		g.drawImage(popinEnabled ? bottomLeftBarNoPower : bottomLeftBar, 0, h - 30, maxHalfW, h, 0, 0, maxHalfW, 30, null);
 		g.drawImage(bottomRightBar, w - maxHalfW, h - 30, w, h, 512 - maxHalfW, 0, 512, 30, null);
+		g.drawImage(logoBar, halfW - 12, h - 30, null);
 		g.drawImage(bottomLeft, 0, halfH, 4, h - 30, 0, 600 - halfH, 4, 600, null);
 		g.drawImage(bottomRight, w - 4, halfH, w, h - 30, 0, 600 - halfH, 4, 600, null);
+		if (popinEnabled) g.drawImage(popin, 11, h - 22, null);
+
+		paintHotspots(g);	
+		
 		g.dispose();
 	}
 	
@@ -439,13 +463,13 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	private boolean fullScreen = false;
 		
 	private BufferStrategy bufferStrategy;
-	private HotspotManager hotspots;
+	private boolean popinEnabled;
 
 	private int totalCanvasVertPadding = SLICK_INSETS.top + SLICK_INSETS.bottom;
 	private int totalCanvasHorizPadding = SLICK_INSETS.left + SLICK_INSETS.right;
 
 	private BufferedImage topLeft, bottomLeft, topRight, bottomRight, top,
-		bottomBar, bottomLeftBar, bottomRightBar, logoBar;
+		bottomBar, bottomLeftBar, bottomLeftBarNoPower, bottomRightBar, logoBar, popin;
 	
 	public BufferedImage favicon, icon64, icon32;	// Other windows use these
 
@@ -453,8 +477,10 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	public static final String BASE_TITLE = "javatari";
 	public static final boolean FULLSCREEN = Parameters.SCREEN_FULLSCREEN;
+	public static final int USE_FSEM = Parameters.SCREEN_USE_FSEM;
 	public static final int BORDER_SIZE = Parameters.SCREEN_BORDER_SIZE;
 	public static final boolean CONSOLE_PANEL = Parameters.SCREEN_CONSOLE_PANEL;
+	private static final boolean EMBEDDED_POPUP = Parameters.SCREEN_EMBEDDED_POPUP;
 
 	public static final long serialVersionUID = 1L;
 
@@ -465,9 +491,11 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			int code = e.getKeyCode();
 			switch (e.getModifiersEx()) {
 			case 0:
-				if (code == KEY_EXIT) 
-					if (fullScreen) fullScreen(!fullScreen);
-					else exit();
+				if (code == KEY_EXIT) {
+					if (fullScreen) fullScreen(false);
+					else if	(popinEnabled)((EmbeddedRoom) Room.currentRoom()).reembedScreen();
+					else Room.currentRoom().exit();
+				}
 				return;
 			case KeyEvent.ALT_DOWN_MASK:
 				switch (code) {
@@ -485,7 +513,7 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	
 	// To handle drag and drop of ROM files and links
-	class ROMDropTransferHandler extends TransferHandler {
+	private class ROMDropTransferHandler extends TransferHandler {
 		@Override
 		public boolean canImport(TransferSupport support) {
 			if (!monitor.isCartridgeChangeEnabled()) return false;

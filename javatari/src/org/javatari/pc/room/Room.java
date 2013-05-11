@@ -2,6 +2,8 @@
 
 package org.javatari.pc.room;
 
+import java.awt.Component;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 
 import org.javatari.atari.cartridge.Cartridge;
@@ -38,7 +40,7 @@ public class Room {
 	}
 
 	public void powerOff() {
-	 	currentConsole.powerOff();
+	 	if (currentConsole != null) currentConsole.extendedPowerOff();
 	 	awtControls.powerOff();
 	 	speaker.powerOff();
 		screen.powerOff();
@@ -126,9 +128,9 @@ public class Room {
 		powerOn();
 	}
 
-	public void openSettings() {
+	public void openSettings(Component parent) {
 		if (settingsDialog == null) settingsDialog = new SettingsDialog(this);
-		settingsDialog.open();
+		settingsDialog.open(parent);
 	}
 
 	public void destroy() {
@@ -138,6 +140,7 @@ public class Room {
 		if (clientConsole != null) clientConsole.destroy();
 		screen.destroy();
 		speaker.destroy();
+		awtControls.destroy();
 		if (settingsDialog != null) {
 			settingsDialog.setVisible(false);
 			settingsDialog.dispose();
@@ -150,12 +153,16 @@ public class Room {
 		if (screen != null) throw new IllegalStateException();
 		screen = buildScreenPeripheral();
 		speaker = new Speaker();
-		awtControls = new AWTConsoleControls(screen.monitor());
-		awtControls.addInputComponents(screen.controlsInputComponents());
+		awtControls = new AWTConsoleControls();
+		awtControls.connectScreen(screen);
 		stateMedia = new FileSaveStateMedia();
 	}
 
 	protected Screen buildScreenPeripheral() {
+		return buildDesktopScreenPeripheral();
+	}
+
+	public DesktopScreenWindow buildDesktopScreenPeripheral() {
 		return new DesktopScreenWindow();
 	}
 
@@ -194,14 +201,14 @@ public class Room {
 		}
 	}
 
-	private Console buildAndPlugStandaloneConsole() {
+	protected Console buildAndPlugStandaloneConsole() {
 		if (standaloneConsole != null) throw new IllegalStateException();
 		standaloneConsole = new Console();
 		plugConsole(standaloneConsole);
 		return standaloneConsole;
 	}
 
-	private ServerConsole buildAndPlugServerConsole() {
+	protected ServerConsole buildAndPlugServerConsole() {
 		if (serverConsole != null) throw new IllegalStateException();
 		RemoteTransmitter remoteTransmitter = new RemoteTransmitter();
 		serverConsole = new ServerConsole(remoteTransmitter);
@@ -209,21 +216,21 @@ public class Room {
 		return serverConsole;
 	}
 	
-	private ClientConsole buildAndPlugClientConsole() {
+	protected ClientConsole buildAndPlugClientConsole() {
 		RemoteReceiver remoteReceiver = new RemoteReceiver();
 		clientConsole = new ClientConsole(remoteReceiver);
 		plugConsole(clientConsole);
 		return clientConsole;
 	}	
 
-	private void adjustPeripheralsToStandaloneOrServerOperation() {
-		currentRoom.awtControls().p1ControlsMode(false);
-		currentRoom.screen().monitor().setCartridgeChangeEnabled(Parameters.SCREEN_CARTRIDGE_CHANGE);
+	protected void adjustPeripheralsToStandaloneOrServerOperation() {
+		awtControls.p1ControlsMode(false);
+		screen.monitor().setCartridgeChangeEnabled(Parameters.SCREEN_CARTRIDGE_CHANGE);
 	}
 
-	private void adjustPeripheralsToClientOperation() {
-		currentRoom.awtControls().p1ControlsMode(true);
-		currentRoom.screen().monitor().setCartridgeChangeEnabled(false);
+	protected void adjustPeripheralsToClientOperation() {
+		awtControls.p1ControlsMode(true);
+		screen.monitor().setCartridgeChangeEnabled(false);
 	}
 
 
@@ -258,48 +265,30 @@ public class Room {
 		return currentRoom;
 	}
 
-	public static Room buildAppletStandaloneRoom() {
-		if (currentRoom != null) throw new IllegalStateException("Room already built");
-		currentRoom = new AppletRoom();
-		currentRoom.buildPeripherals();
-		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
-		currentRoom.buildAndPlugStandaloneConsole();
-		return currentRoom;
+	public void exit() {
+		try {
+			destroy();
+			System.out.println("<<<<<<<<<<<<  EXIT   >>>>>>>>>>>>>");
+			System.exit(0);		
+		} catch(AccessControlException ex) {
+			// Ignore
+		}
 	}
-
-	public static Room buildAppletServerRoom() {
-		if (currentRoom != null) throw new IllegalStateException("Room already built");
-		currentRoom = new AppletRoom();
-		currentRoom.buildPeripherals();
-		currentRoom.adjustPeripheralsToStandaloneOrServerOperation();
-		currentRoom.buildAndPlugServerConsole();
-		return currentRoom;
-	}
-
-	public static Room buildAppletClientRoom() {
-		if (currentRoom != null) throw new IllegalStateException("Room already built");
-		currentRoom = new AppletRoom();
-		currentRoom.buildPeripherals();
-		currentRoom.adjustPeripheralsToClientOperation();
-		currentRoom.buildAndPlugClientConsole();
-		return currentRoom;
-	}
-
 	
-	private Console currentConsole;
-	private Console	standaloneConsole;
-	private ServerConsole serverConsole;
-	private ClientConsole clientConsole;
+	protected Console currentConsole;
+	protected Console	standaloneConsole;
+	protected ServerConsole serverConsole;
+	protected ClientConsole clientConsole;
 
-	private Screen screen;
-	private Speaker speaker;
-	private AWTConsoleControls awtControls;
-	private FileSaveStateMedia stateMedia;
-	private Cartridge cartridgeProvided;
-	private boolean triedToLoadCartridgeProvided = false;
-	private SettingsDialog settingsDialog;
+	protected Screen screen;
+	protected Speaker speaker;
+	protected AWTConsoleControls awtControls;
+	protected FileSaveStateMedia stateMedia;
+	protected Cartridge cartridgeProvided;
+	protected boolean triedToLoadCartridgeProvided = false;
+	protected SettingsDialog settingsDialog;
 	
 	
-	private static Room currentRoom;
+	protected static Room currentRoom;
 		
 }

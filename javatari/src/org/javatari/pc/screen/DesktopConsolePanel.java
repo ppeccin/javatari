@@ -17,17 +17,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.javatari.atari.cartridge.CartridgeSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
-import org.javatari.utils.GraphicsDeviceHelper;
-import org.javatari.utils.slickframe.HotspotManager;
-import org.javatari.utils.slickframe.MousePressAndMotionListener;
+import org.javatari.utils.SwingHelper;
+import org.javatari.utils.slickframe.HotspotPanel;
 import org.javatari.utils.slickframe.SlickFrame;
 
 
@@ -37,8 +34,8 @@ public final class DesktopConsolePanel extends SlickFrame {
 		super(false);
 		docked = true;
 		this.masterWindow = masterWindow;
-		addHotspots(detachMouseListener());
-		consolePanel = new ConsolePanel(monitor, hotspots.detachMouseListener());
+		addHotspots();
+		consolePanel = new ConsolePanel(monitor, detachMouseListener());
 		buildGUI();
 	}
 
@@ -50,6 +47,7 @@ public final class DesktopConsolePanel extends SlickFrame {
 	public void setVisible(final boolean state) {
 		if (!isVisible()) {
 			setFocusable(false);
+			consolePanel.setFocusable(false);
 			setFocusableWindowState(false);
 		}
 		DesktopConsolePanel.super.setVisible(state);
@@ -117,28 +115,28 @@ public final class DesktopConsolePanel extends SlickFrame {
 
 	private void loadImages() {
 		try {
-			retractButtonImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelRetractButton.png");
-			expandButtonImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelExpandButton.png");
-			closeButtonImage = GraphicsDeviceHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelCloseButton.png");
+			retractButtonImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelRetractButton.png");
+			expandButtonImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelExpandButton.png");
+			closeButtonImage = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/PanelCloseButton.png");
 		} catch (IOException ex) {
 			System.out.println("Console Panel: unable to load images\n" + ex);
 		}
 	}
 
-	private void addHotspots(MousePressAndMotionListener forwardListener) {
-		hotspots = new HotspotManager(this, forwardListener);
-		hotspots.addHotspot(
+	private void addHotspots() {
+		contentHotspotPanel = getContentHotspotPanel();
+		contentHotspotPanel.addHotspot(
 			new Rectangle(218, -13, 30, 15),
 			new Runnable() { @Override public void run() {
 				toggleRetract();
 			}});
-		hotspots.addHotspot(
-			new Rectangle(446, 4 - 133, 14, 13),
+		contentHotspotPanel.addHotspot(
+			new Rectangle(446, 4 - 137, 14, 13),
 			new Runnable() { @Override public void run() {
 				if (!docked) {
 					setVisible(false);
 					userClosed = true;
-					SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+					SwingHelper.edtInvokeLater(new Runnable() {  @Override public void run() {
 						toggleRetract();
 					}});
 				}
@@ -211,13 +209,13 @@ public final class DesktopConsolePanel extends SlickFrame {
 		sizeAdjustThread = new Thread("ConsolePanel Size Adjust") { @Override public void run() {
 			for (; delta[0] >= 0; delta[0] -= 8) {
 				try {
-					SwingUtilities.invokeAndWait(new Runnable() {  @Override public void run() {
+					SwingHelper.edtSmartInvokeAndWait(new Runnable() { @Override public void run() {
 						setSize(targetSize.width, targetSize.height + delta[0] * dir);
 					}});
 					Thread.sleep(8);
-				} catch (InterruptedException e1) {} catch (InvocationTargetException e1) {}
+				} catch (InterruptedException e1) {}
 			}
-			SwingUtilities.invokeLater(new Runnable() {  @Override public void run() {
+			SwingHelper.edtInvokeLater(new Runnable() { @Override public void run() {
 				setSize(targetSize);
 			}});
 		}};
@@ -239,7 +237,7 @@ public final class DesktopConsolePanel extends SlickFrame {
 	private boolean userClosed = true;
 	private Point dockedLocation;
 	private Thread sizeAdjustThread;
-	private HotspotManager hotspots;
+	private HotspotPanel contentHotspotPanel;
 	
 	private BufferedImage retractButtonImage;
 	private BufferedImage expandButtonImage;
@@ -260,10 +258,12 @@ public final class DesktopConsolePanel extends SlickFrame {
 			boolean retr = retracted;
 			boolean dock = docked;
 			if (retr)
-				g.drawImage(expandButtonImage, 225, initialHeight - 10, null);
+				g.drawImage(expandButtonImage, 225, initialHeight - 9, null);
 			else
 				g.drawImage(retractButtonImage, 225, initialHeight - 10, null);
 			if (!dock) g.drawImage(closeButtonImage, 448, initialHeight - 132, null);
+			
+			paintHotspots(g);
 		}
 		private static final long serialVersionUID = 1L;
 	}
