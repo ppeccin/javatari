@@ -12,9 +12,10 @@ import org.javatari.atari.cartridge.formats.Cartridge10K_DPC;
 import org.javatari.atari.cartridge.formats.Cartridge12K_FA;
 import org.javatari.atari.cartridge.formats.Cartridge16K_E7;
 import org.javatari.atari.cartridge.formats.Cartridge16K_F6;
-import org.javatari.atari.cartridge.formats.Cartridge24K_28K_FA2;
+import org.javatari.atari.cartridge.formats.Cartridge24K_28K_32K_FA2;
 import org.javatari.atari.cartridge.formats.Cartridge2K_CV;
 import org.javatari.atari.cartridge.formats.Cartridge32K_F4;
+import org.javatari.atari.cartridge.formats.Cartridge32K_FA2cu;
 import org.javatari.atari.cartridge.formats.Cartridge4K;
 import org.javatari.atari.cartridge.formats.Cartridge64K_F0;
 import org.javatari.atari.cartridge.formats.Cartridge64K_X07;
@@ -45,13 +46,10 @@ public class CartridgeDatabase {
 	}
 
 	public static CartridgeInfo produceInfo(ROM rom) {
-		// Get info from the library, if we find one
+		// Get info from the library
 		CartridgeInfo info = CartridgeInfoLibrary.getInfo(rom);
-		if (info == null) {
-			// If not, produce one from the information found in the ROM URL
-			info = new CartridgeInfo();
-			info.name = produceCartridgeName(rom.url);
-		}
+		// If ROM is unknown (name == null), produce name from information found in the ROM URL			
+		if (info.name == null) info.name = produceCartridgeName(rom.url);
 		finishInfo(info, rom);
 		return info;
 	}
@@ -76,9 +74,16 @@ public class CartridgeDatabase {
 			}
 		}
 		// Adjust CRT Mode use information if absent
-		if (info.crtMode == -1)
+		CrtMode: if (info.crtMode == -1) {
 			if (name.matches(HINTS_PREFIX_REGEX + "CRT(_|-)?MODE" + HINTS_SUFFIX_REGEX)) 
 				info.crtMode = 1;
+			else 
+				for (String romName : crtModeRomNames)
+					if (name.matches(romName)) {
+						info.crtMode = 1;
+						break CrtMode;
+					}
+		}
 		// Adjust Format information if absent
 		Format: if (info.format == null || info.format.isEmpty()) {
 			// First by explicit format hint
@@ -164,8 +169,8 @@ public class CartridgeDatabase {
 			Cartridge8K_F8.FORMAT,
 			Cartridge12K_FA.FORMAT,
 			Cartridge16K_F6.FORMAT,
-			Cartridge24K_28K_FA2.FORMAT,
 			Cartridge32K_F4.FORMAT,
+			Cartridge24K_28K_32K_FA2.FORMAT,
 			Cartridge64K_F0.FORMAT,
 			Cartridge64K_X07.FORMAT,
 			Cartridge8K_E0.FORMAT,
@@ -173,12 +178,13 @@ public class CartridgeDatabase {
 			Cartridge16K_E7.FORMAT,
 			Cartridge8K_512K_3E.FORMAT,
 			Cartridge8K_512K_3F.FORMAT,
-			Cartridge8K_64K_EF.FORMAT,
 			Cartridge8K_512K_SB.FORMAT,
+			Cartridge8K_64K_EF.FORMAT,
 			Cartridge8K_UA.FORMAT,
 			Cartridge8K_0840.FORMAT,
 			Cartridge10K_DPC.FORMAT,
-			CartridgePitfall2EnhancedDPCAudio.FORMAT
+			CartridgePitfall2EnhancedDPCAudio.FORMAT,
+			Cartridge32K_FA2cu.FORMAT
 		});
 
 	
@@ -222,7 +228,6 @@ public class CartridgeDatabase {
 				".*PITFALL.*(2|II).*"
 		})
 	};
-
 
 	private static final String[] paddlesRomNames = new String[] {
 		".*PADDLES.*",										// Generic hint
@@ -270,7 +275,12 @@ public class CartridgeDatabase {
 		".*WARPLOCK.*"
 	};
 
-	
+	private static final String[] crtModeRomNames = new String[] {
+		".*STAR.*CASTLE.*",
+		".*SEAWEED.*"
+	};
+
+		
 	private static final String HINTS_PREFIX_REGEX = "(|.*?(\\W|_|%20))";
 	private static final String HINTS_SUFFIX_REGEX = "(|(\\W|_|%20).*)";
 	

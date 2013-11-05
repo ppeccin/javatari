@@ -22,7 +22,22 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 	}
 
 	@Override
-	public boolean save(int slot, ConsoleState state) {
+	public boolean saveState(int slot, ConsoleState state) {
+		return saveResource("save" + slot + ".sav", state);
+	}
+
+	@Override
+	public ConsoleState loadState(int slot) {
+		try{
+			return (ConsoleState)loadResource("save" + slot + ".sav");
+		} catch (Exception ex) {
+			// ClassCast or any other error
+			return null;
+		}
+	}
+
+	@Override
+	public boolean saveResource(String name, Object data) {
 		try {
 			// Create the savestate directory if needed
 			File dir = new File(savesDirectory());
@@ -30,11 +45,11 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 				dir.mkdir();
 			FileOutputStream file = null;
 			try {
-				ByteArrayOutputStream data = new ByteArrayOutputStream();
-				ObjectOutputStream stream = new ObjectOutputStream(data);
-				stream.writeObject(state);
-				file = new FileOutputStream(savesDirectory() + File.separator + "save" + slot + ".sav");
-				file.write(data.toByteArray());
+				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+				ObjectOutputStream stream = new ObjectOutputStream(byteStream);
+				stream.writeObject(data);
+				file = new FileOutputStream(savesDirectory() + File.separator + name);
+				file.write(byteStream.toByteArray());
 			} finally {
 				if (file != null) file.close();
 			}
@@ -42,28 +57,28 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 		} catch (Exception ex) {
 			// No permissions or any other IO error
 			ex.printStackTrace();
+			return false;
 		}
-		return false;
 	}
 
 	@Override
-	public ConsoleState load(int slot) {
+	public Object loadResource(String name) {
 		try{
 			FileInputStream file = null;
 			try{
-				file = new FileInputStream(savesDirectory() + File.separator + "save" + slot + ".sav");
+				file = new FileInputStream(savesDirectory() + File.separator + name);
 				byte[] data = new byte[file.available()];
 				file.read(data);
 				ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(data));
-				return (ConsoleState) stream.readObject();
+				return stream.readObject();
 			} finally {
 				if (file != null) file.close();
 			}
 		} catch (Exception ex) {
 			// No permissions or any other IO error
 			ex.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 
 	private String savesDirectory() {

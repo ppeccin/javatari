@@ -14,6 +14,7 @@ public class ROM implements Serializable {
 		this.info = CartridgeDatabase.produceInfo(this);
 	}
 	
+
 	public final String url;
 	public final byte[] content;
 	public final CartridgeInfo info;

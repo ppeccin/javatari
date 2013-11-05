@@ -114,21 +114,21 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			if (!signalState(pixels != null))		// If signal is off, we are done
 				return false;
 			// Process new line received
-			boolean vSynced = false;
+			boolean vSynched = false;
 			if (line < signalHeight)
 				System.arraycopy(pixels, 0, backBuffer, line * signalWidth, signalWidth);
 			else 
-				vSynced = maxLineExceeded();
+				vSynched = maxLineExceeded();
 			line++;
 			if (videoStandardDetected == null) videoStandardDetectionLines++;
 			if (vSynchSignal) {
 				if (--vSyncDetectionCount == 0) {
 					if (videoStandardDetected == null) videoStandardDetectionNewFrame();
-					vSynced = newFrame();
+					vSynched = newFrame();
 				}
 			} else
-				vSyncDetectionCount = VSYNC_DETECTION;
-			return vSynced;
+				if (vSyncDetectionCount != VSYNC_DETECTION) vSyncDetectionCount = VSYNC_DETECTION;
+			return vSynched;
 		}
 	}
 
@@ -176,6 +176,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public void cartridgeInserted(Cartridge cartridge) {
 		if (crtMode == 0 || crtMode == 1)
 			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == 1 ? 1 : 0);
+		// TODO Adjust display size for StarCastle in a generic way
 	}
 
 	private boolean newFrame() {

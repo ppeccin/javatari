@@ -8,7 +8,7 @@ import org.javatari.atari.cartridge.CartridgeFormatOption;
 import org.javatari.atari.cartridge.ROM;
 
 /**
- * Implements as Enhanced version of Pitfall2 with TIA audio updates every DPC audio clock!
+ * Implements an Enhanced version of Pitfall2 with TIA audio updates every DPC audio clock!
  */
 public class CartridgePitfall2EnhancedDPCAudio extends Cartridge10K_DPC {
 

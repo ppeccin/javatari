@@ -2,6 +2,7 @@
 
 package org.javatari.atari.cartridge.formats;
 
+import org.javatari.atari.board.BUS;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
@@ -15,6 +16,11 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 
 	protected Cartridge10K_DPC(ROM rom, CartridgeFormat format) {
 		super(rom, format, BASE_BANKSW_ADDRESS, false, 0);		// SuperChip always OFF, no RAM
+	}
+
+	@Override
+	public void connectBus(BUS bus) {
+		this.bus = bus;
 	}
 
 	@Override
@@ -216,6 +222,9 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 		return clone;
 	}
 	
+
+	protected transient BUS bus;
+
 	private byte randomNumber = (byte) 0x00;
 	private int[] fetcherPointer = new int[8];
 	private byte[] fetcherStart = new byte[8];

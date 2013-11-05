@@ -18,7 +18,7 @@ public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 	protected CartridgeBankedByMaskedRange(ROM rom, CartridgeFormat format, 
 			int baseBankSwitchAddress, Boolean superChip, int extraRAMSize) {
 		super(rom, format);
-		this.numBanks = bytes.length / BANK_SIZE;
+		int numBanks = bytes.length / BANK_SIZE;
 		this.baseBankSwitchAddress = baseBankSwitchAddress;
 		this.topBankSwitchAddress = baseBankSwitchAddress + numBanks - 1;
 		this.extraRAMSize = extraRAMSize;
@@ -58,7 +58,7 @@ public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 	protected void performBankSwitchOnMaskedAddress() {
 		// Check and perform bank-switch as necessary
 		if (maskedAddress >= baseBankSwitchAddress && maskedAddress <= topBankSwitchAddress)
-			bankAddressOffset = BANK_SIZE * (maskedAddress - baseBankSwitchAddress);
+			bankAddressOffset = romStartAddress + BANK_SIZE * (maskedAddress - baseBankSwitchAddress);
 	}
 
 	@Override
@@ -69,14 +69,15 @@ public abstract class CartridgeBankedByMaskedRange extends CartridgeBanked {
 	}
 
 
-	private final int numBanks;
 	private final int baseBankSwitchAddress;
-	private final int topBankSwitchAddress;
+	protected int     topBankSwitchAddress;
+	
+	protected int romStartAddress = 0;
 	
 	private boolean superChipMode = false;
 	private final boolean superChipAutoDetect;
 	private final int extraRAMSize;
-	private byte[] extraRAM;
+	protected byte[] extraRAM;
 	
 
 	protected static final int BANK_SIZE = 4096;

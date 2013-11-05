@@ -20,11 +20,14 @@ public class CartridgeInfoLibrary {
 	static CartridgeInfo getInfo(String romHash) {
 		if (library == null) initLibrary();
 		CartridgeInfo info = library.get(romHash);
-		if (info != null)
+		if (info != null) {
 			System.out.println("Cartridge: " + info.name);
-		else
-			System.out.println("Cartridge unknown: " + romHash);
-		return info; 
+			return info;
+		}
+		System.out.println("Cartridge unknown: " + romHash);
+		info = new CartridgeInfo();
+		info.hash = romHash;
+		return info;
 	}
 	
 	static String computeHash(byte[] content) {

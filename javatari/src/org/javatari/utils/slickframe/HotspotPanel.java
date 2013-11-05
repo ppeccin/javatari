@@ -44,12 +44,20 @@ public class HotspotPanel extends JPanel {
 	}
 
 	public HotspotAction addHotspot(HotspotAction h) {
-		hotspots.add(h);
-		if (h.tooltip != null) {
-			hotspotsWithTooltip.add(h);
-			ToolTipManager.sharedInstance().registerComponent(this);
+		if (!hotspots.contains(h)) {
+			hotspots.add(h);
+			updateHotspotEffectiveArea(h);
+			if (h.tooltip != null) {
+				hotspotsWithTooltip.add(h);
+				ToolTipManager.sharedInstance().registerComponent(this);
+			}
 		}
 		return h;
+	}
+
+	public void removeHotspot(HotspotAction hotspot) {
+		hotspots.remove(hotspot);
+		hotspotsWithTooltip.remove(hotspot);
 	}
 
 	@Override
@@ -64,10 +72,6 @@ public class HotspotPanel extends JPanel {
 		return null;
 	}
 	
-	public void removeHotspot(HotspotAction hotspot) {
-		hotspots.remove(hotspot);
-	}
-
 	public MousePressAndMotionListener detachMouseListener() {
 		removeMouseListener(mouseListener);
 		removeMouseMotionListener(mouseListener);
@@ -153,13 +157,16 @@ public class HotspotPanel extends JPanel {
 	
 	private void updateHotspotsEffectiveAreas() {
 		if (hotspotsEffectiveAreasValid) return;
-		for (HotspotAction hotspot : hotspots) {
-			Rectangle area = hotspot.area;
-			Rectangle effArea = hotspot.effectiveArea;
-			effArea.x = area.x == CENTER_HOTSPOT ? (getWidth() - area.width) / 2 : area.x < 0 ? getWidth() + area.x : area.x;
-			effArea.y = area.y == CENTER_HOTSPOT ? (getHeight() - area.height) / 2 : area.y < 0 ? getHeight() + area.y : area.y; 
-		}
+		for (HotspotAction hotspot : hotspots)
+			updateHotspotEffectiveArea(hotspot); 
 		hotspotsEffectiveAreasValid = true;
+	}
+
+	private void updateHotspotEffectiveArea(HotspotAction hotspot) {
+		Rectangle area = hotspot.area;
+		Rectangle effArea = hotspot.effectiveArea;
+		effArea.x = area.x == CENTER_HOTSPOT ? (getWidth() - area.width) / 2 : area.x < 0 ? getWidth() + area.x : area.x;
+		effArea.y = area.y == CENTER_HOTSPOT ? (getHeight() - area.height) / 2 : area.y < 0 ? getHeight() + area.y : area.y;
 	}
 
 

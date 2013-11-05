@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.javatari.atari.board.BUS;
+import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.atari.controls.ConsoleControls.Control;
 import org.javatari.atari.controls.ConsoleControlsInput;
 import org.javatari.general.board.BUS16Bits;
@@ -33,7 +34,11 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	}
 
 	public void connectBus(BUS bus) {
-		this.bus = bus;
+		// Nothing
+	}
+
+	public void connectSaveStateSocket(SaveStateSocket socket) {
+		// Nothing
 	}
 
 	@Override
@@ -98,15 +103,13 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	}
 
 
-	protected transient BUS bus;
-
-	private ROM rom;
+	protected final ROM rom;
 	protected byte[] bytes;		// for fast access to ROM content
 	private final CartridgeFormat format;
 	
 	protected int maskedAddress;
-	private static final int ADDRESS_MASK = 0x0fff;
 
+	private static final int ADDRESS_MASK = 0x0fff;
 
 	public static final long serialVersionUID = 2L;		// Embedded ROM version
 

@@ -6,4 +6,8 @@ public interface SaveStateSocket {
 
 	public void connectMedia(SaveStateMedia media);
 
+	public SaveStateMedia media();
+	
+	public void externalStateChange();
+	
 }

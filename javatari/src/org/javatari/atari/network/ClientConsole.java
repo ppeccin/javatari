@@ -2,7 +2,6 @@
 
 package org.javatari.atari.network;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +76,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 		controlsSocket.addForwardedInput(tia);
 		controlsSocket.addForwardedInput(pia);
 		cartridgeSocket = new ClientConsoleCartridgeSocketAdapter();
-		saveStateSocket = new ClientConsoleSaveStateSourceAdapter();
+		saveStateSocket = new ClientConsoleSaveStateSocketAdapter();
 	}
 
 	@Override
@@ -193,10 +192,15 @@ public final class ClientConsole extends Console implements ClockDriven {
 		}
 	}
 
-	private class ClientConsoleSaveStateSourceAdapter extends SaveStateSocketAdapter {
+	private class ClientConsoleSaveStateSocketAdapter extends SaveStateSocketAdapter {
 		@Override
 		public void connectMedia(SaveStateMedia media) {
-			// Ignore, savestates are controlled by the server
+			// Ignore, savestates are controlled by the Server
+		}
+		@Override
+		public void connectCartridge(Cartridge cartridge) {
+			// No socket, savestates are controlled by the Server
+			cartridge.connectSaveStateSocket(null);
 		}
 	}
 

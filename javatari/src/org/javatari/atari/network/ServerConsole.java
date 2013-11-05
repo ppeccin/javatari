@@ -59,7 +59,7 @@ public final class ServerConsole extends Console implements ClockDriven {
 		controlsSocket.addForwardedInput(tia);
 		controlsSocket.addForwardedInput(pia);
 		cartridgeSocket = new ServerConsoleCartridgeSocketAdapter();
-		saveStateSocket = new ServerConsoleSaveStateSourceAdapter();
+		saveStateSocket = new ServerConsoleSaveStateSocketAdapter();
 	}
 
 	@Override
@@ -169,6 +169,12 @@ public final class ServerConsole extends Console implements ClockDriven {
 
 	private class ServerConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {}
 
-	private class ServerConsoleSaveStateSourceAdapter extends SaveStateSocketAdapter {}
+	private class ServerConsoleSaveStateSocketAdapter extends SaveStateSocketAdapter {
+		@Override
+		public void externalStateChange() {
+			// Make sure any state changed is reflected on the Client 
+			sendStateUpdate();
+		}
+	}
 
 }

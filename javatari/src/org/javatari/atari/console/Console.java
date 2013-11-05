@@ -2,7 +2,6 @@
 
 package org.javatari.atari.console;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -132,7 +131,10 @@ public class Console {
 		controlsSocket.removeForwardedInput(cartridge());
 		bus.cartridge(cartridge);
 		cartridgeSocket.cartridgeInserted(cartridge);
-		if (cartridge != null) controlsSocket.addForwardedInput(cartridge);
+		if (cartridge != null) {
+			controlsSocket.addForwardedInput(cartridge);
+			saveStateSocket.connectCartridge(cartridge);
+		}
 	}
 
 	protected void videoStandardAuto() {
@@ -377,17 +379,28 @@ public class Console {
 		public void connectMedia(SaveStateMedia media) {
 			this.media = media;	
 		}
+		@Override
+		public SaveStateMedia media() {
+			return media;
+		}
+		@Override
+		public void externalStateChange() {
+			// Nothing
+		}
+		public void connectCartridge(Cartridge cartridge) {
+			cartridge.connectSaveStateSocket(this);
+		}
 		public void saveState(int slot) {
 			if (!powerOn || media == null) return;
 			ConsoleState state = pauseAndSaveState();
-			if (media.save(slot, state))
+			if (media.saveState(slot, state))
 				showOSD("State " + slot + " saved", true);
 			else 
 				showOSD("State " + slot + " save failed", true);
 		}
 		public void loadState(int slot) {
 			if (media == null) return;
-			ConsoleState state = media.load(slot);
+			ConsoleState state = media.loadState(slot);
 			if (state == null) {
 				showOSD("State " + slot + " load failed", true);
 				return;
