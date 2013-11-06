@@ -54,7 +54,7 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	
 	protected final ChannelStream channel0 = new ChannelStream(); 
 	protected final ChannelStream channel1 = new ChannelStream(); 
-	protected final byte[] samples = new byte[1024];	// More than enough samples for a frame
+	protected final byte[] samples = new byte[2048];	// More than enough samples for a frame
 	protected int generatedSamples = 0;
 	private int samplesPerFrame = 0;
 
