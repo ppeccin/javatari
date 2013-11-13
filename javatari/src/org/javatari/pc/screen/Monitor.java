@@ -120,14 +120,11 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			else 
 				vSynched = maxLineExceeded();
 			line++;
-			if (videoStandardDetected == null) videoStandardDetectionLines++;
+			if (videoStandardDetected == null) videoStandardDetectionFrameLineCount++;
 			if (vSynchSignal) {
-				if (--vSyncDetectionCount == 0) {
-					if (videoStandardDetected == null) videoStandardDetectionNewFrame();
-					vSynched = newFrame();
-				}
-			} else
-				if (vSyncDetectionCount != VSYNC_DETECTION) vSyncDetectionCount = VSYNC_DETECTION;
+				if (videoStandardDetected == null) videoStandardDetectionNewFrame();
+				vSynched = newFrame() || vSynched;
+			}
 			return vSynched;
 		}
 	}
@@ -140,7 +137,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	@Override
 	public void videoStandardDetectionStart() {
 		videoStandardDetected = null;
-		videoStandardDetectionFrameCount = videoStandardDetectionTotalLinesCount = 0;
+		videoStandardDetectionFrameCount = 0;
+		videoStandardDetectionFrameLineCount = 0;		
 	}
 
 	@Override
@@ -176,7 +174,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public void cartridgeInserted(Cartridge cartridge) {
 		if (crtMode == 0 || crtMode == 1)
 			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == 1 ? 1 : 0);
-		// TODO Adjust display size for StarCastle in a generic way
 	}
 
 	private boolean newFrame() {
@@ -219,14 +216,30 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 
 	private void videoStandardDetectionNewFrame() {
-		int linesCount = videoStandardDetectionLines;
-		videoStandardDetectionLines = 0;
-		// Only consider frames with linesCount in range
-		if (linesCount < 250 || linesCount > 325) return;
-		videoStandardDetectionTotalLinesCount += linesCount;
-		if (++videoStandardDetectionFrameCount < 4) return;
-		int averageLPF = videoStandardDetectionTotalLinesCount / videoStandardDetectionFrameCount;
-		videoStandardDetected = averageLPF < 290 ? VideoStandard.NTSC : VideoStandard.PAL;
+		int linesCount = videoStandardDetectionFrameLineCount;
+		videoStandardDetectionFrameLineCount = 0;
+		// Only consider frames with linesCount in range (NTSC 262 +- 10, PAL 312 +- 10)
+		if ((linesCount >= 252 && linesCount <= 272)
+				|| (linesCount >= 302 && linesCount <= 322))
+			if (++videoStandardDetectionFrameCount >= 5)
+				videoStandardDetectionFinish(linesCount);
+	}
+
+	private void videoStandardDetectionFinish(int linesCount) {
+		videoStandardDetected = linesCount < 290 ? VideoStandard.NTSC : VideoStandard.PAL;
+		
+		// Compute an additional number of lines to make the display bigger, if needed
+		// Only used when the detected number of lines per frame is bigger than standard by a reasonable amount 
+		int prevAdd = videoStandardDetectionAdtLinesPerFrame;
+		int newAdd = linesCount - videoStandardDetected.height;
+		if (newAdd > 2) newAdd = (newAdd > 6 ? 6 : newAdd) - 2; 
+		else newAdd = 0;
+
+		// Only sets size now if additional lines changed
+		if (newAdd != prevAdd) {
+			videoStandardDetectionAdtLinesPerFrame = newAdd;
+			adjustToVideoStandard(videoStandardDetected);
+		}
 	}
 
 	private void displayUpdateSize() {
@@ -302,8 +315,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 
 	private void adjustToVideoSignal() {
-		if (signalStandard == videoSignal.standard()) return;
-		adjustToVideoStandard(videoSignal.standard());
+		if (signalStandard != videoSignal.standard())
+			adjustToVideoStandard(videoSignal.standard());
 	}
 
 	private void adjustToVideoStandard(VideoStandard videoStandard) {
@@ -322,7 +335,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 
 	private void adjustToVideoSignalOff() {
-		vSyncDetectionCount = VSYNC_DETECTION;
 		line = 0;
 		display.displayClear();
 		paintLogo();
@@ -454,20 +466,31 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		displayOriginX = x;
 		if (displayOriginX < 0) displayOriginX = 0;
 		else if (displayOriginX > signalWidth - displayWidth) displayOriginX = signalWidth - displayWidth;
+		
 		displayOriginYPct = yPct;
 		if (displayOriginYPct < 0) displayOriginYPct = 0;
-		else if ((displayOriginYPct / 100 * signalHeight) > signalHeight - displayHeight) displayOriginYPct = ((double)signalHeight - displayHeight) / signalHeight * 100; 
-		displayOriginY = (int) (displayOriginYPct / 100 * signalHeight);
+		else if ((displayOriginYPct / 100 * signalHeight) > signalHeight - displayHeight) 
+			displayOriginYPct = ((double)signalHeight - displayHeight) / signalHeight * 100; 
+
+		// Compute final display originY, adding a little for additional lines as discovered in last video standard detection
+		int adtOriginY = videoStandardDetectionAdtLinesPerFrame / 2;
+		displayOriginY = (int) (displayOriginYPct / 100 * signalHeight) + adtOriginY;
+		if ((displayOriginY + displayHeight) > signalHeight) displayOriginY = signalHeight - displayHeight;
 	}
 
 	private void setDisplaySize(int width, double heightPct) {
 		displayWidth = width;
 		if (displayWidth < 10) displayWidth = 10;
 		else if (displayWidth > signalWidth) displayWidth = signalWidth;
+		
 		displayHeightPct = heightPct;
 		if (displayHeightPct < 10) displayHeightPct = 10;
 		else if (displayHeightPct > 100) displayHeightPct = 100;
-		displayHeight = (int) (displayHeightPct / 100 * signalHeight);
+		
+		// Compute final display height, considering additional lines as discovered in last video standard detection
+		displayHeight = (int) (displayHeightPct / 100 * (signalHeight + videoStandardDetectionAdtLinesPerFrame));
+		if (displayHeight > signalHeight) displayHeight = signalHeight;
+
 		setDisplayOrigin(displayOriginX, displayOriginYPct);
 		displayUpdateSize();
 	}
@@ -636,8 +659,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	private VideoStandard videoStandardDetected;
 	private int videoStandardDetectionFrameCount;
-	private int videoStandardDetectionTotalLinesCount;
-	private int videoStandardDetectionLines = 0;
+	private int videoStandardDetectionFrameLineCount = 0;
+	private int videoStandardDetectionAdtLinesPerFrame = 0;
 
 	private int[] backBuffer;
 	private int[] frontBuffer;
@@ -675,8 +698,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	
 	private Image logoIcon;
 	
-	private int vSyncDetectionCount = 0;
-	
 	private final Runnable refresher = new Runnable() {
 		@Override
 		public void run() {
@@ -685,7 +706,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	};
 	
 
-	private static final int VSYNC_DETECTION = 2;
 	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
 	
 	public static final double DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;

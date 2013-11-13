@@ -756,6 +756,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private void vBlankClockDecode() {
 		vBlankDecodeActive = false;
 		vBlankOn = vBlankNewState;
+		if (debug) debugPixel(DEBUG_VBLANK_COLOR);
 		observableChange();
 	}
 
@@ -944,7 +945,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if (reg == 0x28) { /*RESMP0 = i;*/ missile0SetResetToPlayer(i); return; }
 		if (reg == 0x29) { /*RESMP1 = i;*/ missile1SetResetToPlayer(i); return; }
 		if (reg == 0x01) { /*VBLANK = i;*/ vBlankSet(i); return; }
-		if (reg == 0x00) { /*VSYNC  = i;*/ observableChange(); vSyncOn = (i & 0x02) != 0; return; }
+		if (reg == 0x00) { /*VSYNC  = i;*/ observableChange(); vSyncOn = (i & 0x02) != 0; if (debug) debugPixel(VSYNC_COLOR); return; }
 		if (reg == 0x2C) { /*CXCLR  = i;*/ observableChange(); CXM0P = CXM1P = CXP0FB = CXP1FB = CXM0FB = CXM1FB = CXBLPF = CXPPMM = 0; return; }
 		if (reg == 0x03) { /*RSYNC  = i;*/ /* clock = 0; */ return; }
 

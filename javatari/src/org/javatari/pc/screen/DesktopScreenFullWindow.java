@@ -109,11 +109,13 @@ public final class DesktopScreenFullWindow extends JFrame implements MonitorDisp
 	@Override
 	// Gets the largest possible size at the default aspect
 	public float displayDefaultOpenningScaleX(int displayWidth, int displayHeight) {
-		float scaleX = getWidth() / displayWidth;
-		scaleX -= (scaleX % Monitor.DEFAULT_SCALE_ASPECT_X);				// Round multiple of the default X scale
+		int winW = getWidth();
+		int winH = getHeight();
+		float scaleX = winW / displayWidth;
+		scaleX -= (scaleX % Monitor.DEFAULT_SCALE_ASPECT_X);		// Round multiple of the default X scale
 		float h = scaleX / Monitor.DEFAULT_SCALE_ASPECT_X * displayHeight;
-		while (h > getHeight() + 20) {									// 20 is a little tolerance
-			scaleX -= Monitor.DEFAULT_SCALE_ASPECT_X;					// Decrease one full default X scale
+		while (h > winH + 35) {										// 35 is a little tolerance
+			scaleX -= Monitor.DEFAULT_SCALE_ASPECT_X;				// Decrease one full default X scale
 			h = scaleX / Monitor.DEFAULT_SCALE_ASPECT_X * displayHeight;
 		}
 		return scaleX;

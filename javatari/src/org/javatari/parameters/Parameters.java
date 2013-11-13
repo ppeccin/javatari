@@ -351,7 +351,7 @@ public final class Parameters {
 
 	public static double	SCREEN_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int 		SCREEN_DEFAULT_ORIGIN_X = 68;
-	public static double 	SCREEN_DEFAULT_ORIGIN_Y_PCT = 12;				// Percentage of height	
+	public static double 	SCREEN_DEFAULT_ORIGIN_Y_PCT = 12.4;				// Percentage of height	
 	public static int 		SCREEN_DEFAULT_WIDTH = 160;
 	public static double 	SCREEN_DEFAULT_HEIGHT_PCT = 81.5;				// Percentage of height
 	public static float 	SCREEN_DEFAULT_SCALE_X = 4;
@@ -359,7 +359,7 @@ public final class Parameters {
 	public static float 	SCREEN_DEFAULT_SCALE_ASPECT_X = 2;				// X = 2 * Y
 	public static int 		SCREEN_BORDER_SIZE = 3;
 	public static int 		SCREEN_OSD_FRAMES = 160;
-	public static int 		SCREEN_VSYNC_TOLERANCE = 20;
+	public static int 		SCREEN_VSYNC_TOLERANCE = 16;
 	public static boolean 	SCREEN_QUALITY_RENDERING = false;
 	public static int	 	SCREEN_CRT_MODE = 0;
 	public static float	 	SCREEN_CRT_RETENTION_ALPHA = 0.75f;
