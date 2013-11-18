@@ -4,7 +4,7 @@ package org.javatari.general.av.audio;
 
 public interface AudioMonitor  {
 
-	public void nextSamples(byte[] samples, int quant);
+	public int nextSamples(byte[] samples, int quant);
 
 	public void synchOutput();
 	

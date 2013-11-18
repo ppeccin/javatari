@@ -18,10 +18,17 @@ public final class AudioMonoGenerator extends AudioGenerator {
 			}
 			
 			samples[generatedSamples++] = (byte) (mixedSample * MAX_AMPLITUDE * 127);
+			frameSamples++;
 		}
 	}
 
-	private float lastSample;
+	@Override
+	public void signalOff() {
+		lastSample = 0;
+		super.signalOff();
+	}
+	
+	private float lastSample = 0;
 	
 	private static final float MAX_AMPLITUDE = Parameters.TIA_AUDIO_MAX_AMPLITUDE;
 	

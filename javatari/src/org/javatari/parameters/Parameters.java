@@ -337,11 +337,11 @@ public final class Parameters {
 	public static boolean 	TIA_SYNC_WITH_AUDIO_MONITOR = false;
 	public static boolean 	TIA_SYNC_WITH_VIDEO_MONITOR = false;
 
-	public static int 		TIA_AUDIO_SAMPLE_RATE = 31430;					// A little less than TIA Scanline frequency * 2 = 31440
+	public static int 		TIA_AUDIO_SAMPLE_RATE = 31440;					// A little less than TIA Scanline frequency * 2 = 31440
 	public static float 	TIA_AUDIO_MAX_AMPLITUDE = 0.5f;
 
 	public static double	VIDEO_NTSC_FPS = 60;
-	public static double	VIDEO_PAL_FPS = 50.384615;
+	public static double	VIDEO_PAL_FPS = 50.3846153846153847;
 	
 	public static int 		RAM_FRY_ZERO_BITS = 120;						// Quantity of bits to change
 	public static int 		RAM_FRY_ONE_BITS = 25;
@@ -380,8 +380,8 @@ public final class Parameters {
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
 	public static int		SPEAKER_OUTPUT_BUFFER_SIZE = 1024;				// In frames (samples)
-	public static int		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = 5;		// In milliseconds
-	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 10;				// In milliseconds
+	public static int		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = 6;		// In milliseconds
+	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 6;					// In milliseconds
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static boolean 	MULTIPLAYER_UI = true;

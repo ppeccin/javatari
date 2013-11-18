@@ -302,13 +302,15 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			new ImageCapabilities(true), new ImageCapabilities(true),
 			Monitor.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
 		);
-		// First try with vSync option
 		Class<?> extBufCapClass = null;
+		try {
+			// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
+			extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
+		} catch (Exception ex) {}
+		// First try with vSync option
 		if (Monitor.BUFFER_VSYNC != -1)
 			try {
-				// TODO Extract extBufCapClass creation to alwaus display granted VSYNC state at the end
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
-				extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
 				Class<?> vSyncTypeClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities$VSyncType");
 				Constructor<?> extBufCapConstructor = extBufCapClass.getConstructor(
 					new Class[] { BufferCapabilities.class, vSyncTypeClass }

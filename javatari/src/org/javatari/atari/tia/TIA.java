@@ -116,7 +116,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			videoOutputVSynched = videoOutput.nextLine(linePixels, vSyncOn);
 		} while (!videoOutputVSynched && powerOn);
 		if (powerOn) {
-			audioOutput.sendSamplesFrameToMonitor();
+			audioOutput.finishFrame();
 			// If needed, synch with audio and video output after each frame
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
 			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();

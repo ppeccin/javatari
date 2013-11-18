@@ -18,7 +18,12 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 
 	@Override
 	public void clockPulse() {
-		if (generatedSamples < samplesPerFrame) generateNextSamples(1);
+		if (frameSamples < samplesPerFrame) generateNextSamples(1);
+		if (generatedSamples >= 106) sendGeneratedSamples();
+	}
+
+	public AudioMonitor monitor() {
+		return monitor;
 	}
 
 	public ChannelStream channel0() {
@@ -29,33 +34,43 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 		return channel1;
 	}
 
-	public void sendSamplesFrameToMonitor() {
-		int missingSamples = samplesPerFrame - generatedSamples;
-		if (missingSamples > 0) generateNextSamples(missingSamples);
-		if (monitor != null) monitor.nextSamples(samples, generatedSamples);
-		generatedSamples = 0;
-	}
-
-	public void signalOff() {
-		if (monitor != null) monitor.nextSamples(null, 0);
-	}
-
-	public AudioMonitor monitor() {
-		return monitor;
-	}
-
 	public void videoStandard(VideoStandard standard) {
 		// Perfect amount is 2 sample per scanline = 31440, 524 for NTSC(60Hz) and 624 for PAL(50hz)
 		samplesPerFrame = (int) Math.round(SAMPLE_RATE / standard.fps);	
 	}
 
-	protected abstract void generateNextSamples(int min);
+	public void signalOff() {
+		generatedSamples = 0;
+		frameSamples = 0;
+		if (monitor != null) monitor.nextSamples(null, 0);
+	}
+
+	public void finishFrame() {
+		int missingSamples = samplesPerFrame - frameSamples;
+		if (missingSamples > 0) generateNextSamples(missingSamples);
+		sendGeneratedSamples();
+		frameSamples = 0;
+	}
+
+	private void sendGeneratedSamples() {
+		if (monitor != null) {
+			int more = monitor.nextSamples(samples, generatedSamples);
+			if (more > 0) {
+				generateNextSamples(more);
+				monitor.nextSamples(samples, generatedSamples);
+			}
+		}
+		generatedSamples = 0;
+	}
+
+	protected abstract void generateNextSamples(int quant);
 
 	
 	protected final ChannelStream channel0 = new ChannelStream(); 
 	protected final ChannelStream channel1 = new ChannelStream(); 
 	protected final byte[] samples = new byte[2048];	// More than enough samples for a frame
 	protected int generatedSamples = 0;
+	protected int frameSamples = 0;
 	private int samplesPerFrame = 0;
 
 	private AudioMonitor monitor;
