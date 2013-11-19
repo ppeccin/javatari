@@ -308,7 +308,7 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
 		} catch (Exception ex) {}
 		// First try with vSync option
-		if (Monitor.BUFFER_VSYNC != -1)
+		if (extBufCapClass != null && Monitor.BUFFER_VSYNC != -1)
 			try {
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
 				Class<?> vSyncTypeClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities$VSyncType");
@@ -334,9 +334,10 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 		}
 		bufferStrategy = canvas.getBufferStrategy();
 		// Show info about the granted BufferStrategy
+		if (bufferStrategy != null) System.out.println("Buffer Strategy: " + bufferStrategy.getClass().getSimpleName());
 		BufferCapabilities grantedCaps = bufferStrategy.getCapabilities();
-		System.out.println("Backbuffer accelerated: " + grantedCaps.getBackBufferCapabilities().isAccelerated());
-		System.out.println("PageFlipping active: " + grantedCaps.isPageFlipping() + ", " + grantedCaps.getFlipContents());
+		System.out.println("Backbuffer Accelerated: " + grantedCaps.getBackBufferCapabilities().isAccelerated());
+		System.out.println("PageFlipping Active: " + grantedCaps.isPageFlipping() + ", " + grantedCaps.getFlipContents());
 		if (extBufCapClass != null && grantedCaps.getClass().equals(extBufCapClass))
 			try {
 				System.out.println("VSynch active: " + extBufCapClass.getMethod("getVSync",(Class<?>[])null).invoke(grantedCaps));

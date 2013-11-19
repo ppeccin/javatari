@@ -137,12 +137,15 @@ public final class DesktopScreenFullWindow extends JFrame implements MonitorDisp
 			new ImageCapabilities(true), new ImageCapabilities(true),
 			Monitor.PAGE_FLIPPING ? FlipContents.BACKGROUND : null
 		);
-		// First try with vSync option
 		Class<?> extBufCapClass = null;
-		if (Monitor.BUFFER_VSYNC != -1)
+		try {
+			// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
+			extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
+		} catch (Exception ex) {}
+		// First try with vSync option
+		if (extBufCapClass != null && Monitor.BUFFER_VSYNC != -1)
 			try {
 				// Creates ExtendedBufferCapabilities via reflection to avoid problems with AccessControl
-				extBufCapClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
 				Class<?> vSyncTypeClass = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities$VSyncType");
 				Constructor<?> extBufCapConstructor = extBufCapClass.getConstructor(
 					new Class[] { BufferCapabilities.class, vSyncTypeClass }
@@ -152,23 +155,24 @@ public final class DesktopScreenFullWindow extends JFrame implements MonitorDisp
 	            	new Object[] { desiredCaps, vSyncType }
 	            );
 	            // Try creating the BufferStrategy
-	            createBufferStrategy(Monitor.MULTI_BUFFERING, extBuffCaps);
+	            this.createBufferStrategy(Monitor.MULTI_BUFFERING, extBuffCaps);
 			} catch (Exception ex) {}
 		// Then try with remaining options (Flipping, etc)
-		if (getBufferStrategy() == null)
+		if (this.getBufferStrategy() == null)
 			try {
-				createBufferStrategy(Monitor.MULTI_BUFFERING, desiredCaps);
+				this.createBufferStrategy(Monitor.MULTI_BUFFERING, desiredCaps);
 			} catch (Exception ex) {}
 		// Last, use the default
-		if (getBufferStrategy() == null) {
+		if (this.getBufferStrategy() == null) {
 			System.out.println("Could not create desired BufferStrategy. Switching to default...");
-			createBufferStrategy(Monitor.MULTI_BUFFERING);
+			this.createBufferStrategy(Monitor.MULTI_BUFFERING);
 		}
-		bufferStrategy = getBufferStrategy();
+		bufferStrategy = this.getBufferStrategy();
 		// Show info about the granted BufferStrategy
+		if (bufferStrategy != null) System.out.println("Buffer Strategy: " + bufferStrategy.getClass().getSimpleName());
 		BufferCapabilities grantedCaps = bufferStrategy.getCapabilities();
-		System.out.println("Backbuffer accelerated: " + grantedCaps.getBackBufferCapabilities().isAccelerated());
-		System.out.println("PageFlipping active: " + grantedCaps.isPageFlipping() + ", " + grantedCaps.getFlipContents());
+		System.out.println("Backbuffer Accelerated: " + grantedCaps.getBackBufferCapabilities().isAccelerated());
+		System.out.println("PageFlipping Active: " + grantedCaps.isPageFlipping() + ", " + grantedCaps.getFlipContents());
 		if (extBufCapClass != null && grantedCaps.getClass().equals(extBufCapClass))
 			try {
 				System.out.println("VSynch active: " + extBufCapClass.getMethod("getVSync",(Class<?>[])null).invoke(grantedCaps));

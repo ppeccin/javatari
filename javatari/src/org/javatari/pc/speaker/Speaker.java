@@ -81,8 +81,7 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 			inputBuffer = ByteBuffer.allocateDirect(INPUT_BUFFER_SIZE);
 			tempBuffer = new byte[inputBuffer.capacity()];
 			if (ADDED_THREAD_PRIORITY != 0) clock.setPriority(Thread.NORM_PRIORITY + ADDED_THREAD_PRIORITY);
-			System.out.println("Sound Mixer Line: " + dataLine);
-			System.out.println("Sound Output buffer: " + dataLine.getBufferSize());
+			System.out.println("Sound Mixer Line: " + dataLine.getClass().getSimpleName());
 			clock = new Clock("Speaker", this, FPS);
 		} catch (Exception ex) {
 			System.out.println("Unable to acquire audio line:\n" + ex);
