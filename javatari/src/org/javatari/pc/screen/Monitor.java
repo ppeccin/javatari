@@ -54,7 +54,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		adjustToVideoSignal();
 	}
 
-	public void setDisplay(MonitorDisplay monitorDisplay) {
+	public synchronized void setDisplay(MonitorDisplay monitorDisplay) {
 		display = monitorDisplay;
 		float scX = display.displayDefaultOpenningScaleX(displayWidth, displayHeight);
 		setDisplayScale(scX, scX / DEFAULT_SCALE_ASPECT_X);
@@ -102,26 +102,26 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 
 	@Override
-	public boolean nextLine(final int[] pixels, boolean vSynchSignal) {
-		// Synchronize to avoid changing the standard while receiving lines / refreshing frame 
-		synchronized (newDataMonitor) {
-			// Adjusts to the new signal state (on or off) as necessary
-			if (!signalState(pixels != null))		// If signal is off, we are done
-				return false;
-			// Process new line received
-			boolean vSynched = false;
-			if (line < signalHeight)
-				System.arraycopy(pixels, 0, backBuffer, line * signalWidth, signalWidth);
-			else 
-				vSynched = maxLineExceeded();
-			line++;
-			if (videoStandardDetected == null) videoStandardDetectionFrameLineCount++;
-			if (vSynchSignal) {
-				if (videoStandardDetected == null) videoStandardDetectionNewFrame();
-				vSynched = newFrame() || vSynched;
-			}
-			return vSynched;
+	// Synchronize to avoid changing the standard while receiving lines 
+	public synchronized	boolean nextLine(final int[] pixels, boolean vSynchSignal) {
+		// Adjusts to the new signal state (on or off) as necessary
+		if (!signalState(pixels != null))		// If signal is off, we are done
+			return false;
+		// Process new line received
+		boolean vSynched = false;
+		if (line < signalHeight) {
+			// Copy only contents that will be displayed
+			if (line >= displayOriginY && line < displayOriginY + displayHeight)
+				System.arraycopy(pixels, displayOriginX, backBuffer, (line - displayOriginY) * displayWidth, displayWidth);
+		} else 
+			vSynched = maxLineExceeded();
+		line++;
+		if (videoStandardDetected == null) videoStandardDetectionFrameLineCount++;
+		if (vSynchSignal) {
+			if (videoStandardDetected == null) videoStandardDetectionNewFrame();
+			vSynched = newFrame() || vSynched;
 		}
+		return vSynched;
 	}
 
 	@Override
@@ -173,12 +173,13 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	private boolean newFrame() {
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
-		// Copy only the contents needed (displayWidth x displayHeight) to the frontBuffer
-		arrayCopyWithStride(
-				backBuffer, displayOriginY * signalWidth + displayOriginX, 
-				frontBuffer, 0, displayWidth * displayHeight, 
-				displayWidth, signalWidth
-		);
+
+		// Flip front and back buffers
+		int[] aux = backBuffer;
+		backBuffer = frontBuffer;
+		frontBuffer = aux;
+		
+		// Signal for a refresh and start a new frame
 		if (fps < 0) clock.interrupt();
 		if (debug > 0) cleanBackBuffer();
 		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode " + (crtMode == 0 ? "off" : crtMode), true);
@@ -314,9 +315,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			adjustToVideoStandard(videoSignal.standard());
 	}
 
-	private void adjustToVideoStandard(VideoStandard videoStandard) {
-		// Synchronize on nextLine() and refresh() monitors to avoid changing the standard while receiving lines / refreshing frame 
-		synchronized (refreshMonitor) { synchronized (newDataMonitor) {
+	// Synchronize to avoid changing the standard while refreshing frame or receiving lines 
+	private synchronized void adjustToVideoStandard(VideoStandard videoStandard) {
+		synchronized (refreshMonitor) {
 			signalStandard = videoStandard;
 			signalWidth = videoStandard.width;
 			signalHeight = videoStandard.height;
@@ -326,7 +327,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			frontBuffer = new int[signalWidth * signalHeight];
 			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_ARGB);
 			if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
-		}}
+		}
 	}
 
 	private void adjustToVideoSignalOff() {
@@ -446,7 +447,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		graphics.drawImage( scanlinesTextureImage, 0, 0, effectiveWidth, effectiveHeight, 0, 0, effectiveWidth, effectiveHeight, null);
 	}
 
-	private void setDisplayDefaultSize() {
+	private synchronized void setDisplayDefaultSize() {
 		setDisplaySize(DEFAULT_WIDTH, DEFAULT_HEIGHT_PCT);
 		setDisplayOrigin(DEFAULT_ORIGIN_X, DEFAULT_ORIGIN_Y_PCT);
 		if (display != null) {
@@ -457,7 +458,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		displayCenter();
 	}
 
-	private void setDisplayOrigin(int x, double yPct) {
+	private synchronized void setDisplayOrigin(int x, double yPct) {
 		displayOriginX = x;
 		if (displayOriginX < 0) displayOriginX = 0;
 		else if (displayOriginX > signalWidth - displayWidth) displayOriginX = signalWidth - displayWidth;
@@ -473,7 +474,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		if ((displayOriginY + displayHeight) > signalHeight) displayOriginY = signalHeight - displayHeight;
 	}
 
-	private void setDisplaySize(int width, double heightPct) {
+	private synchronized void setDisplaySize(int width, double heightPct) {
 		displayWidth = width;
 		if (displayWidth < 10) displayWidth = 10;
 		else if (displayWidth > signalWidth) displayWidth = signalWidth;
@@ -623,20 +624,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		}
 	}
 
-	private static void arrayCopyWithStride(int[] src, int srcPos, int dest[], int destPos, int length, int chunk, int stride) {
-		int total = length;
-		while(total > 0) {
-			System.arraycopy(src, srcPos, dest, destPos, chunk);
-			srcPos += stride;
-			destPos += chunk;
-			total -= chunk;
-		}
-	}
-	
 
 	public Clock clock;
 	
-	public String newDataMonitor = "nextLineMonitor";		// Used only for synchronization
 	public String refreshMonitor = "refreshMonitor";		// Used only for synchronization
 
 	private MonitorControls monitorControls;

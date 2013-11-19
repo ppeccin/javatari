@@ -256,7 +256,7 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 
 	private void openWindow() {
 		if (isVisible()) return;
-		// Exist FullScreen mode, if that was the case
+		// Exit FullScreen mode, if that was the case
 		if (fullWindow != null && fullWindow.isVisible()) {
 			try {
 				GraphicsConfiguration graphicsConfig = 

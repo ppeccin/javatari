@@ -19,7 +19,7 @@ import org.javatari.general.av.video.VideoStandard;
 import org.javatari.general.board.BUS16Bits;
 import org.javatari.general.board.ClockDriven;
 import org.javatari.parameters.Parameters;
-import org.javatari.utils.Array2DCopy;
+import org.javatari.utils.ArraysCopy;
 
 
 @SuppressWarnings("unused")
@@ -1077,7 +1077,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		state.playfieldDelayedChangeClock	   =  playfieldDelayedChangeClock;
 		state.playfieldDelayedChangePart	   =  playfieldDelayedChangePart;
 		state.playfieldDelayedChangePattern	   =  playfieldDelayedChangePattern;
-		state.playersDelayedSpriteChanges      =  Array2DCopy.copy(playersDelayedSpriteChanges);
+		state.playersDelayedSpriteChanges      =  ArraysCopy.copy2D(playersDelayedSpriteChanges);
 		state.playersDelayedSpriteChangesCount =  playersDelayedSpriteChangesCount;
 		state.hMoveHitBlank					   =  hMoveHitBlank;
 		state.hMoveHitClock					   =  hMoveHitClock;
