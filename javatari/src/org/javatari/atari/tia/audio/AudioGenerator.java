@@ -19,7 +19,7 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	@Override
 	public void clockPulse() {
 		if (frameSamples < samplesPerFrame) generateNextSamples(1);
-		if (generatedSamples >= 106) sendGeneratedSamples();
+		if (generatedSamples >= SEND_CHUNK) sendGeneratedSamples();
 	}
 
 	public AudioMonitor monitor() {
@@ -48,19 +48,26 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	public void finishFrame() {
 		int missingSamples = samplesPerFrame - frameSamples;
 		if (missingSamples > 0) generateNextSamples(missingSamples);
-		sendGeneratedSamples();
+			
+		int available = sendGeneratedSamples();
+
+		// Check available samples on monitor to prevent starvation. Send additional samples if needed
+		if (available >= 0 && available < MIN_MONITOR_BUFFER_CHUNKS * SEND_CHUNK) {
+			int add = MIN_MONITOR_BUFFER_CHUNKS * SEND_CHUNK - available + SEND_CHUNK / MONITOR_BUFFER_CHUNKS_ADD_FACTOR;
+			generateNextSamples(add);
+			sendGeneratedSamples();
+			// System.out.println("Available in Monitor: " + available + ", add: " + add);
+		}
+		
 		frameSamples = 0;
 	}
 
-	private void sendGeneratedSamples() {
-		if (monitor != null) {
-			int more = monitor.nextSamples(samples, generatedSamples);
-			if (more > 0) {
-				generateNextSamples(more);
-				monitor.nextSamples(samples, generatedSamples);
-			}
-		}
+	private int sendGeneratedSamples() {
+		int available = -1;
+		if (monitor != null)
+			available = monitor.nextSamples(samples, generatedSamples);
 		generatedSamples = 0;
+		return available;
 	}
 
 	protected abstract void generateNextSamples(int quant);
@@ -77,5 +84,8 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 
 	
 	private static final int SAMPLE_RATE = Parameters.TIA_AUDIO_SAMPLE_RATE;
+	private static final int SEND_CHUNK = Parameters.TIA_AUDIO_SEND_CHUNK;
+	private static final int MIN_MONITOR_BUFFER_CHUNKS = Parameters.TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS;
+	private static final int MONITOR_BUFFER_CHUNKS_ADD_FACTOR = Parameters.TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR;
 
 }

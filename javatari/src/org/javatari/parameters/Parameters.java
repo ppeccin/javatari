@@ -246,6 +246,9 @@ public final class Parameters {
 
 			val = props.getProperty("TIA_AUDIO_SAMPLE_RATE"); if (val != null) TIA_AUDIO_SAMPLE_RATE = Integer.valueOf(val);
 			val = props.getProperty("TIA_AUDIO_MAX_AMPLITUDE"); if (val != null) TIA_AUDIO_MAX_AMPLITUDE = Float.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_SEND_CHUNK"); if (val != null) TIA_AUDIO_SEND_CHUNK = Integer.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS"); if (val != null) TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS = Integer.valueOf(val);
+			val = props.getProperty("TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR"); if (val != null) TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR = Integer.valueOf(val);
 
 			val = props.getProperty("RAM_FRY_ZERO_BITS"); if (val != null) RAM_FRY_ZERO_BITS = Integer.valueOf(val);
 			val = props.getProperty("RAM_FRY_ONE_BITS"); if (val != null) RAM_FRY_ONE_BITS = Integer.valueOf(val);
@@ -339,6 +342,9 @@ public final class Parameters {
 
 	public static int 		TIA_AUDIO_SAMPLE_RATE = 31440;					// A little less than TIA Scanline frequency * 2 = 31440
 	public static float 	TIA_AUDIO_MAX_AMPLITUDE = 0.5f;
+	public static int 		TIA_AUDIO_SEND_CHUNK = 106;
+	public static int 		TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS = 7;
+	public static int 		TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR = 10;
 
 	public static double	VIDEO_NTSC_FPS = 60;
 	public static double	VIDEO_PAL_FPS = 50.3846153846153847;
@@ -378,10 +384,10 @@ public final class Parameters {
 	public static boolean 	SCREEN_CARTRIDGE_CHANGE = true;
 	
 	public static double	SPEAKER_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
-	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1536;				// In frames (samples)
-	public static int		SPEAKER_OUTPUT_BUFFER_SIZE = 1024;				// In frames (samples)
-	public static int		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = 6;		// In milliseconds
-	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 6;					// In milliseconds
+	public static int		SPEAKER_INPUT_BUFFER_SIZE = 1872;				// In frames (samples)
+	public static int		SPEAKER_OUTPUT_BUFFER_SIZE = 1248;				// In frames (samples)
+	public static int		SPEAKER_OUTPUT_BUFFER_FULL_SLEEP_TIME = 5;		// In milliseconds
+	public static int		SPEAKER_NO_DATA_SLEEP_TIME = 5;					// In milliseconds
 	public static int		SPEAKER_ADDED_THREAD_PRIORITY = 0;
 
 	public static boolean 	MULTIPLAYER_UI = true;

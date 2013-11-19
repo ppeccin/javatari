@@ -25,7 +25,6 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 	public void powerOn(){
 		if (!triedToGetLine) getLine();
 		if (dataLine == null) return;
-		currOutputBufferPosition = 0;
 		dataLine.start();
 		clock.go();
 	}
@@ -35,7 +34,6 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 		clock.pause();
 		dataLine.flush();
 		dataLine.stop();
-		currOutputBufferPosition = 0;
 	}
 
 	public void destroy() {
@@ -56,13 +54,12 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 		int ava = inputBuffer.remaining();
 		if (ava > quant)
 			ava = quant;
-		else
-			if (ava < quant) System.out.println(">>>> DROPPED: " + quant + " - " + ava + " = " + (quant - ava));
+		// else
+			// if (ava < quant) System.out.println(">>>> DROPPED: " + quant + " - " + ava + " = " + (quant - ava));
 		inputBuffer.put(buffer, 0, ava);
-//		if (currOutputBufferPosition < 400) 
-//			return 20;
-//		else 
-			return -1;
+
+		// System.out.println(">>>> Available: " + inputBuffer.position());
+		return inputBuffer.position();
 	}
 	
 	@Override
@@ -107,23 +104,22 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 		if (dataLine == null) return;
 		int ava = dataLine.available();		// this is a little expensive... :-(
 		
-		currOutputBufferPosition = OUTPUT_BUFFER_SIZE - ava;
-		// System.out.println(">> Out: " + currOutputBufferPosition + "\tIn: " + inputBuffer.position());
+		// System.out.println(">> Out: " + (OUTPUT_BUFFER_SIZE - ava) + "\tIn: " + inputBuffer.position());
 		
 		if (ava == 0) {
-			// System.out.println("+ OutputBuffer FULL");
+			// System.out.println("+ OutputBuffer FULL, InputBuffer: " + inputBuffer.position());
 			if (OUTPUT_BUFFER_FULL_SLEEP_TIME > 0 && FPS < 0)
 				try { Thread.sleep(OUTPUT_BUFFER_FULL_SLEEP_TIME, 0); } catch (InterruptedException e) { }
 			return;
 		}
 		int data = getFromInputBuffer(tempBuffer, ava);
 		if (data == 0) {
-			// System.out.println("- InputBuffer EMPTY, OutputBuffer: " + ava);
+			// System.out.println("- InputBuffer EMPTY, OutputBuffer: " + (OUTPUT_BUFFER_SIZE - ava));
 			if (NO_DATA_SLEEP_TIME > 0 && FPS < 0)
 				try { Thread.sleep(NO_DATA_SLEEP_TIME, 0); } catch (InterruptedException e) { }
 			return;
 		}
-		// System.out.println(">> " + ava + ", data avail: " + data + ", InputBuffer: " + inputBuffer.remaining());
+
 		dataLine.write(tempBuffer, 0, data);
 		if (FPS < 0)
 			try { Thread.sleep(OUTPUT_BUFFER_FULL_SLEEP_TIME, 0); } catch (InterruptedException e) { }
@@ -136,7 +132,6 @@ public final class Speaker implements ClockDriven, AudioMonitor  {
 	private ByteBuffer inputBuffer;
 	private byte[] tempBuffer;		
 	private boolean triedToGetLine = false;
-	private int currOutputBufferPosition;
 	
 	private final AudioFormat AUDIO_FORMAT = new AudioFormat(SAMPLE_RATE, 8, 1, true, false);
 
