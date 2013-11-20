@@ -73,51 +73,53 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@Override
 	// To perform better, TIA is using one clock cycle per frame
 	public void clockPulse() {
-		if (!powerOn || (debugPause && debugPausedNoMoreFrames())) return;
-		boolean videoOutputVSynched = false;	
-		do {
-			clock = 0;
-			// Send the first clock/3 pulse to the CPU and PIA, perceived by the TIA at clock 0
-			bus.clockPulse();
-			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
-			if (!bus.cpu.RDY) bus.cpu.RDY = true;
-			// HBLANK period
-			for (clock = 3; clock < HBLANK_DURATION; clock += 3) {		// 3 .. 66
-				if (!repeatLastLine) checkRepeatMode();
-				// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
+		if (powerOn && (!debugPause || debugPausedMoreFrames())) {
+			int frames = 1;
+			do {
+				clock = 0;
+				// Send the first clock/3 pulse to the CPU and PIA, perceived by the TIA at clock 0
 				bus.clockPulse();
-			}
-			// 67
-			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.clockPulse();
-			// Display period
-			int subClock3 = 2;	// To control the clock/3 cycles. First at clock 69
-			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
-				if (!repeatLastLine) checkRepeatMode();
-				// Clock delay decodes
-				if (vBlankDecodeActive) vBlankClockDecode();
-				// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
-				if (--subClock3 == 0) {
+				// Releases the CPU at the beginning of the line in case a WSYNC has halted it
+				if (!bus.cpu.RDY) bus.cpu.RDY = true;
+				// HBLANK period
+				for (clock = 3; clock < HBLANK_DURATION; clock += 3) {		// 3 .. 66
+					if (!repeatLastLine) checkRepeatMode();
+					// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
 					bus.clockPulse();
-					subClock3 = 3;
 				}
-				objectsClockCounters();
-				if (!repeatLastLine && (clock >= 76 || !hMoveHitBlank))
-					setPixelValue();
-				// else linePixels[clock] |= 0x88800080;	// Add a pink dye to show pixels repeated
-			}
-			// End of scan line
-			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
-			audioOutput.clockPulse();
-			// Handle Paddles capacitor charging
-			if (paddle0Position >= 0 && !paddleCapacitorsGrounded) paddlesChargeCapacitors();	// Only if paddles are connected (position >= 0)
-			// Send the finished line to the output
-			finishLine();
-			videoOutputVSynched = videoOutput.nextLine(linePixels, vSyncOn);
-		} while (!videoOutputVSynched && powerOn);
+				// 67
+				// First Audio Sample. 2 samples per scan line ~ 31440 KHz
+				audioOutput.clockPulse();
+				// Display period
+				int subClock3 = 2;	// To control the clock/3 cycles. First at clock 69
+				for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
+					if (!repeatLastLine) checkRepeatMode();
+					// Clock delay decodes
+					if (vBlankDecodeActive) vBlankClockDecode();
+					// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
+					if (--subClock3 == 0) {
+						bus.clockPulse();
+						subClock3 = 3;
+					}
+					objectsClockCounters();
+					if (!repeatLastLine && (clock >= 76 || !hMoveHitBlank))
+						setPixelValue();
+					// else linePixels[clock] |= 0x88800080;	// Add a pink dye to show pixels repeated
+				}
+				// End of scan line
+				// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
+				audioOutput.clockPulse();
+				// Handle Paddles capacitor charging
+				if (paddle0Position >= 0 && !paddleCapacitorsGrounded) paddlesChargeCapacitors();	// Only if paddles are connected (position >= 0)
+				finishLine();
+				// Send the finished line to the output and check if monitor synched 
+				if (videoOutput.nextLine(linePixels, vSyncOn)) frames--;
+			} while (frames > 0 && powerOn);
+		}
+		
 		if (powerOn) {
 			audioOutput.finishFrame();
-			// If needed, synch with audio and video output after each frame
+			// Synch with audio and video outputs after each frame as needed
 			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
 			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();
 		}
@@ -836,10 +838,10 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		debugPixels[clock] = color;
 	}
 	
-	private boolean debugPausedNoMoreFrames() {
-		if (debugPauseMoreFrames <= 0) return true;
+	private boolean debugPausedMoreFrames() {
+		if (debugPauseMoreFrames <= 0) return false;
 		debugPauseMoreFrames--;
-		return false;
+		return true;
 	}
 
 	private void processDebugPixelsInLine() {

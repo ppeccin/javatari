@@ -39,6 +39,7 @@ public final class RemoteTransmitter {
 		started = false;
 		// Stop listening serverSocket if needed
 		if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+		if (socket != null && !socket.isClosed()) socket.close();
 		UpdatesSender sender = updatesSender;
 		if (sender == null) return;
 		sender.interrupt();	// Will stop the sender loop

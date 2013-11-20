@@ -257,6 +257,8 @@ public final class Parameters {
 			val = props.getProperty("CONSOLE_FAST_SPEED_FACTOR"); if (val != null) CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(val);
 
 			val = props.getProperty("SCREEN_DEFAULT_FPS"); if (val != null) SCREEN_DEFAULT_FPS = Double.valueOf(val);
+			val = props.getProperty("SCREEN_BUFFER_VSYNC"); if (val != null) SCREEN_BUFFER_VSYNC = Integer.valueOf(val);
+			val = props.getProperty("SCREEN_BUFFER_SYNC_WAIT"); if (val != null) SCREEN_BUFFER_SYNC_WAIT = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_DEFAULT_ORIGIN_X"); if (val != null) SCREEN_DEFAULT_ORIGIN_X = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_DEFAULT_ORIGIN_Y_PCT"); if (val != null) SCREEN_DEFAULT_ORIGIN_Y_PCT = Double.valueOf(val);
 			val = props.getProperty("SCREEN_DEFAULT_WIDTH"); if (val != null) SCREEN_DEFAULT_WIDTH = Integer.valueOf(val);
@@ -273,7 +275,6 @@ public final class Parameters {
 			val = props.getProperty("SCREEN_SCANLINES_STRENGTH"); if (val != null) SCREEN_SCANLINES_STRENGTH = Float.valueOf(val);
 			val = props.getProperty("SCREEN_MULTI_BUFFERING"); if (val != null) SCREEN_MULTI_BUFFERING = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_PAGE_FLIPPING"); if (val != null) SCREEN_PAGE_FLIPPING = Boolean.valueOf(val);
-			val = props.getProperty("SCREEN_BUFFER_VSYNC"); if (val != null) SCREEN_BUFFER_VSYNC = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_CONSOLE_PANEL"); if (val != null) SCREEN_CONSOLE_PANEL = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_FRAME_ACCELERATION"); if (val != null) SCREEN_FRAME_ACCELERATION = Float.valueOf(val);
 			val = props.getProperty("SCREEN_INTERM_FRAME_ACCELERATION"); if (val != null) SCREEN_INTERM_FRAME_ACCELERATION = Float.valueOf(val);
@@ -356,6 +357,8 @@ public final class Parameters {
 	public static int		CONSOLE_FAST_SPEED_FACTOR = 15;
 
 	public static double	SCREEN_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
+	public static int	 	SCREEN_BUFFER_VSYNC = -1;
+	public static boolean	SCREEN_BUFFER_SYNC_WAIT = false;
 	public static int 		SCREEN_DEFAULT_ORIGIN_X = 68;
 	public static double 	SCREEN_DEFAULT_ORIGIN_Y_PCT = 12.4;				// Percentage of height	
 	public static int 		SCREEN_DEFAULT_WIDTH = 160;
@@ -372,7 +375,6 @@ public final class Parameters {
 	public static float 	SCREEN_SCANLINES_STRENGTH = 0.5f;
 	public static int	 	SCREEN_MULTI_BUFFERING = 2;
 	public static boolean 	SCREEN_PAGE_FLIPPING = true;
-	public static int	 	SCREEN_BUFFER_VSYNC = -1;
 	public static boolean 	SCREEN_CONSOLE_PANEL = true;
 	public static float		SCREEN_FRAME_ACCELERATION = -1;
 	public static float		SCREEN_INTERM_FRAME_ACCELERATION = -1;

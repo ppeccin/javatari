@@ -10,11 +10,10 @@ import org.javatari.atari.console.savestate.ConsoleState;
 
 public final class ServerUpdate implements Serializable {
 
-	public Boolean powerOn = null;
+	public Boolean powerChange = null;
 	public List<ControlChange> controlChanges = null;
 	public ConsoleState consoleState = null;
-	public boolean isClockPulse = false;
 	
-	public static final long serialVersionUID = 1L;
+	public static final long serialVersionUID = 2L;
 
 }

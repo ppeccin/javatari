@@ -81,7 +81,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 
 	@Override
 	public void clockPulse() {
-		// Block clock pulses until Console is unpaused (go) or turned off
+		// Block clock pulses until Console is unpaused (go) or turned off	TODO Verify
 		while(isPaused && powerOn) try {
 			Thread.sleep(1000/60);
 		} catch (InterruptedException e) {}
@@ -111,13 +111,13 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	void receiveServerUpdate(ServerUpdate update) {
-		if (update.powerOn != null)
-			receiveServerPower(update.powerOn);
+		if (update.powerChange != null)
+			receiveServerPower(update.powerChange);
 		if (update.consoleState != null)
 			receiveServerState(update.consoleState );
 		if (update.controlChanges != null)
 			((ClientConsoleControlsSocketAdapter) controlsSocket).serverControlChanges(update.controlChanges);
-		if (update.isClockPulse)
+		if (powerOn)
 			clockPulse();
 	}
 

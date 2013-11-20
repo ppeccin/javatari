@@ -154,6 +154,7 @@ public class Console {
 		if (tia.videoOutput().monitor() == null) return;
 		videoStandardAutoDetectionInProgress = true;
 		tia.videoOutput().monitor().videoStandardDetectionStart();
+		// TODO This thread is a source of indeterminism. Potential problem in multiplayer sync
 		new Thread("Console VideoStd Detection") { public void run() {
 			VideoStandard std;
 			int tries = 0;
@@ -250,15 +251,15 @@ public class Console {
 
 	private ConsoleState pauseAndSaveState() {
 		pause();
-		ConsoleState state = Console.this.saveState();
+		ConsoleState state = saveState();
 		go();
 		return state;
 	}
 
-	private void pauseAndLoadState(ConsoleState state) {
+	protected void pauseAndLoadState(ConsoleState state) {
 		if (powerOn) {
 			pause();
-			Console.this.loadState(state);
+			loadState(state);
 			go();
 		} else {
 			powerOn();
@@ -348,7 +349,7 @@ public class Console {
 		public void insert(Cartridge cartridge, boolean autoPower) {
 			if (autoPower && powerOn) powerOff();
 			cartridge(cartridge); 
-			if (autoPower && !powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
+			if (autoPower && !powerOn) powerOn();
 		}
 		@Override
 		public Cartridge inserted() {

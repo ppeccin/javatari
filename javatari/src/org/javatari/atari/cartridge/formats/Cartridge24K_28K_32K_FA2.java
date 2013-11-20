@@ -52,7 +52,7 @@ public class Cartridge24K_28K_32K_FA2 extends CartridgeBankedByMaskedRange {
 		else return (byte)(b & 0xbf);	// Not busy, clear bit 6
 		
 		if (harmonyFlashOpInProgress != 0) return (byte)(b | 0x40);	// Still in progress, set bit 6
-		else return (byte)(b & 0xbf);							// Finished, clear bit 6
+		else return (byte)(b & 0xbf);								// Finished, clear bit 6
 	};
 	
 	private void performFlashOperation(int op) {
@@ -90,7 +90,7 @@ public class Cartridge24K_28K_32K_FA2 extends CartridgeBankedByMaskedRange {
 			bus.tia.videoOutput().showOSD("Done.", true);
 			// Signal a external state modification
 			// Flash memory may have been loaded from file and changed
-			// Also the waitin timer is a source of indeterminism!
+			// Also the waiting timer is a source of indeterminism!
 			if (saveStateSocket != null) saveStateSocket.externalStateChange();
 		}		
 	}

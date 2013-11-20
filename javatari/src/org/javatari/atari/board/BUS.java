@@ -27,6 +27,7 @@ public final class BUS implements BUS16Bits, ClockDriven {
 
 	public void powerOn() {
 		// Data in the bus come random at powerOn
+		// TODO This is a source of indeterminism. Potential problem in multiplayer sync
 		if (cartridge == null) data = (byte)Randomizer.instance.nextInt(256);
 		else data = 0;
 	}

@@ -143,7 +143,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	@Override
 	public void synchOutput() {
-		SwingHelper.edtSmartInvokeAndWait(refresher);
+		if (BUFFER_SYNC_WAIT) SwingHelper.edtSmartInvokeAndWait(refresher);
+		else SwingHelper.edtInvokeLater(refresher);
 	}
 
 	@Override
@@ -156,8 +157,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	@Override
 	public void clockPulse() {
 		synchOutput();
-		// If in "On Demand" mode (fps < 0) then just wait for the next frame to interrupt the sleep, but no more than 2 frames
-		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
 	}
 
 	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
@@ -179,8 +178,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		backBuffer = frontBuffer;
 		frontBuffer = aux;
 		
-		// Signal for a refresh and start a new frame
-		if (fps < 0) clock.interrupt();
+		// Start a new frame
 		if (debug > 0) cleanBackBuffer();
 		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode " + (crtMode == 0 ? "off" : crtMode), true);
 		line = 0;
@@ -695,6 +693,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	
 	public static final double DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;
 
+	public static final int      BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
+	private static final boolean BUFFER_SYNC_WAIT = Parameters.SCREEN_BUFFER_SYNC_WAIT;
 	public static final int      DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
 	public static final double   DEFAULT_ORIGIN_Y_PCT = Parameters.SCREEN_DEFAULT_ORIGIN_Y_PCT;		// Percentage of height
 	public static final int      DEFAULT_WIDTH = Parameters.SCREEN_DEFAULT_WIDTH;
@@ -709,13 +709,15 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public static final float    SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
 	public static final int      MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
 	public static final boolean  PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
-	public static final int      BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
 	public static final float    FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
 	public static final float    IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
 	public static final float    SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
 	private static final boolean FIXED_SIZE = Parameters.SCREEN_FIXED_SIZE;
 
+	
+	
+	
 	public static final long serialVersionUID = 0L;
 
 

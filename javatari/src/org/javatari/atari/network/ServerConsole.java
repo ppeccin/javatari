@@ -65,23 +65,31 @@ public final class ServerConsole extends Console implements ClockDriven {
 	@Override
 	protected synchronized void cartridge(Cartridge cartridge) {
 		super.cartridge(cartridge);
-		sendStateUpdate();
+		stateUpdateRequested = true;
 	}
 
 	@Override
-	protected synchronized void loadState(ConsoleState state) {
+	protected void loadState(ConsoleState state) {
 		super.loadState(state);
-		sendStateUpdate();
+		stateUpdateRequested = true;
 	}
-
+	
 	@Override
 	public synchronized void clockPulse() {
+		Boolean powerChange = null;
+		ConsoleState state = null;
+		if (stateUpdateRequested) {
+			powerChange = powerOn;
+			state = saveState();
+			stateUpdateRequested = false;
+		}
 		List<ControlChange> controlChanges = ((ServerConsoleControlsSocketAdapter) controlsSocket).commitAndGetChangesToSend();
 		if (powerOn) tia.clockPulse();
 		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
 			ServerUpdate update = new ServerUpdate();
+			update.powerChange = powerChange;
+			update.consoleState = state;
 			update.controlChanges = controlChanges;
-			update.isClockPulse = powerOn;
 			remoteTransmitter.sendUpdate(update);
 		}
 	}
@@ -89,13 +97,12 @@ public final class ServerConsole extends Console implements ClockDriven {
 	@Override
 	protected synchronized void powerFry() {
 		super.powerFry();
-		sendStateUpdate();
+		stateUpdateRequested = true;
 	}
-
 
 	synchronized void clientConnected() {
 		showOSD("Player 2 Client Connected", true);
-		sendStateUpdate();
+		stateUpdateRequested = true;
 	}
 
 	void clientDisconnected() {
@@ -110,15 +117,6 @@ public final class ServerConsole extends Console implements ClockDriven {
 				controlsSocket.controlStateChanged(change.control, change.state);
 	}
 
-	private void sendStateUpdate() {
-		if (remoteTransmitter != null && remoteTransmitter.isClientConnected()) {
-			ServerUpdate update = new ServerUpdate();
-			update.powerOn = powerOn;
-			update.consoleState = saveState();
-			remoteTransmitter.sendUpdate(update);
-		}
-	}
-
 	private void setupTransmitter(RemoteTransmitter transmitter) {
 		remoteTransmitter = transmitter;
 		remoteTransmitter.serverConsole(this);
@@ -126,6 +124,7 @@ public final class ServerConsole extends Console implements ClockDriven {
 
 	
 	private RemoteTransmitter remoteTransmitter;
+	private boolean stateUpdateRequested = false;
 		
 	
 	private class ServerConsoleControlsSocketAdapter extends ConsoleControlsSocket {
@@ -167,13 +166,21 @@ public final class ServerConsole extends Console implements ClockDriven {
 		private List<ControlChange> queuedChanges = new ArrayList<ControlChange>();
 	}
 
-	private class ServerConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {}
+	private class ServerConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {
+		@Override
+		public void insert(Cartridge cartridge, boolean autoPower) {
+			if (autoPower && powerOn) powerOff();
+			cartridge(cartridge);
+			// Send powerOn as a user event so the Console don't get turned on before the state update is sent
+			if (autoPower && !powerOn) controlsSocket.controlStateChanged(Control.POWER, true);
+		}
+	}
 
 	private class ServerConsoleSaveStateSocketAdapter extends SaveStateSocketAdapter {
 		@Override
 		public void externalStateChange() {
-			// Make sure any state changed is reflected on the Client 
-			sendStateUpdate();
+			// Make sure any state changed is reflected on the Client
+			stateUpdateRequested = true;
 		}
 	}
 
