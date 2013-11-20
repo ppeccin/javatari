@@ -26,8 +26,8 @@ public final class PanelScreen extends JPanel implements Screen {
 		super();
 		monitorPanel = new MonitorPanel();
 		monitorPanel.monitor().setFixedSize(screenFixedSize);
-		monitorPanel.monitor().addControlInputComponents(this.keyControlsInputComponents());
 		if (CONSOLE_PANEL) consolePanel = new ConsolePanel(monitorPanel.monitor(), null);
+		monitorPanel.monitor().addControlInputComponents(keyControlsInputComponents());
 		setup();
 	}
 

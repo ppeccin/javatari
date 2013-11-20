@@ -4,6 +4,7 @@ package org.javatari.pc.controls;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +120,10 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	}
 
 	private void addInputComponents(List<Component> inputs) {
-		for (Component component : inputs) {
+		Inputs: for (Component component : inputs) {
+			KeyListener[] currListeners = component.getKeyListeners();
+			for (int i = 0; i < currListeners.length; i++)
+				if (currListeners[i] == this) continue Inputs;		// Avoid adding the same listener again
 			component.setFocusTraversalKeysEnabled(false);
 			component.addKeyListener(this);
 		}

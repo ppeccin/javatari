@@ -715,9 +715,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
 	private static final boolean FIXED_SIZE = Parameters.SCREEN_FIXED_SIZE;
 
-	
-	
-	
 	public static final long serialVersionUID = 0L;
 
 

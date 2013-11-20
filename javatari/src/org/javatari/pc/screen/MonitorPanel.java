@@ -2,7 +2,6 @@
 
 package org.javatari.pc.screen;
 
-
 import java.awt.BufferCapabilities;
 import java.awt.BufferCapabilities.FlipContents;
 import java.awt.Canvas;
@@ -78,7 +77,7 @@ public final class MonitorPanel extends HotspotPanel implements MonitorDisplay {
 		canvas.setFocusTraversalKeysEnabled(false);
 		add(canvas);
 		positionCanvas();
-		addInputComponents(keyControlsInputComponents());
+		addControlInputComponents(keyControlsInputComponents());
 		popupEnabled = EMBEDDED_POPUP && Room.currentRoom() instanceof EmbeddedRoom;
 	}
 		
@@ -216,7 +215,7 @@ public final class MonitorPanel extends HotspotPanel implements MonitorDisplay {
 			} catch (Exception ex) {}
 	}
 
-	private void addInputComponents(List<Component> inputs) {
+	private void addControlInputComponents(List<Component> inputs) {
 		MonitorPanelControlKeyListener lis = new MonitorPanelControlKeyListener();
 		for (Component component : inputs)
 			component.addKeyListener(lis);

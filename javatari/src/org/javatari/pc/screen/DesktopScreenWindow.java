@@ -233,7 +233,6 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 		addHotspots();
 		monitor = new Monitor();
 		fullWindow = new DesktopScreenFullWindow(this);
-		monitor.addControlInputComponents(this.keyControlsInputComponents());
 		addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				if (e.getComponent() == DesktopScreenWindow.this) positionCanvas();
@@ -243,12 +242,14 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			consolePanelWindow = new DesktopConsolePanel(this, monitor);
 			consolePanelWindow.setTransferHandler(new ROMDropTransferHandler());
 		}
-		addInputComponents(keyControlsInputComponents());
+		List<Component> keyControlsInputComponents = keyControlsInputComponents();
+		addControlInputComponents(keyControlsInputComponents);
+		monitor.addControlInputComponents(keyControlsInputComponents);
 		monitor.setDisplay(this);
 		displayCenter();
 	}
 
-	private void addInputComponents(List<Component> inputs) {
+	private void addControlInputComponents(List<Component> inputs) {
 		DesktopScreenControlKeyListener lis = new DesktopScreenControlKeyListener();
 		for (Component component : inputs)
 			component.addKeyListener(lis);
