@@ -37,6 +37,5 @@ public final class TestStandalone {
 	}
 	
 	// TODO Test Java7
-	// TODO Keyboard Input Components and Focus
 
 }

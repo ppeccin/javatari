@@ -82,15 +82,18 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 	
 	public void powerOn() {
-		cleanBackBuffer();
-		paintLogo();
-		line = 0;
-		clock.go();
+		synchronized(refreshMonitor) {
+			cleanBackBuffer();
+			powerOn = true;
+			signalState(false);
+			clock.go();
+		}
 	}
 
 	public void powerOff() {
 		synchronized(refreshMonitor) {
 			clock.pause();
+			powerOn = false;
 			signalState(false);
 		}
 	}
@@ -332,6 +335,11 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		line = 0;
 		display.displayClear();
 		paintLogo();
+		if (fps == 0 && powerOn && signalOffRefresher == null) {
+			SignalOffRefresher ref = new SignalOffRefresher();
+			signalOffRefresher = ref;
+			ref.start();
+		}
 	}
 
 	private void paintLogo() {
@@ -657,7 +665,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private float displayScaleX;
 	private float displayScaleY;
 	
+	private boolean powerOn = false;
 	private boolean signalOn = false;
+	private SignalOffRefresher signalOffRefresher;
 	
 	private int osdFramesLeft = -1;
 	private String osdMessage; 
@@ -688,6 +698,17 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		}
 	};
 	
+	private final class SignalOffRefresher extends Thread {
+		@Override
+		public void run() {
+			try { sleep(1000/30); } catch (InterruptedException e) {}
+			while(powerOn && !signalOn) {
+				synchOutput();
+				try { sleep(1000/30); } catch (InterruptedException e) {}
+			}
+			signalOffRefresher = null;
+		}
+	};
 
 	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
 	

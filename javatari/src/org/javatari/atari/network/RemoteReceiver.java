@@ -162,7 +162,7 @@ public final class RemoteReceiver {
 	private static final int MAX_UPDATES_PENDING = Parameters.CLIENT_MAX_UPDATES_PENDING;
 
 
-	private class UpdatesReceiver extends Thread {
+	private final class UpdatesReceiver extends Thread {
 		public UpdatesReceiver() {
 			super("RemoteReceiver Receiver");
 		}
@@ -185,7 +185,7 @@ public final class RemoteReceiver {
 		}
 	}
 
-	private class UpdatesConsumer extends Thread {
+	private final class UpdatesConsumer extends Thread {
 		public UpdatesConsumer() {
 			super("RemoteReceiver Consumer");
 		}

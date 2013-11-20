@@ -155,7 +155,7 @@ public final class RemoteTransmitter {
 	private static final int MAX_UPDATES_PENDING = Parameters.SERVER_MAX_UPDATES_PENDING;
 	
 	
-	private class UpdatesSender extends Thread {
+	private final class UpdatesSender extends Thread {
 		public UpdatesSender() {
 			super("RemoteTransmitter Sender");
 		}
