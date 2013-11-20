@@ -81,9 +81,11 @@ public final class ClientConsole extends Console implements ClockDriven {
 
 	@Override
 	public void clockPulse() {
-		// Block clock pulses until Console is unpaused (go) or turned off	TODO Verify
+		// Block clock pulses until Console is unpaused (go) is turned off
+		// Important while Screen is dettached in Applet mode,
+		// so no indeterministic behavior is introduced while the Screen is off!
 		while(isPaused && powerOn) try {
-			Thread.sleep(1000/60);
+			Thread.sleep(1000/120);		// Half a frame
 		} catch (InterruptedException e) {}
 
 		synchronized(this) {
