@@ -186,11 +186,15 @@ public class Console {
 	}
 
 	protected void mainClockAdjustToNormal() {
-		mainClock.speed(tia.desiredClockForVideoStandard());
+		double fps = tia.desiredClockForVideoStandard();
+		mainClock.speed(fps);
+		tia.audioOutput().fps(fps);
 	}
 
-	protected void mainClockAdjustToFast() {
-		mainClock.speed(tia.desiredClockForVideoStandard() * FAST_SPEED_FACTOR);
+	protected void mainClockAdjustToAlternate() {
+		double fps = tia.desiredClockForVideoStandard() * ALTERNATE_CLOCK_FACTOR;
+		mainClock.speed(fps);
+		tia.audioOutput().fps(fps);
 	}
 
 	protected void mainClockDestroy() {
@@ -286,7 +290,7 @@ public class Console {
 
 	protected Clock mainClock;
 	
-	public static final int FAST_SPEED_FACTOR = Parameters.CONSOLE_FAST_SPEED_FACTOR;
+	public static final float ALTERNATE_CLOCK_FACTOR = Parameters.CONSOLE_ALTERNATE_CLOCK_FACTOR;
 
 	
 	protected class ConsoleControlsInputAdapter implements ConsoleControlsInput {
@@ -298,7 +302,7 @@ public class Console {
 			if (control == Control.FAST_SPEED) {
 				if (state) {
 					showOSD("FAST FORWARD", true);
-					mainClockAdjustToFast();
+					mainClockAdjustToAlternate();
 				} else {
 					showOSD(null, true);
 					mainClockAdjustToNormal();

@@ -60,7 +60,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	@Override
-	protected void mainClockAdjustToFast() {
+	protected void mainClockAdjustToAlternate() {
 		// Ignore, the clock is controlled remotely
 	}
 

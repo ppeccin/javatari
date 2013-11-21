@@ -22,7 +22,6 @@ import org.javatari.parameters.Parameters;
 import org.javatari.utils.ArraysCopy;
 
 
-@SuppressWarnings("unused")
 public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public TIA() {
@@ -44,7 +43,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	public void videoStandard(VideoStandard standard) {
 		videoOutput.standard(standard);
-		audioOutput.videoStandard(standard);
 		palette = standard.equals(VideoStandard.NTSC) ? NTSCPalette.getPalette() : PALPalette.getPalette();
 	}
 	
@@ -54,6 +52,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	}
 	
 	public void powerOn() {
+		framePatternPosition = 0;
 		Arrays.fill(linePixels, HBLANK_COLOR);
 		Arrays.fill(debugPixels, 0);
 		audioOutput.channel0().setVolume(0);
@@ -73,50 +72,58 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@Override
 	// To perform better, TIA is using one clock cycle per frame
 	public void clockPulse() {
-		if (powerOn && (!debugPause || debugPausedMoreFrames())) {
-			int frames = 1;
-			do {
-				clock = 0;
-				// Send the first clock/3 pulse to the CPU and PIA, perceived by the TIA at clock 0
-				bus.clockPulse();
-				// Releases the CPU at the beginning of the line in case a WSYNC has halted it
-				if (!bus.cpu.RDY) bus.cpu.RDY = true;
-				// HBLANK period
-				for (clock = 3; clock < HBLANK_DURATION; clock += 3) {		// 3 .. 66
-					if (!repeatLastLine) checkRepeatMode();
-					// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
-					bus.clockPulse();
-				}
-				// 67
-				// First Audio Sample. 2 samples per scan line ~ 31440 KHz
-				audioOutput.clockPulse();
-				// Display period
-				int subClock3 = 2;	// To control the clock/3 cycles. First at clock 69
-				for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
-					if (!repeatLastLine) checkRepeatMode();
-					// Clock delay decodes
-					if (vBlankDecodeActive) vBlankClockDecode();
-					// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
-					if (--subClock3 == 0) {
-						bus.clockPulse();
-						subClock3 = 3;
-					}
-					objectsClockCounters();
-					if (!repeatLastLine && (clock >= 76 || !hMoveHitBlank))
-						setPixelValue();
-					// else linePixels[clock] |= 0x88800080;	// Add a pink dye to show pixels repeated
-				}
-				// End of scan line
-				// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
-				audioOutput.clockPulse();
-				// Handle Paddles capacitor charging
-				if (paddle0Position >= 0 && !paddleCapacitorsGrounded) paddlesChargeCapacitors();	// Only if paddles are connected (position >= 0)
-				finishLine();
-				// Send the finished line to the output and check if monitor synched 
-				if (videoOutput.nextLine(linePixels, vSyncOn)) frames--;
-			} while (frames > 0 && powerOn);
-		}
 		
+		int frames = 0;
+		if (powerOn) {
+			if (debugPause) {
+				if (debugPausedMoreFrames()) frames = 1;
+			} else {
+				if (--framePatternPosition < 0) framePatternPosition = framePattern.length - 1;
+				frames = framePattern[framePatternPosition];
+			}
+		}
+
+	 	while (frames > 0 && powerOn) {
+			clock = 0;
+			// Send the first clock/3 pulse to the CPU and PIA, perceived by TIA at clock 0
+			bus.clockPulse();
+			// Releases the CPU at the beginning of the line in case a WSYNC has halted it
+			if (!bus.cpu.RDY) bus.cpu.RDY = true;
+			// HBLANK period
+			for (clock = 3; clock < HBLANK_DURATION; clock += 3) {		// 3 .. 66
+				if (!repeatLastLine) checkRepeatMode();
+				// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
+				bus.clockPulse();
+			}
+			// 67
+			// First Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.clockPulse();
+			// Display period
+			int subClock3 = 2;	// To control the clock/3 cycles. First at clock 69
+			for (clock = 68; clock < LINE_WIDTH; clock++) {			// 68 .. 227
+				if (!repeatLastLine) checkRepeatMode();
+				// Clock delay decodes
+				if (vBlankDecodeActive) vBlankClockDecode();
+				// Send clock/3 pulse to the CPU and PIA each 3rd TIA cycle 
+				if (--subClock3 == 0) {
+					bus.clockPulse();
+					subClock3 = 3;
+				}
+				objectsClockCounters();
+				if (!repeatLastLine && (clock >= 76 || !hMoveHitBlank))
+					setPixelValue();
+				// else linePixels[clock] |= 0x88800080;	// Add a pink dye to show pixels repeated
+			}
+			// End of scan line
+			// Second Audio Sample. 2 samples per scan line ~ 31440 KHz
+			audioOutput.clockPulse();
+			// Handle Paddles capacitor charging
+			if (paddle0Position >= 0 && !paddleCapacitorsGrounded) paddlesChargeCapacitors();	// Only if paddles are connected (position >= 0)
+			finishLine();
+			// Send the finished line to the output and check if monitor synched 
+			if (videoOutput.nextLine(linePixels, vSyncOn)) frames--;
+		}
+
 		if (powerOn) {
 			audioOutput.finishFrame();
 			// Synch with audio and video outputs after each frame as needed
@@ -1223,6 +1230,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private boolean debugPause = false;
 	private int debugPauseMoreFrames = 0;
 	
+	private int[] framePattern = { 1 };
+	private int   framePatternPosition = 0;
+	
 
 	// State Variables ----------------------------------------------
 
@@ -1419,7 +1429,9 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int DEBUG_BK_COLOR     = 0xff334433;
 	private static final int DEBUG_BL_COLOR     = 0xffffff00;
 
+	@SuppressWarnings("unused")
 	private static final int DEBUG_SP_COLOR  	= 0xff00ffff;
+	@SuppressWarnings("unused")
 	private static final int DEBUG_SP_COLOR2 	= 0xffff00ff;
 
 	private static final int READ_ADDRESS_MASK  = 0x000f;

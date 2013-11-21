@@ -4,7 +4,6 @@ package org.javatari.atari.tia.audio;
 
 import org.javatari.general.av.audio.AudioMonitor;
 import org.javatari.general.av.audio.AudioSignal;
-import org.javatari.general.av.video.VideoStandard;
 import org.javatari.general.board.ClockDriven;
 import org.javatari.parameters.Parameters;
 
@@ -34,9 +33,11 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 		return channel1;
 	}
 
-	public void videoStandard(VideoStandard standard) {
-		// Perfect amount is 2 sample per scanline = 31440, 524 for NTSC(60Hz) and 624 for PAL(50hz)
-		samplesPerFrame = (int) Math.round(SAMPLE_RATE / standard.fps);	
+	public void fps(double fps) {
+		// Normal amount is 2 sample per scanline = 31440, 524 for NTSC(60Hz) and 624 for PAL(50hz)
+		// Calculate total samples per frame based on fps
+		samplesPerFrame = (int) Math.round(SAMPLE_RATE / fps);
+		if (samplesPerFrame > MAX_SAMPLES) samplesPerFrame = MAX_SAMPLES;
 	}
 
 	public void signalOff() {
@@ -54,6 +55,7 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 		// Check available samples on monitor to prevent starvation. Send additional samples if needed
 		if (available >= 0 && available < MIN_MONITOR_BUFFER_CHUNKS * SEND_CHUNK) {
 			int add = MIN_MONITOR_BUFFER_CHUNKS * SEND_CHUNK - available + SEND_CHUNK / MONITOR_BUFFER_CHUNKS_ADD_FACTOR;
+			if (add > MAX_SAMPLES) add = MAX_SAMPLES;
 			generateNextSamples(add);
 			sendGeneratedSamples();
 			// System.out.println("Available in Monitor: " + available + ", add: " + add);
@@ -75,7 +77,8 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	
 	protected final ChannelStream channel0 = new ChannelStream(); 
 	protected final ChannelStream channel1 = new ChannelStream(); 
-	protected final byte[] samples = new byte[2048];	// More than enough samples for a frame
+
+	protected final byte[] samples = new byte[MAX_SAMPLES];
 	protected int generatedSamples = 0;
 	protected int frameSamples = 0;
 	private int samplesPerFrame = 0;
@@ -87,5 +90,6 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	private static final int SEND_CHUNK = Parameters.TIA_AUDIO_SEND_CHUNK;
 	private static final int MIN_MONITOR_BUFFER_CHUNKS = Parameters.TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS;
 	private static final int MONITOR_BUFFER_CHUNKS_ADD_FACTOR = Parameters.TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR;
+	private static final int MAX_SAMPLES = 4 * 1024;
 
 }

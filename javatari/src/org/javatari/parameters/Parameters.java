@@ -254,7 +254,7 @@ public final class Parameters {
 			val = props.getProperty("RAM_FRY_ONE_BITS"); if (val != null) RAM_FRY_ONE_BITS = Integer.valueOf(val);
 			val = props.getProperty("RAM_FRY_VARIANCE"); if (val != null) RAM_FRY_VARIANCE = Float.valueOf(val);
 			val = props.getProperty("BUS_DATA_RETENTION"); if (val != null) BUS_DATA_RETENTION = Boolean.valueOf(val);
-			val = props.getProperty("CONSOLE_FAST_SPEED_FACTOR"); if (val != null) CONSOLE_FAST_SPEED_FACTOR = Integer.valueOf(val);
+			val = props.getProperty("CONSOLE_ALTERNATE_CLOCK_FACTOR"); if (val != null) CONSOLE_ALTERNATE_CLOCK_FACTOR = Float.valueOf(val);
 
 			val = props.getProperty("SCREEN_DEFAULT_FPS"); if (val != null) SCREEN_DEFAULT_FPS = Double.valueOf(val);
 			val = props.getProperty("SCREEN_BUFFER_VSYNC"); if (val != null) SCREEN_BUFFER_VSYNC = Integer.valueOf(val);
@@ -354,7 +354,7 @@ public final class Parameters {
 	public static int 		RAM_FRY_ONE_BITS = 25;
 	public static float 	RAM_FRY_VARIANCE = 0.3f;
 	public static boolean 	BUS_DATA_RETENTION = true;
-	public static int		CONSOLE_FAST_SPEED_FACTOR = 15;
+	public static float		CONSOLE_ALTERNATE_CLOCK_FACTOR = 20;
 
 	public static double	SCREEN_DEFAULT_FPS = -1;						// 0 = External Synch, -1 = Auto FPS (On Demand)
 	public static int	 	SCREEN_BUFFER_VSYNC = -1;
