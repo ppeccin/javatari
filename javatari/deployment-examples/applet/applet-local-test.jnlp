@@ -21,6 +21,6 @@
         name="javatari"
         main-class="org.javatari.main.AppletStandalone" 
 		width="654"
-        height="603" >
+        height="609" >
 	</applet-desc>
 </jnlp>
