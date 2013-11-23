@@ -36,6 +36,4 @@ public final class TestStandalone {
 
 	}
 	
-	// TODO Test Java7
-
 }
