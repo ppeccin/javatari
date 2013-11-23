@@ -2,7 +2,6 @@
 
 package org.javatari.pc.screen;
 
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -83,6 +82,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	
 	public void powerOn() {
 		synchronized(refreshMonitor) {
+			cleanFrontBuffer();
 			cleanBackBuffer();
 			powerOn = true;
 			signalState(false);
@@ -214,9 +214,13 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		return state;
 	}
 
+	private void cleanFrontBuffer() {
+		Arrays.fill(frontBuffer, Color.BLACK.getRGB());		 
+	}
+
 	private void cleanBackBuffer() {
-		// Clear screen if in debug mode, and put a nice green for detection of undrawn lines
-		Arrays.fill(backBuffer, Color.GREEN.getRGB());		 
+		// If in debug mode, put a nice green for detection of undrawn lines
+		Arrays.fill(backBuffer, debug > 0 ? Color.GREEN.getRGB() : Color.BLACK.getRGB());		 
 	}
 
 	private void videoStandardDetectionNewFrame() {
@@ -286,11 +290,15 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		adjustToVideoStandard(VideoStandard.NTSC);
 		setDisplayDefaultSize();	
 		clock = new Clock("Video Monitor", this, fps);
-		cleanBackBuffer();
 		paintLogo();
 	}
 
 	private void prepareResources() {
+		// Prepare Buffers and FrameImage with maximum possible sizes (PAL)
+		backBuffer = new int[VideoStandard.PAL.width * VideoStandard.PAL.height];
+		frontBuffer = new int[VideoStandard.PAL.width * VideoStandard.PAL.height];
+		frameImage = new BufferedImage(VideoStandard.PAL.width, VideoStandard.PAL.height, BufferedImage.TYPE_INT_ARGB);
+		if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
 		// Prepare the Logo image
 		try {
 			logoIcon = SwingHelper.loadAsCompatibleImage("org/javatari/pc/screen/images/Logo.png");
@@ -331,10 +339,6 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			signalHeight = videoStandard.height;
 			setDisplaySize(displayWidth, displayHeightPct);
 			setDisplayOrigin(displayOriginX, displayOriginYPct);
-			backBuffer = new int[signalWidth * signalHeight];
-			frontBuffer = new int[signalWidth * signalHeight];
-			frameImage = new BufferedImage(signalWidth, signalHeight, BufferedImage.TYPE_INT_ARGB);
-			if (FRAME_ACCELERATION >= 0) frameImage.setAccelerationPriority(FRAME_ACCELERATION);
 		}
 	}
 
