@@ -120,15 +120,13 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 			// Handle Paddles capacitor charging
 			if (paddle0Position >= 0 && !paddleCapacitorsGrounded) paddlesChargeCapacitors();	// Only if paddles are connected (position >= 0)
 			finishLine();
-			// Send the finished line to the output and check if monitor synched 
+			// Send the finished line to the output and check if monitor vSynched 
 			if (videoOutput.nextLine(linePixels, vSyncOn)) frames--;
 		}
 
 		if (powerOn) {
 			audioOutput.finishFrame();
-			// Synch with audio and video outputs after each frame as needed
-			if (SYNC_WITH_AUDIO_MONITOR) audioOutput.monitor().synchOutput();
-			if (SYNC_WITH_VIDEO_MONITOR) videoOutput.monitor().synchOutput();
+			videoOutput.finishFrame();
 		}
 	}
 
@@ -1438,9 +1436,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private static final int WRITE_ADDRESS_MASK = 0x003f;
 	
 	private static final int PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT = 50;  // Supports a maximum of player GR changes before any is drawn
-	
-	private static final boolean SYNC_WITH_AUDIO_MONITOR = Parameters.TIA_SYNC_WITH_AUDIO_MONITOR;
-	private static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
 	
 	private static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz
 

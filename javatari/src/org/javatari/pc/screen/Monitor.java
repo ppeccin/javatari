@@ -146,8 +146,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	@Override
 	public void synchOutput() {
-		if (BUFFER_SYNC_WAIT) SwingHelper.edtSmartInvokeAndWait(refresher);
-		else SwingHelper.edtInvokeLater(refresher);
+		if (fps < 0) clock.interrupt();		// Just ask for a refresh if in Adaptive mode
+		else synchOutputInSwing();
 	}
 
 	@Override
@@ -159,7 +159,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	
 	@Override
 	public void clockPulse() {
-		synchOutput();
+		synchOutputInSwing();
+		// If in "On Demand" mode (fps < 0) then just wait for the next frame to interrupt the sleep, but no more than 2 frames
+		if (fps < 0 && !Thread.interrupted()) try { Thread.sleep(1000 / 60 * 2,  0); } catch (InterruptedException e) { /* Awake! */ };
 	}
 
 	public void cartridgeInsert(Cartridge cart, boolean autoPower) {
@@ -171,6 +173,11 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public void cartridgeInserted(Cartridge cartridge) {
 		if (crtMode == 0 || crtMode == 1)
 			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == 1 ? 1 : 0);
+	}
+
+	private void synchOutputInSwing() {
+		if (BUFFER_SYNC_WAIT) SwingHelper.edtSmartInvokeAndWait(refresher);
+		else SwingHelper.edtInvokeLater(refresher);
 	}
 
 	private boolean newFrame() {
@@ -704,7 +711,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			try { sleep(1000/30); } catch (InterruptedException e) {}
 			while(powerOn && !signalOn) {
 				synchOutput();
-				try { sleep(1000/30); } catch (InterruptedException e) {}
+				try { sleep(1000/30); } catch (InterruptedException e) {}	// 30 fps
 			}
 			signalOffRefresher = null;
 		}

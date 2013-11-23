@@ -62,6 +62,9 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 		}
 		
 		frameSamples = 0;
+		
+		// Synch with audio monitor as needed
+		if (SYNC_WITH_AUDIO_MONITOR && monitor != null) monitor.synchOutput();
 	}
 
 	private int sendGeneratedSamples() {
@@ -91,5 +94,7 @@ public abstract class AudioGenerator implements AudioSignal, ClockDriven {
 	private static final int MIN_MONITOR_BUFFER_CHUNKS = Parameters.TIA_AUDIO_MIN_MONITOR_BUFFER_CHUNKS;
 	private static final int MONITOR_BUFFER_CHUNKS_ADD_FACTOR = Parameters.TIA_AUDIO_MONITOR_BUFFER_CHUNKS_ADD_FACTOR;
 	private static final int MAX_SAMPLES = 4 * 1024;
+
+	private static final boolean SYNC_WITH_AUDIO_MONITOR = Parameters.TIA_SYNC_WITH_AUDIO_MONITOR;
 
 }

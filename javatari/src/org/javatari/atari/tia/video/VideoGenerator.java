@@ -5,6 +5,7 @@ package org.javatari.atari.tia.video;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.general.av.video.VideoStandard;
+import org.javatari.parameters.Parameters;
 
 public final class VideoGenerator implements VideoSignal {
 
@@ -39,8 +40,16 @@ public final class VideoGenerator implements VideoSignal {
 	public void standard(VideoStandard standard) {
 		this.standard = standard;
 	}
+	
+	public void finishFrame() {
+		// Synch with video monitor after each frame as needed
+		if (SYNC_WITH_VIDEO_MONITOR && monitor != null) monitor.synchOutput();
+	}
 
 	private VideoMonitor monitor;
 	private VideoStandard standard;
+	
+
+	private static final boolean SYNC_WITH_VIDEO_MONITOR = Parameters.TIA_SYNC_WITH_VIDEO_MONITOR;
 	
 }
