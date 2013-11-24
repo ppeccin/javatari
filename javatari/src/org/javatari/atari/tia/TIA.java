@@ -82,6 +82,8 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 				frames = framePattern[framePatternPosition];
 			}
 		}
+		
+		if (frames <= 0) return;
 
 	 	while (frames > 0 && powerOn) {
 			clock = 0;

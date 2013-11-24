@@ -36,7 +36,6 @@ import org.javatari.pc.cartridge.URLROMChooser;
 import org.javatari.utils.Environment;
 import org.javatari.utils.SwingHelper;
 
-
 public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsertionListener {
 	
 	public Monitor() {
@@ -171,8 +170,11 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	@Override
 	public void cartridgeInserted(Cartridge cartridge) {
-		if (crtMode == 0 || crtMode == 1)
-			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == 1 ? 1 : 0);
+		// Only change mode if not forced
+		if (CRT_MODE >= 0) return;
+		// Then, only change mode if cartridge has specification
+		if (cartridge != null && cartridge.getInfo().crtMode >= 0)
+			setCrtMode(cartridge.getInfo().crtMode);
 	}
 
 	private void synchOutputInSwing() {
@@ -184,14 +186,15 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		if (line < signalHeight - VSYNC_TOLERANCE) return false;
 
 		// Flip front and back buffers
-		int[] aux = backBuffer;
-		backBuffer = frontBuffer;
-		frontBuffer = aux;
+		int[] aux = frontBuffer;
+		frontBuffer = backBuffer;
+		backBuffer = aux;
 		
 		// Start a new frame
 		if (debug > 0) cleanBackBuffer();
 		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode " + (crtMode == 0 ? "off" : crtMode), true);
 		line = 0;
+		frame++;
 		return true;
 	}
 
@@ -360,19 +363,17 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			Dimension ces = display.displayEffectiveSize();
 			int w = ces.width;
 			int h = ces.height;
-			canvasGraphics.setBackground(Color.BLACK);
-			canvasGraphics.clearRect(0, 0, w, h);	// TODO Flickers when not using multi buffering
+			Graphics2D intermGraphics = intermFrameImage.createGraphics();
+			intermGraphics.setBackground(Color.BLACK);
+			intermGraphics.clearRect(0, 0, w, h);
 			int lw = logoIcon.getWidth(null);
 			int lh = logoIcon.getHeight(null);
 			float r = h < lh ? (float)h / lh : 1;
 			lw *= r; lh *= r;
-			canvasGraphics.drawImage(
-				logoIcon,
-				(w - lw) / 2, (h - lh) / 2,
-				lw, lh,
-				null
-			);
-			paintOSD(canvasGraphics);
+			intermGraphics.drawImage(logoIcon, (w - lw) / 2, (h - lh) / 2, lw, lh, null);
+			paintOSD(intermGraphics);
+			canvasGraphics.drawImage(intermFrameImage, 0, 0, w, h, 0, 0, w, h, null);
+			intermGraphics.dispose();
 			displayFrameFinished(canvasGraphics);
 		}
 	}
@@ -396,6 +397,10 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		}
 		// Synchronize to avoid changing image properties while refreshing frame
 		synchronized (refreshMonitor) {
+			int f = frame;
+			if (lastFrameRendered == f) return;
+
+			int[] drawBuffer = frontBuffer;
 			Graphics2D displayGraphics = displayGraphics();
 			if (displayGraphics == null) return;
 			// Get the entire Canvas
@@ -408,8 +413,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 				int intermWidth = Math.min(displayEffectiveWidth, 2048);
 				int intermHeight = Math.min(displayEffectiveHeight, 1280);
 				Graphics2D intermGraphics = intermFrameImage.createGraphics();
+				intermGraphics.setComposite(AlphaComposite.Src);
 				// Renders to intermediate image
-				renderFrame(intermGraphics, intermWidth, intermHeight, true);
+				renderFrame(intermGraphics, drawBuffer, intermWidth, intermHeight);
 				// If CRT mode 2, alpha-superimpose the prepared scanlines image
 				if (crtMode == 2)
 					renderScanlines(intermGraphics, intermWidth, intermHeight);
@@ -432,36 +438,36 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 					null);
 			} else {
 				// Renders directly to Canvas
-				renderFrame(displayGraphics, displayEffectiveWidth, displayEffectiveHeight, crtMode > 0);
+				renderFrame(displayGraphics, drawBuffer, displayEffectiveWidth, displayEffectiveHeight);
 				// If CRT mode 2, alpha-superimpose the prepared scanlines image
 				if (crtMode == 2)
 					renderScanlines(displayGraphics, displayEffectiveWidth, displayEffectiveHeight);
 				paintOSD(displayGraphics);
 			}
 			displayFrameFinished(displayGraphics);
+			lastFrameRendered = f;
 		}
 	}
 
-	private void renderFrame(Graphics2D graphics, int effectiveWidth, int effectiveHeight, boolean clear) {
-		if (clear) {
-			graphics.setBackground(Color.BLACK);
-			graphics.clearRect(0, 0, effectiveWidth, effectiveHeight);
-		}
+	private void renderFrame(Graphics2D graphics, int[] drawBuffer, int effectiveWidth, int effectiveHeight) {
 		// If CRT mode 1, 2 or 4, set composite for last and new frame over each other, and draw old frame
 		if (crtMode > 0 && crtMode != 3) {
-			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, CRT_RETENTION_ALPHA));
+			// Clear last image
+			graphics.setBackground(Color.BLACK);
+			graphics.clearRect(0, 0, effectiveWidth, effectiveHeight);
 			// Draw old frame
+			graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, CRT_RETENTION_ALPHA));
 			graphics.drawImage(frameImage, 0, 0, effectiveWidth, effectiveHeight, 0, 0, displayWidth, displayHeight, null);
 		}
 		// Update the image to draw with contents stored in the frontBuffer
-		frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, frontBuffer);
+		frameImage.getRaster().setDataElements(0, 0, displayWidth, displayHeight, drawBuffer);
 		// Draw new frame
 		graphics.drawImage(frameImage, 0, 0, effectiveWidth, effectiveHeight, 0, 0, displayWidth, displayHeight, null);
 	}
 
 	private void renderScanlines(Graphics2D graphics, int effectiveWidth, int effectiveHeight) {
 		graphics.setComposite(AlphaComposite.SrcOver);
-		graphics.drawImage( scanlinesTextureImage, 0, 0, effectiveWidth, effectiveHeight, 0, 0, effectiveWidth, effectiveHeight, null);
+		graphics.drawImage(scanlinesTextureImage, 0, 0, effectiveWidth, effectiveHeight, 0, 0, effectiveWidth, effectiveHeight, null);
 	}
 
 	private synchronized void setDisplayDefaultSize() {
@@ -685,12 +691,14 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private JLabel osdComponent;
 	
 	private boolean qualityRendering = QUALITY_RENDERING;
-	private int crtMode = CRT_MODE;
+	private int crtMode = CRT_MODE < 0 ? 0 : CRT_MODE;
 
 	private int debug = 0;
 	private boolean showStats = false;
 	
 	private int line = 0;
+	private int frame = 0;
+	private int lastFrameRendered = -1;
 
 	private MonitorDisplay display;
 
