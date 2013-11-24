@@ -333,7 +333,7 @@ public final class Parameters {
 	public static String mainArg = null;
 
 	// Main Emulator Version
-	public static final String VERSION = "version 3.30";
+	public static final String VERSION = "version 3.40";
 
 	// DEFAULTS
 
