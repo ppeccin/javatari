@@ -29,12 +29,12 @@ public final class MonitorControls implements KeyListener {
 		keyCodeMap.put(KEY_CART_URL,     Control.LOAD_CARTRIDGE_URL);
 		keyCodeMap.put(KEY_CART_EMPTY,   Control.LOAD_CARTRIDGE_EMPTY);
 
-		keyAltCodeMap.put(KEY_QUALITY,   Control.QUALITY);
-		keyAltCodeMap.put(KEY_DEBUG,     Control.DEBUG);
-		keyAltCodeMap.put(KEY_STATS,     Control.STATS);
-		keyAltCodeMap.put(KEY_CRT_MODES, Control.CRT_MODES);
-		keyAltCodeMap.put(KEY_CART_FILE, Control.LOAD_CARTRIDGE_FILE_NO_AUTO_POWER);
-		keyAltCodeMap.put(KEY_CART_URL,  Control.LOAD_CARTRIDGE_URL_NO_AUTO_POWER);
+		keyAltCodeMap.put(KEY_CRT_FILTER,   Control.CRT_FILTER);
+		keyAltCodeMap.put(KEY_DEBUG,     	Control.DEBUG);
+		keyAltCodeMap.put(KEY_STATS,    	Control.STATS);
+		keyAltCodeMap.put(KEY_CRT_MODES, 	Control.CRT_MODES);
+		keyAltCodeMap.put(KEY_CART_FILE, 	Control.LOAD_CARTRIDGE_FILE_NO_AUTO_POWER);
+		keyAltCodeMap.put(KEY_CART_URL,  	Control.LOAD_CARTRIDGE_URL_NO_AUTO_POWER);
 
 		keyShiftCodeMap.put(KEY_UP,    Control.SIZE_MINUS); 
 		keyShiftCodeMap.put(KEY_DOWN,  Control.SIZE_PLUS); 
@@ -124,7 +124,7 @@ public final class MonitorControls implements KeyListener {
 	public static final int KEY_CART_PASTE_INS = KeyEvent.VK_INSERT;
 	public static final int KEY_CART_EMPTY     = KeyEvent.VK_F7;
 
-	public static final int KEY_QUALITY        = KeyEvent.VK_Q;
+	public static final int KEY_CRT_FILTER     = KeyEvent.VK_T;
 	public static final int KEY_CRT_MODES      = KeyEvent.VK_R;
 	public static final int KEY_VIDEO_STAND    = KeyEvent.VK_V;
 	

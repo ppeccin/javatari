@@ -380,7 +380,7 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	private static final int KEY_DIFFICULTY1    = KeyEvent.VK_F9;  
                                                
 	private static final int KEY_FRAME            = KeyEvent.VK_F;
-	private static final int KEY_TRACE            = KeyEvent.VK_T;
+	private static final int KEY_TRACE            = KeyEvent.VK_Q;
 	private static final int KEY_DEBUG            = KeyEvent.VK_D;
 	private static final int KEY_NO_COLLISIONS    = KeyEvent.VK_C;
 	private static final int KEY_VIDEO_STANDARD   = KeyEvent.VK_V;

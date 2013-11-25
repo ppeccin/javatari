@@ -269,7 +269,7 @@ public final class Parameters {
 			val = props.getProperty("SCREEN_BORDER_SIZE"); if (val != null) SCREEN_BORDER_SIZE = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_OSD_FRAMES"); if (val != null) SCREEN_OSD_FRAMES = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_VSYNC_TOLERANCE"); if (val != null) SCREEN_VSYNC_TOLERANCE = Integer.valueOf(val);
-			val = props.getProperty("SCREEN_QUALITY_RENDERING"); if (val != null) SCREEN_QUALITY_RENDERING = Boolean.valueOf(val);
+			val = props.getProperty("SCREEN_CRT_FILTER"); if (val != null) SCREEN_CRT_FILTER = Boolean.valueOf(val);
 			val = props.getProperty("SCREEN_CRT_MODE"); if (val != null) SCREEN_CRT_MODE = Integer.valueOf(val);
 			val = props.getProperty("SCREEN_CRT_RETENTION_ALPHA"); if (val != null) SCREEN_CRT_RETENTION_ALPHA = Float.valueOf(val);
 			val = props.getProperty("SCREEN_SCANLINES_STRENGTH"); if (val != null) SCREEN_SCANLINES_STRENGTH = Float.valueOf(val);
@@ -369,7 +369,7 @@ public final class Parameters {
 	public static int 		SCREEN_BORDER_SIZE = 3;
 	public static int 		SCREEN_OSD_FRAMES = 160;
 	public static int 		SCREEN_VSYNC_TOLERANCE = 16;
-	public static boolean 	SCREEN_QUALITY_RENDERING = false;
+	public static boolean 	SCREEN_CRT_FILTER = false;
 	public static int	 	SCREEN_CRT_MODE = 0;
 	public static float	 	SCREEN_CRT_RETENTION_ALPHA = 0.75f;
 	public static float 	SCREEN_SCANLINES_STRENGTH = 0.5f;

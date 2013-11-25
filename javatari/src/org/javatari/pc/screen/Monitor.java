@@ -172,9 +172,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public void cartridgeInserted(Cartridge cartridge) {
 		// Only change mode if not forced
 		if (CRT_MODE >= 0) return;
-		// Then, only change mode if cartridge has specification
-		if (cartridge != null && cartridge.getInfo().crtMode >= 0)
-			setCrtMode(cartridge.getInfo().crtMode);
+		if (crtMode == 0 || crtMode == 1)
+			setCrtMode(cartridge == null ? 0 : cartridge.getInfo().crtMode == -1 ? 0 : cartridge.getInfo().crtMode);
 	}
 
 	private void synchOutputInSwing() {
@@ -192,7 +191,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		
 		// Start a new frame
 		if (debug > 0) cleanBackBuffer();
-		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode " + (crtMode == 0 ? "off" : crtMode), true);
+		if (showStats) showOSD(videoSignal.standard() + "  " + line + " lines,  CRT mode: " + crtModeNames[crtMode], true);
 		line = 0;
 		frame++;
 		return true;
@@ -274,11 +273,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		Graphics2D displayGraphics = display.displayGraphics();
 		displayGraphics.setComposite(AlphaComposite.Src);
 		// Adjusts the Render Quality if needed
-		if (displayGraphics != null) 
-			displayGraphics.setRenderingHint(
-				RenderingHints.KEY_RENDERING, 
-				qualityRendering ? RenderingHints.VALUE_RENDER_QUALITY : RenderingHints.VALUE_RENDER_DEFAULT
-			);
+		if (displayGraphics != null && crtFilter) 
+			displayGraphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		return displayGraphics;
 	}
 
@@ -580,7 +576,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 			int newMode = mode > 4 || mode < 0 ? 0 : mode;
 			if (crtMode == newMode) return;
 			crtMode = newMode;
-			showOSD(crtMode == 0 ? "CRT mode off" : "CRT mode " + crtMode, true);
+			showOSD("CRT mode: " + crtModeNames[crtMode], true);
 		}
 	}
 
@@ -599,9 +595,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 				loadCartridgeEmpty(); break;
 			case LOAD_CARTRIDGE_PASTE:
 				loadCartridgePaste(); break;
-			case QUALITY:
-				qualityRendering = !qualityRendering;
-				showOSD(qualityRendering ? "Filter ON" : "Filter OFF", true);
+			case CRT_FILTER:
+				crtFilter = !crtFilter;
+				showOSD(crtFilter ? "CRT Filter: ON" : "CRT Filter: OFF", true);
 				break;
 			case CRT_MODES:
 				crtModeToggle(); break;
@@ -690,7 +686,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private String osdMessage; 
 	private JLabel osdComponent;
 	
-	private boolean qualityRendering = QUALITY_RENDERING;
+	private boolean crtFilter = CRT_FILTER;
 	private int crtMode = CRT_MODE < 0 ? 0 : CRT_MODE;
 
 	private int debug = 0;
@@ -729,10 +725,11 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		}
 	};
 
-	private static final int VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
+	private static final String[] crtModeNames = { "OFF", "Phosphor", "Phosphor Scanlines", "RGB", "RGB Phosphor" };
 	
-	public static final double DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;
-
+	
+	public static final double   DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;
+	private static final int     VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
 	public static final int      BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
 	private static final boolean BUFFER_SYNC_WAIT = Parameters.SCREEN_BUFFER_SYNC_WAIT;
 	public static final int      DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
@@ -743,7 +740,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	public static final float    DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
 	public static final float    DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
 	public static final int      OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
-	public static final boolean  QUALITY_RENDERING = Parameters.SCREEN_QUALITY_RENDERING;
+	public static final boolean  CRT_FILTER = Parameters.SCREEN_CRT_FILTER;
 	public static final int      CRT_MODE = Parameters.SCREEN_CRT_MODE;
 	public static final float    CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
 	public static final float    SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
@@ -771,7 +768,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		LOAD_CARTRIDGE_URL, LOAD_CARTRIDGE_URL_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_EMPTY,
 		LOAD_CARTRIDGE_PASTE,
-		QUALITY, CRT_MODES,
+		CRT_FILTER, CRT_MODES,
 		DEBUG, STATS
 	}
 

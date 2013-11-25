@@ -1641,13 +1641,13 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnAltJ.setFont(fontLabel);
 			txtpnAltJ.setBounds(12, 39, 121, 226);
 			helpPanel.add(txtpnAltJ);
-			txtpnAltJ.setText("CTR + 1-0:\r\nALT + 1-0:\r\n\r\nALT + ENT:\r\nALT + V:\r\nALT + R:\r\nALT + Q:\r\nALT + G:\r\nALT + D:\r\nALT + C:\r\nALT + P:\r\nALT + F:\r\nTAB:");
+			txtpnAltJ.setText("CTR + 1-0:\r\nALT + 1-0:\r\n\r\nALT + ENT:\r\nALT + V:\r\nALT + R:\r\nALT + T:\r\nALT + G:\r\nALT + D:\r\nALT + C:\r\nALT + P:\r\nALT + F:\r\nTAB:");
 			
 			JTextPane txtpnFullscreenNtsc = new JTextPane();
 			txtpnFullscreenNtsc.setOpaque(false);
 			txtpnFullscreenNtsc.setBackground(noBackground);
 			txtpnFullscreenNtsc.setEditable(false);
-			txtpnFullscreenNtsc.setText("Save State\r\nLoad State\r\n\r\nFullscreen\r\nNTSC / PAL\r\nCRT Modes\r\nFilter\r\nShow info\r\nDebug Modes\r\nCollisions\r\nPause\r\nNext Frame\r\nFast Speed");
+			txtpnFullscreenNtsc.setText("Save State\r\nLoad State\r\n\r\nFullscreen\r\nNTSC / PAL\r\nCRT Modes\r\nCRT Filter\r\nShow info\r\nDebug Modes\r\nCollisions\r\nPause\r\nNext Frame\r\nFast Speed");
 			txtpnFullscreenNtsc.setFont(fontLabel);
 			txtpnFullscreenNtsc.setBounds(95, 39, 145, 226);
 			helpPanel.add(txtpnFullscreenNtsc);

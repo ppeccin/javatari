@@ -1,15 +1,21 @@
 Visit http://javatari.org for downloads and online play
 Discuss at http://groups.google.com/group/javatari
 
+Version 3.40
+============
+- Support for Harmony/Melody Cart flash memory and .cu images
+- Star Castle Arcade highscores now working
+- General performance tuning
+
+
+Previous Versions:
+
 Version 3.30
 ============
 - Applets can now be detached from the browser window
 - Once detached, all features are available including Full Screen
 - Full Screen is now multi-monitor aware
 - Updated, cleaner looks
-
-
-Previous Versions:
 
 Version 3.20
 ============

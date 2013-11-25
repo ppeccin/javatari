@@ -9,7 +9,7 @@ Alt + J:       Toggle Joystick modes
 
 Alt + ENTER:   Toggle FullScreen
 Alt + R:       Toggle CRT modes
-Alt + Q:       Toggle Filter
+Alt + T:       Toggle CRT Filter
 Alt + D:       Toggle Debug modes
 Alt + C:       Toggle Collisions
 Alt + V:       Toggle NTSC/PAL
