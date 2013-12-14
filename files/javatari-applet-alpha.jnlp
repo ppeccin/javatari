@@ -14,7 +14,7 @@
 	</security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari-alpha-signed.jar" main="true" />
+		<jar href="javatari-signed-alpha.jar" main="true" />
 	</resources>
 	<applet-desc 
         name="javatari"
