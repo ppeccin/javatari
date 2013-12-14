@@ -5,9 +5,13 @@
     <target name="MakeJAR">
         <jar destfile="javatari.jar" filesetmanifest="mergewithoutmain">
             <manifest>
+                <attribute name="Application-Name" value="Javatari 3.40"/>
                 <attribute name="Main-Class" value="org.javatari.main.Standalone"/>
                 <attribute name="Class-Path" value="."/>
-            </manifest>
+                <attribute name="Permissions" value="all-permissions"/>
+                <attribute name="Codebase" value="*"/>
+                <attribute name="Sealed" value="true"/>
+                </manifest>
             <fileset dir="../bin"/>
             <fileset dir="../../joy/bin"/>
             </jar>
