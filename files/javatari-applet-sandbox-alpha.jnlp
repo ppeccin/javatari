@@ -1,8 +1,8 @@
 <jnlp spec="6.0+"
 	codebase="http://javatari.org/files/"
-	href="javatari330-applet.jnlp" >
+	href="javatari-applet-sandbox-alpha.jnlp" >
 	<information>
-		<title>javatari Applet</title>
+		<title>Javatari Applet Alpha</title>
 		<vendor>Paulo Augusto Peccin</vendor>
 		<homepage href="http://javatari.org" />
 		<icon href="javatari-icon.png" />
@@ -14,7 +14,7 @@
 	</security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari330-signed.jar" main="true" />
+		<jar href="javatari40-signed-sandbox.jar" main="true" />
 	</resources>
 	<applet-desc 
         name="javatari"
