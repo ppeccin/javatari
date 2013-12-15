@@ -1,14 +1,19 @@
 Visit http://javatari.org for downloads and online play
 Discuss at http://groups.google.com/group/javatari
 
+Version 4.0
+============
+- Full support for the upcoming Java security requirements
+- Both all-permissions and sandboxed deployment options
+
+
+Previous Versions:
+
 Version 3.40
 ============
 - Support for Harmony/Melody Cart flash memory and .cu images
 - Star Castle Arcade highscores now working
 - General performance tuning
-
-
-Previous Versions:
 
 Version 3.30
 ============

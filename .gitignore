@@ -1,5 +1,6 @@
 javatari/bin/
-javatari/deploy/MakeSignedJAR.xml
+javatari/deploy/*.jar
+javatari/deploy/SignJARs.xml
 javatari/javatarisaves/
 joy/bin/
 

@@ -332,8 +332,9 @@ public final class Parameters {
 	// Cartridge URL to load passed as argument
 	public static String mainArg = null;
 
-	// Main Emulator Version
-	public static final String VERSION = "version 3.40";
+	// Main Version info
+	public static final String TITLE = "Javatari";
+	public static final String VERSION = "4.0";
 
 	// DEFAULTS
 

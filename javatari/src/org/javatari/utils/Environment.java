@@ -10,11 +10,13 @@ import java.util.Locale;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
+import org.javatari.parameters.Parameters;
+
 
 public class Environment {
 
 	public static void init() {
-		System.out.println(vmInfo());
+		System.out.println(Parameters.TITLE + " " + Parameters.VERSION + " on " + vmInfo());
 		try {
 			// Set Locale
 			try {
@@ -58,7 +60,7 @@ public class Environment {
 
 	public static String vmInfo() {
 		try {
-			return System.getProperty("java.vm.name") + " ver: " + System.getProperty("java.version");
+			return System.getProperty("java.vm.name") + " ver: " + System.getProperty("java.version") + " (" + System.getProperty("os.arch") + ")";
 		} catch (Throwable e) {
 			return "VM info unavailable";
 		}
