@@ -198,7 +198,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	}
 
 	private boolean maxLineExceeded() {
-		if (line > signalHeight + VSYNC_TOLERANCE) {
+		if (line > signalHeight + VSYNC_TOLERANCE + EXTRA_UPPER_VSYNC_TOLERANCE) {
 			// if (debug > 0) System.out.println("Display maximum scanlines exceeded: " + line);
 			return newFrame();
 		}
@@ -228,9 +228,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private void videoStandardDetectionNewFrame() {
 		int linesCount = videoStandardDetectionFrameLineCount;
 		videoStandardDetectionFrameLineCount = 0;
-		// Only consider frames with linesCount in range (NTSC 262 +- 10, PAL 312 +- 10)
-		if ((linesCount >= 252 && linesCount <= 272)
-				|| (linesCount >= 302 && linesCount <= 322))
+		// Only consider frames with linesCount in range with tolerances (NTSC 262, PAL 312)
+		if ((linesCount >= 250 && linesCount <= 281)
+				|| (linesCount >= 300 && linesCount <= 325))
 			if (++videoStandardDetectionFrameCount >= 5)
 				videoStandardDetectionFinish(linesCount);
 	}
@@ -727,28 +727,29 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	private static final String[] crtModeNames = { "OFF", "Phosphor", "Phosphor Scanlines", "RGB", "RGB Phosphor" };
 	
-	
+	private static final int EXTRA_UPPER_VSYNC_TOLERANCE = 5;
+
 	public static final double   DEFAULT_FPS = Parameters.SCREEN_DEFAULT_FPS;
-	private static final int     VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
 	public static final int      BUFFER_VSYNC = Parameters.SCREEN_BUFFER_VSYNC;
-	private static final boolean BUFFER_SYNC_WAIT = Parameters.SCREEN_BUFFER_SYNC_WAIT;
-	public static final int      DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
-	public static final double   DEFAULT_ORIGIN_Y_PCT = Parameters.SCREEN_DEFAULT_ORIGIN_Y_PCT;		// Percentage of height
-	public static final int      DEFAULT_WIDTH = Parameters.SCREEN_DEFAULT_WIDTH;
-	public static final double   DEFAULT_HEIGHT_PCT = Parameters.SCREEN_DEFAULT_HEIGHT_PCT;			// Percentage of height
-	public static final float    DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
-	public static final float    DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
-	public static final float    DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
-	public static final int      OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
-	public static final boolean  CRT_FILTER = Parameters.SCREEN_CRT_FILTER;
-	public static final int      CRT_MODE = Parameters.SCREEN_CRT_MODE;
-	public static final float    CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
-	public static final float    SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
 	public static final int      MULTI_BUFFERING = Parameters.SCREEN_MULTI_BUFFERING;
 	public static final boolean  PAGE_FLIPPING = Parameters.SCREEN_PAGE_FLIPPING;
-	public static final float    FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
-	public static final float    IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
-	public static final float    SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
+	private static final int     VSYNC_TOLERANCE = Parameters.SCREEN_VSYNC_TOLERANCE;
+	private static final boolean BUFFER_SYNC_WAIT = Parameters.SCREEN_BUFFER_SYNC_WAIT;
+	private static final int     DEFAULT_ORIGIN_X = Parameters.SCREEN_DEFAULT_ORIGIN_X;
+	private static final double  DEFAULT_ORIGIN_Y_PCT = Parameters.SCREEN_DEFAULT_ORIGIN_Y_PCT;		// Percentage of height
+	private static final int     DEFAULT_WIDTH = Parameters.SCREEN_DEFAULT_WIDTH;
+	private static final double  DEFAULT_HEIGHT_PCT = Parameters.SCREEN_DEFAULT_HEIGHT_PCT;			// Percentage of height
+	public static final float    DEFAULT_SCALE_X = Parameters.SCREEN_DEFAULT_SCALE_X;
+	public static final float    DEFAULT_SCALE_ASPECT_X = Parameters.SCREEN_DEFAULT_SCALE_ASPECT_X;
+	private static final float   DEFAULT_SCALE_Y = Parameters.SCREEN_DEFAULT_SCALE_Y;
+	private static final int     OSD_FRAMES = Parameters.SCREEN_OSD_FRAMES;
+	private static final boolean CRT_FILTER = Parameters.SCREEN_CRT_FILTER;
+	private static final int     CRT_MODE = Parameters.SCREEN_CRT_MODE;
+	private static final float   CRT_RETENTION_ALPHA = Parameters.SCREEN_CRT_RETENTION_ALPHA;
+	private static final float   SCANLINES_STRENGTH = Parameters.SCREEN_SCANLINES_STRENGTH;
+	private static final float   FRAME_ACCELERATION = Parameters.SCREEN_FRAME_ACCELERATION;
+	private static final float   IMTERM_FRAME_ACCELERATION = Parameters.SCREEN_INTERM_FRAME_ACCELERATION;
+	private static final float   SCANLINES_ACCELERATION = Parameters.SCREEN_SCANLINES_ACCELERATION;
 	private static final boolean CARTRIDGE_CHANGE = Parameters.SCREEN_CARTRIDGE_CHANGE;
 	private static final boolean FIXED_SIZE = Parameters.SCREEN_FIXED_SIZE;
 

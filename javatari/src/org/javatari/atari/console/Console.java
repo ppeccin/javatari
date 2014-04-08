@@ -61,25 +61,21 @@ public class Console {
 	
 	public void powerOn() {
 		if (powerOn) powerOff();
-		bus.powerOn();
-		ram.powerOn();
 		cpu.powerOn();
-		pia.powerOn();
-		tia.powerOn();
+		bus.powerOn();
 		powerOn = true;
 		controlsSocket.controlsStatesRedefined();
 		go();
+		
+		bus.ram.dump();
+		
 		videoStandardAutoDetectionStart();
-		if (cartridge() == null) showOSD("NO CARTRIDGE INSERTED!", true);
 	}
 
 	public void powerOff() {
 		pause();
-		tia.powerOff();
-		pia.powerOff();
-		cpu.powerOff();
-		ram.powerOff();
 		bus.powerOff();
+		cpu.powerOff();
 		powerOn = false;
 		controlsSocket.controlsStatesRedefined();
 	}

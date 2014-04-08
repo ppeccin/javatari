@@ -267,8 +267,9 @@ public class Room {
 
 	public void exit() {
 		try {
+			System.out.print("Terminating Javatari... ");
 			destroy();
-			System.out.println(">> Terminating Javatari");
+			System.out.println("Terminated.");
 			System.exit(0);		
 		} catch(AccessControlException ex) {
 			// Ignore

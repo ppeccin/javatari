@@ -18,8 +18,7 @@ public final class RTI extends Instruction {
 
 	@Override
 	public void execute() {
-		// Does not perform the dummy PC + 1 read
-		// Does not perform the dummy stack read
+		cpu.dummyStackRead();
 		cpu.PS(cpu.pullByte());
 		cpu.PC = cpu.pullWord();
 	}

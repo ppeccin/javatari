@@ -7,13 +7,14 @@ import java.io.Serializable;
 
 import org.javatari.general.board.BUS16Bits;
 import org.javatari.parameters.Parameters;
+import org.javatari.utils.Debugger;
 import org.javatari.utils.Randomizer;
 
 
 public final class RAM implements BUS16Bits {
 
 	public RAM() {
-		// RAM come totally random at creation
+		// RAM comes totally random at creation
 		Randomizer.instance.nextBytes(bytes);
 	}
 
@@ -37,11 +38,9 @@ public final class RAM implements BUS16Bits {
 
 	public void dump() {
 		System.out.println("RAM DUMP:");
-		for(int i = 0; i < bytes.length; i++)
-			System.out.printf("%02x ", bytes[i]);
-		System.out.println();
+		Debugger.dumpBytes(bytes, 0, bytes.length);
 	}
-	
+
 	public RAMState saveState() {
 		RAMState state = new RAMState();
 		state.bytes = bytes.clone();
@@ -69,6 +68,10 @@ public final class RAM implements BUS16Bits {
 	
 	
 	// Constants -------------------------------------------
+
+	public static final int CHIP_MASK = 0x1280;
+	public static final int CHIP_SELECT = 0x0080;
+
 	private static final int ADDRESS_MASK = 0x007f;
 
 	private static final int FRY_ZERO_BITS = Parameters.RAM_FRY_ZERO_BITS;

@@ -26,14 +26,25 @@ public final class BUS implements BUS16Bits, ClockDriven {
 	}
 
 	public void powerOn() {
-		// Data in the bus come random at powerOn
-		// TODO This is a source of indeterminism. Potential problem in multiplayer sync
-		if (cartridge == null) data = (byte)Randomizer.instance.nextInt(256);
-		else data = 0;
+		data = 0;
+		if (cartridge == null) {
+			tia.videoOutput().showOSD("NO CARTRIDGE INSERTED!", true);
+			// Data in the bus comes random at powerOn if no Cartridge is present
+			data = (byte)Randomizer.instance.nextInt(256);
+		}
+		// Power on devices connected to the BUS
+		ram.powerOn();
+		pia.powerOn();
+		tia.powerOn();
+		if (cartridge != null) cartridge.powerOn();
 	}
 
 	public void powerOff() {
-		// Nothing
+		// Power off devices connected to the BUS
+		if (cartridge != null) cartridge.powerOff();
+		tia.powerOff();
+		pia.powerOff();
+		ram.powerOff();
 	}
 
 	@Override
@@ -45,44 +56,50 @@ public final class BUS implements BUS16Bits, ClockDriven {
 	
 	@Override
 	public byte readByte(int address) {
-		if ((address & CART_MASK) == CART_SEL) {					// CART selected?
+		// CART Bus monitoring
+		if (cartridgeNeedsBusMonitoring) cartridge.monitorBusBeforeRead(address, data);
+
+		if ((address & Cartridge.CHIP_MASK) == Cartridge.CHIP_SELECT) {		// CART selected?
 			if (cartridge != null) data = cartridge.readByte(address);
-		} else if ((address & RAM_MASK) == RAM_SEL)					// RAM selected?
+		} else if ((address & RAM.CHIP_MASK) == RAM.CHIP_SELECT)			// RAM selected?
 			data = ram.readByte(address);
-		else if ((address & PIA_MASK) == PIA_SEL)					// PIA selected?
+		else if ((address & PIA.CHIP_MASK) == PIA.CHIP_SELECT)				// PIA selected?
 			data = pia.readByte(address);
-		else														// TIA selected...
+		else																// TIA selected...
 			// Only bit 7 and 6 are connected to TIA read registers.
 			if (DATA_RETENTION)
 				data = (byte)(data & 0x3f | tia.readByte(address));		// Use the retained data for bits 5-0
 			else
 				data = tia.readByte(address);							// As if all bits were provided by TIA
 
-		// CART Bus monitoring
-		if (cartridgeNeedsBusMonitoring) cartridge.monitorByteRead(address, data);
-
 		return data;
 	}
 
 	@Override
 	public void writeByte(int address, byte b) {
+		// CART Bus monitoring
+		if (cartridgeNeedsBusMonitoring) cartridge.monitorBusBeforeWrite(address, b);
+
 		data = b;
 		
-		if ((address & RAM_MASK) == RAM_SEL) ram.writeByte(address, b);			// RAM selected?
-		else if	((address & TIA_MASK) == TIA_SEL) tia.writeByte(address, b);	// TIA selected?
-		else if	((address & PIA_MASK) == PIA_SEL) pia.writeByte(address, b);	// PIA selected?
-		else 																	// CART selected...
+		if	((address & TIA.CHIP_MASK) == TIA.CHIP_SELECT) tia.writeByte(address, b);		// TIA selected?
+		else if ((address & RAM.CHIP_MASK) == RAM.CHIP_SELECT) ram.writeByte(address, b);	// RAM selected?
+		else if	((address & PIA.CHIP_MASK) == PIA.CHIP_SELECT) pia.writeByte(address, b);	// PIA selected?
+		else 																				// CART selected...
 			if	(cartridge != null) cartridge.writeByte(address, b);				
-
-		// CART Bus monitoring
-		if (cartridgeNeedsBusMonitoring) cartridge.monitorByteWritten(address, b);
 	}
 
 	public void cartridge(Cartridge cartridge) {
 		this.cartridge = cartridge;
-		if (cartridge != null) cartridge.connectBus(this);
-		cartridgeNeedsClock = cartridge == null ? false : cartridge.needsClock();
-		cartridgeNeedsBusMonitoring = cartridge == null ? false : cartridge.needsBusMonitoring();
+		if (cartridge != null) {
+			data = 0;
+			cartridge.connectBus(this);
+			cartridgeNeedsClock = cartridge.needsClock();
+			cartridgeNeedsBusMonitoring = cartridge.needsBusMonitoring();
+		} else {
+			cartridgeNeedsClock = false;
+			cartridgeNeedsBusMonitoring = false;
+		}
 	}
 
 
@@ -96,14 +113,6 @@ public final class BUS implements BUS16Bits, ClockDriven {
 	private boolean cartridgeNeedsClock = false;
 	private boolean cartridgeNeedsBusMonitoring = false;
 
-	private static final int CART_MASK = 0x1000;
-	private static final int CART_SEL = 0x1000;
-	private static final int RAM_MASK = 0x1280;
-	private static final int RAM_SEL = 0x0080;
-	private static final int TIA_MASK = 0x1080;
-	private static final int TIA_SEL = 0x0000;
-	private static final int PIA_MASK = 0x1280;
-	private static final int PIA_SEL = 0x0280;
 
 	private static final boolean DATA_RETENTION = Parameters.BUS_DATA_RETENTION;
 

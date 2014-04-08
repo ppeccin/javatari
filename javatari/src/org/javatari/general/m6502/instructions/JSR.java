@@ -20,7 +20,6 @@ public final class JSR extends Instruction {
 	@Override
 	public void execute() {
 		byte PCL = cpu.bus.readByte(ea);
-		// Does not perform the dummy stack read
 		cpu.pushWord(cpu.PC);				// JSR should push the return address - 1
 		byte PCH = cpu.bus.readByte(ea + 1);
 		cpu.PC = (M6502.toUnsignedByte(PCH) << 8) | M6502.toUnsignedByte(PCL);

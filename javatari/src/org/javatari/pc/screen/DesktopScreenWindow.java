@@ -24,6 +24,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -229,6 +231,13 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	}
 
 	private void setup() {
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				closeRequested();
+			}
+		});
 		popinEnabled = EMBEDDED_POPUP && Room.currentRoom() instanceof EmbeddedRoom;
 		addHotspots();
 		monitor = new Monitor();
@@ -358,6 +367,12 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			getWidth() - totalCanvasHorizPadding, 
 			getHeight() - totalCanvasVertPadding
 		);
+	}
+
+	private void closeRequested() {
+		if (fullScreen) fullScreen(false);
+		else if	(popinEnabled)((EmbeddedRoom) Room.currentRoom()).reembedScreen();
+		else Room.currentRoom().exit();
 	}
 
 	private void addHotspots() {
@@ -497,9 +512,7 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 			switch (e.getModifiersEx()) {
 			case 0:
 				if (code == KEY_EXIT) {
-					if (fullScreen) fullScreen(false);
-					else if	(popinEnabled)((EmbeddedRoom) Room.currentRoom()).reembedScreen();
-					else Room.currentRoom().exit();
+					closeRequested();
 				}
 				return;
 			case KeyEvent.ALT_DOWN_MASK:

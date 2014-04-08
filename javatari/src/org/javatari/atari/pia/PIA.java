@@ -74,7 +74,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	
 	@Override
 	public byte readByte(int address) {
-		final int reg = address & READ_ADDRESS_MASK;
+		final int reg = address & ADDRESS_MASK;
 
 		if (reg == 0x04 || reg == 0x06) { readFromINTIM(); return (byte) INTIM; }								
 		if (reg == 0x00) return (byte) SWCHA;
@@ -90,7 +90,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@Override
 	public void writeByte(int address, byte b) {
 		int i = b & 0xff;
-		int reg = address & WRITE_ADDRESS_MASK;
+		int reg = address & ADDRESS_MASK;
 
 		if (reg == 0x04) { TIM1T  = i; setTimerInterval(i, 1); return; }
 		if (reg == 0x05) { TIM8T  = i; setTimerInterval(i, 8); return; }
@@ -211,8 +211,11 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private int TIM64T; 						// 11111111  set 64 clock interval (53.6 usec/interval)     
 	private int T1024T; 						// 11111111  set 1024 clock interval (858.2 usec/interval)
 
-	private static final int READ_ADDRESS_MASK = 0x0007;
-	private static final int WRITE_ADDRESS_MASK = 0x0007;
+
+	public static final int CHIP_MASK = 0x1280;
+	public static final int CHIP_SELECT = 0x0280;
+
+	private static final int ADDRESS_MASK = 0x0007;
 	
 
 	// Used to save/load states

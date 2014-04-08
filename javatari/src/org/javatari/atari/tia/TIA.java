@@ -1300,7 +1300,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private boolean missile0RecentReset = false;
 	private int missile0Counter = 0;
 	private int missile0ScanCounter = -1;
-	private int missile0ScanSpeed = 8;			// 8 per clock = 1 pixel wide
+	private int missile0ScanSpeed = 8;						// 8 per clock = 1 pixel wide
 	private boolean missile0ResetToPlayer = false;
 
 	private boolean missile1Enabled = false;
@@ -1316,7 +1316,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	private int ballColor = 0xff000000;
 	private int ballCounter = 0;
 	private int ballScanCounter = -1;
-	private int ballScanSpeed = 8;				// 8 per clock = 1 pixel wide			
+	private int ballScanSpeed = 8;							// 8 per clock = 1 pixel wide			
 	private boolean ballVerticalDelay = false;
 
 	private int[][] playersDelayedSpriteChanges = new int[PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT][3];
@@ -1401,6 +1401,12 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	// Constants --------------------------------------------------
 	
+	public static final int CHIP_MASK = 0x1080;
+	public static final int CHIP_SELECT = 0x0000;
+	
+	private static final int READ_ADDRESS_MASK  = 0x000f;
+	private static final int WRITE_ADDRESS_MASK = 0x003f;
+	
 	private static final int VBLANK_COLOR = 0x00000000;		// Full transparency needed for CRT emulation modes
 	private static final int HBLANK_COLOR = 0xff000000;
 	private static final int VSYNC_COLOR = 0xffdddddd;
@@ -1434,9 +1440,6 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 	@SuppressWarnings("unused")
 	private static final int DEBUG_SP_COLOR2 	= 0xffff00ff;
 
-	private static final int READ_ADDRESS_MASK  = 0x000f;
-	private static final int WRITE_ADDRESS_MASK = 0x003f;
-	
 	private static final int PLAYERS_DELAYED_SPRITE_GHANGES_MAX_COUNT = 50;  // Supports a maximum of player GR changes before any is drawn
 	
 	private static final double FORCED_CLOCK = Parameters.TIA_FORCED_CLOCK;	//  TIA Real Clock = NTSC clock = 3584160 or 3579545 Hz

@@ -41,7 +41,7 @@ public final class Cartridge8K_512K_3E extends Cartridge8K_512K_3F {
 	}
 		
 	@Override
-	public void monitorByteWritten(int address, byte data) {
+	public void monitorBusBeforeWrite(int address, byte data) {
 		// Perform ROM bank switching as needed
 		if (address == 0x003f) {
 			int bank = data & 0xff;		// unsigned

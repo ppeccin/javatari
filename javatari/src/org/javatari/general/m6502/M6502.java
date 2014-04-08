@@ -106,13 +106,13 @@ public final class M6502 implements ClockDriven {
 	public void clockPulse() {
 		// If this is the last execution cycle of the instruction, execute it ignoring the !RDY signal 
 		if (remainingCycles == 1) {
+			//if (trace) showDebug(">>> TRACE");
 			currentInstruction.execute();
 			remainingCycles = 0;
 			return;
 		}
-		if (!RDY) return;					// CPU is halted
+		if (!RDY) return;						// CPU is halted
 		if (remainingCycles-- > 0) return;		// CPU is still "executing" remaining instruction cycles
-		// if (trace) showDebug(">>> TRACE");
 		currentInstruction = instructions[toUnsignedByte(bus.readByte(PC++))];	// Reads the instruction to be executed
 		remainingCycles = currentInstruction.fetch() - 1;						// One cycle was just executed already!
 	}
@@ -131,13 +131,17 @@ public final class M6502 implements ClockDriven {
 		// Nothing
 	}
 
-	public int fetchImmediateAddress() {
+	public void fetchImpliedAddress() {
+		bus.readByte(PC);						// Worthless read, discard data. PC unchanged
+	}											// TODO Make instructions call here
+
+	public int fetchImmediateAddress() {		// No memory being read here!
 		return PC++;
 	}
 
 	public int fetchRelativeAddress() {
-		int res = bus.readByte(PC++) + PC;  // PC should be get AFTER the increment and be added to the offset that was read
-		pageCrossed = (res & 0xff00) != (PC & 0xff00);
+		int res = bus.readByte(PC++) + PC;  	// PC should be get AFTER the increment and be added to the offset that was read
+		pageCrossed = (res & 0xff00) != (PC & 0xff00);		// TODO Implement additional bad reads
 		return res;		
 	}
 
@@ -146,21 +150,26 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public int fetchZeroPageXAddress() {
-		return toUnsignedByte(bus.readByte(PC++) + X);		// Sum should wrap the byte and always be in range 0 - ff
+		byte base = bus.readByte(PC++);
+		bus.readByte(toUnsignedByte(base));		// Additional bad read, discard data
+		return toUnsignedByte(base + X);		// Sum should wrap the byte and always be in range 00 - ff
 	}
 
 	public int fetchZeroPageYAddress() {
-		return toUnsignedByte(bus.readByte(PC++) + Y);		// Sum should wrap the byte and always be in range 0 - ff
+		byte base = bus.readByte(PC++);
+		bus.readByte(toUnsignedByte(base));		// Additional bad read, discard data
+		return toUnsignedByte(base + Y);		// Sum should wrap the byte and always be in range 00 - ff
 	}
 	
 	public int fetchAbsoluteAddress() {
-		return memoryReadWord((PC+=2) - 2);					// PC should be get BEFORE the double increment 
+		return memoryReadWord((PC+=2) - 2);		// PC should be get BEFORE the double increment 
 	}
 
 	public int fetchAbsoluteXAddress() {
 		final int addr = fetchAbsoluteAddress();
 		final int res = addr + toUnsignedByte(X);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
+		if (pageCrossed) bus.readByte((addr & 0xff00) | (res & 0x00ff));		// Additional bad read, discard data
 		return res;
 	}
 
@@ -168,6 +177,7 @@ public final class M6502 implements ClockDriven {
 		final int addr = fetchAbsoluteAddress();
 		final int res = addr + toUnsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
+		if (pageCrossed) bus.readByte((addr & 0xff00) | (res & 0x00ff));		// Additional bad read, discard data
 		return res;
 	}
 
@@ -183,6 +193,7 @@ public final class M6502 implements ClockDriven {
 		final int addr = memoryReadWordWrappingPage(fetchZeroPageAddress());	// Should wrap page (the zero page) reading effective address
 		final int res = addr + toUnsignedByte(Y);
 		pageCrossed = (res & 0xff00) != (addr & 0xff00);
+		if (pageCrossed) bus.readByte((addr & 0xff00) | (res & 0x00ff));		// Additional bad read, discard data
 		return res; 
 	}
 
@@ -190,9 +201,10 @@ public final class M6502 implements ClockDriven {
 		return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address + 1)) << 8);	// Address + 1 may wrap, LSB first
 	}
 
-	public int memoryReadWordWrappingPage(int address) {		// Accounts for the page-cross problem  (should wrap page)
+	public int memoryReadWordWrappingPage(int address) {	// Accounts for the page-cross problem  (should wrap page)
 		if ((address & 0xff) == 0xff)		
-			return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address & 0xff00)) << 8);	// Gets hi byte from the page-wrap &xx00 (addr + 1 wraps to begin of page)
+			// Get hi byte from the page-wrap &xx00 (addr + 1 wraps to beginning of page)
+			return toUnsignedByte(bus.readByte(address)) | (toUnsignedByte(bus.readByte(address & 0xff00)) << 8);
 		else
 			return memoryReadWord(address);
 	}
@@ -201,6 +213,10 @@ public final class M6502 implements ClockDriven {
 		bus.writeByte(STACK_PAGE + toUnsignedByte(SP--), b);
 	}
 
+	public void dummyStackRead() {
+		bus.readByte(STACK_PAGE + toUnsignedByte(SP));		// Additional dummy stack read before SP increment, discard data
+	}
+	
 	public byte pullByte() {
 		return bus.readByte(STACK_PAGE + toUnsignedByte(++SP));
 	}
@@ -216,14 +232,17 @@ public final class M6502 implements ClockDriven {
 
 	public byte PS() {
 		byte b = (byte)(
-			(NEGATIVE?0x80:0) | (OVERFLOW?0x40:0) | (BREAK_COMMAND?0x10:0) |
-			(DECIMAL_MODE?0x08:0) | (INTERRUPT_DISABLE?0x04:0) | (ZERO?0x02:0) | (CARRY?0x01:0));
+			(NEGATIVE?0x80:0) | (OVERFLOW?0x40:0) | (DECIMAL_MODE?0x08:0) | 
+			(INTERRUPT_DISABLE?0x04:0) | (ZERO?0x02:0) | (CARRY?0x01:0) |
+			BREAK_COMMAND_FLAG	// Software instructions always push PS with BREAK_COMMAND set;
+		);
 		return b;
 	}
 	
 	public void PS(byte b) {
-		NEGATIVE = (b & 0x80) != 0; OVERFLOW = (b & 0x40) != 0; BREAK_COMMAND = (b & 0x10) != 0;
+		NEGATIVE = (b & 0x80) != 0; OVERFLOW = (b & 0x40) != 0;
 		DECIMAL_MODE = (b & 0x08) != 0; INTERRUPT_DISABLE = (b & 0x04) != 0; ZERO = (b & 0x02) != 0; CARRY = (b & 0x01) != 0;
+		// BREAK_COMMAND actually does not exist as a real flag
 	}
 
 	public String printState() {
@@ -235,7 +254,7 @@ public final class M6502 implements ClockDriven {
 		", SP: " + String.format("%02x", SP) +
 		", PC: " + String.format("%04x", (int)PC) +
 		", Flags: " + String.format("%08d", Integer.parseInt(Integer.toBinaryString(PS() & 0xff))) +
-		", Instr: " + currentInstruction.getClass().getSimpleName() +  
+		", Instr: " + (currentInstruction != null ? currentInstruction.getClass().getSimpleName() : "none" ) +  
 		", RemCycles: " + remainingCycles;
 		return str;
 	}
@@ -266,7 +285,7 @@ public final class M6502 implements ClockDriven {
 		M6502State state = new M6502State();
 		state.PC = PC; state.A = A; state.X = X; state.Y = Y; state.SP = SP; 
 		state.CARRY = CARRY; state.ZERO = ZERO; state.OVERFLOW = OVERFLOW; state.NEGATIVE = NEGATIVE;
-		state.DECIMAL_MODE = DECIMAL_MODE; state.INTERRUPT_DISABLE = INTERRUPT_DISABLE; state.BREAK_COMMAND = BREAK_COMMAND;
+		state.DECIMAL_MODE = DECIMAL_MODE; state.INTERRUPT_DISABLE = INTERRUPT_DISABLE;
 		state.RDY = RDY;
 		state.trace = trace; state.debug = debug;
 		state.pageCrossed = pageCrossed;
@@ -278,7 +297,7 @@ public final class M6502 implements ClockDriven {
 	public void loadState(M6502State state) {
 		PC = state.PC; A = state.A; X = state.X; Y = state.Y; SP = state.SP; 
 		CARRY = state.CARRY; ZERO = state.ZERO; OVERFLOW = state.OVERFLOW; NEGATIVE = state.NEGATIVE;
-		DECIMAL_MODE = state.DECIMAL_MODE; INTERRUPT_DISABLE = state.INTERRUPT_DISABLE; BREAK_COMMAND = state.BREAK_COMMAND;
+		DECIMAL_MODE = state.DECIMAL_MODE; INTERRUPT_DISABLE = state.INTERRUPT_DISABLE;
 		RDY = state.RDY;
 		trace = state.trace; debug = state.debug;
 		pageCrossed = state.pageCrossed;
@@ -291,8 +310,8 @@ public final class M6502 implements ClockDriven {
 	// Public real 6502 registers and memory, for instructions and general access
 
 	public byte A, X, Y, SP;
-	public int PC;			// Assumes anyone reading PC should mask it to 0xfff
-	public boolean CARRY, ZERO, OVERFLOW, NEGATIVE, DECIMAL_MODE, INTERRUPT_DISABLE, BREAK_COMMAND;
+	public int PC;			// Assumes anyone reading PC should mask it to 0xffff
+	public boolean CARRY, ZERO, OVERFLOW, NEGATIVE, DECIMAL_MODE, INTERRUPT_DISABLE;
 	public boolean RDY;		// RDY pin, used to halt the processor
 	public BUS16Bits bus;
 
@@ -571,6 +590,7 @@ public final class M6502 implements ClockDriven {
 	// Constants
 	public static final byte STACK_INITIAL_SP = (byte)0xff;
 	public static final int STACK_PAGE = 0x0100;
+	public static final byte BREAK_COMMAND_FLAG = 0x10;
 	
 	// Vectors
 	public static final int NMI_HANDLER_ADDRESS = 0xfffa;

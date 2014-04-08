@@ -41,6 +41,14 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 		// Nothing
 	}
 
+	public void powerOn() {
+		// Nothing
+	}
+	
+	public void powerOff() {
+		// Nothing
+	}
+
 	@Override
 	public void clockPulse() {
 		// Nothing
@@ -58,11 +66,11 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 		// Writing to ROMs is possible, but nothing is changed
 	}
 
-	public void monitorByteRead(int address, byte data) {
+	public void monitorBusBeforeRead(int address, byte data) {
 		// Nothing
 	}
 
-	public void monitorByteWritten(int address, byte data) {
+	public void monitorBusBeforeWrite(int address, byte data) {
 		// Nothing
 	}
 
@@ -108,6 +116,10 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	private final CartridgeFormat format;
 	
 	protected int maskedAddress;
+
+
+	public static final int CHIP_MASK = 0x1000;
+	public static final int CHIP_SELECT = 0x1000;
 
 	private static final int ADDRESS_MASK = 0x0fff;
 

@@ -31,4 +31,9 @@ public final class Debugger {
 		return res;
 	}
 
+	public static void dumpBytes(byte[] bytes, int start, int quant) {
+		for(int i = 0; i < quant; i++)
+			System.out.printf("%02x ", bytes[start + i]);
+		System.out.println();
+	}
 }

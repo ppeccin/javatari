@@ -14,18 +14,18 @@ public final class BRK extends Instruction {
 
 	@Override
 	public int fetch() {
-		// BRK requires one extra unused byte after the opcode, as of the specification
+		// BRK requires one extra unused byte after the opcode, as per specification
 		// Lets use this byte as a parameter for debug purposes!
-		par = M6502.toUnsignedByte(cpu.bus.readByte(cpu.fetchImmediateAddress()));	// This would be a dummy PC + 1 read
+		par = M6502.toUnsignedByte(cpu.bus.readByte(cpu.fetchImmediateAddress()));	// This acts like a dummy PC read and increment
+
 		return 7;
 	}
 
 	@Override
 	public void execute() {
-		cpu.debug(">>> BREAK " + par);
+		cpu.debug(">>> BREAK: " + par);
 		cpu.pushWord(cpu.PC);		
 		cpu.pushByte(cpu.PS());
-		cpu.INTERRUPT_DISABLE = true;
 		cpu.PC = cpu.memoryReadWord(M6502.IRQ_HANDLER_ADDRESS);
 	}
 

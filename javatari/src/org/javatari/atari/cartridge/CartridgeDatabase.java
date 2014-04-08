@@ -27,8 +27,9 @@ import org.javatari.atari.cartridge.formats.Cartridge8K_64K_EF;
 import org.javatari.atari.cartridge.formats.Cartridge8K_E0;
 import org.javatari.atari.cartridge.formats.Cartridge8K_F8;
 import org.javatari.atari.cartridge.formats.Cartridge8K_FE;
+import org.javatari.atari.cartridge.formats.Cartridge8K_64K_AR;
 import org.javatari.atari.cartridge.formats.Cartridge8K_UA;
-import org.javatari.atari.cartridge.formats.CartridgePitfall2EnhancedDPCAudio;
+import org.javatari.atari.cartridge.formats.Cartridge10K_DPCa;
 import org.javatari.parameters.Parameters;
 
 public class CartridgeDatabase {
@@ -164,27 +165,28 @@ public class CartridgeDatabase {
 	}
 	
 	private static List<CartridgeFormat> allFormats = Arrays.asList(new CartridgeFormat[] {
-			Cartridge4K.FORMAT,
-			Cartridge2K_CV.FORMAT,
-			Cartridge8K_F8.FORMAT,
-			Cartridge12K_FA.FORMAT,
-			Cartridge16K_F6.FORMAT,
-			Cartridge32K_F4.FORMAT,
-			Cartridge24K_28K_32K_FA2.FORMAT,
-			Cartridge64K_F0.FORMAT,
-			Cartridge64K_X07.FORMAT,
-			Cartridge8K_E0.FORMAT,
-			Cartridge8K_FE.FORMAT,
-			Cartridge16K_E7.FORMAT,
-			Cartridge8K_512K_3E.FORMAT,
-			Cartridge8K_512K_3F.FORMAT,
-			Cartridge8K_512K_SB.FORMAT,
-			Cartridge8K_64K_EF.FORMAT,
-			Cartridge8K_UA.FORMAT,
-			Cartridge8K_0840.FORMAT,
-			Cartridge10K_DPC.FORMAT,
-			CartridgePitfall2EnhancedDPCAudio.FORMAT,
-			Cartridge32K_FA2cu.FORMAT
+			Cartridge4K.FORMAT,					// 101
+			Cartridge2K_CV.FORMAT,				// 102
+			Cartridge8K_F8.FORMAT,				// 101
+			Cartridge8K_64K_AR.FORMAT,			// 101
+			Cartridge12K_FA.FORMAT,				// 101
+			Cartridge16K_F6.FORMAT,				// 101
+			Cartridge32K_F4.FORMAT,				// 101
+			Cartridge24K_28K_32K_FA2.FORMAT,	// 102
+			Cartridge64K_F0.FORMAT,				// 101
+			Cartridge64K_X07.FORMAT,			// 102
+			Cartridge8K_E0.FORMAT,				// 102
+			Cartridge8K_FE.FORMAT,				// 103
+			Cartridge16K_E7.FORMAT,				// 102
+			Cartridge8K_512K_3E.FORMAT,			// 111
+			Cartridge8K_512K_3F.FORMAT,			// 112
+			Cartridge8K_512K_SB.FORMAT,			// 113
+			Cartridge8K_64K_EF.FORMAT,			// 114
+			Cartridge8K_UA.FORMAT,				// 115
+			Cartridge8K_0840.FORMAT,			// 116
+			Cartridge10K_DPCa.FORMAT,			// 101
+			Cartridge10K_DPC.FORMAT,			// 110
+			Cartridge32K_FA2cu.FORMAT			// 103
 		});
 
 	
@@ -224,7 +226,7 @@ public class CartridgeDatabase {
 		new FormatRomNameMatcher(Cartridge8K_512K_3E.FORMAT, new String[] {
 				".*BOULDER.*DASH.*", 		".*BLDRDASH.*"
 		}),
-		new FormatRomNameMatcher(CartridgePitfall2EnhancedDPCAudio.FORMAT, new String[] {
+		new FormatRomNameMatcher(Cartridge10K_DPCa.FORMAT, new String[] {
 				".*PITFALL.*(2|II).*"
 		})
 	};

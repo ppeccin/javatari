@@ -28,6 +28,7 @@ public final class DesktopScreenFullWindow extends JFrame implements MonitorDisp
 	}
 
 	private void init() {
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		setLayout(null);
 		setUndecorated(true);
 		setBackground(Color.BLACK);

@@ -18,8 +18,7 @@ public final class PLA extends Instruction {
 
 	@Override
 	public void execute() {
-		// Does not perform the dummy PC + 1 read
-		// Does not perform the dummy stack read
+		cpu.dummyStackRead();
 		byte val = cpu.pullByte();
 		cpu.A = val;
 		cpu.NEGATIVE = val < 0;

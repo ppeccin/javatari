@@ -160,7 +160,7 @@ public final class ROMLoader {
 	private static final int MAX_ROM_SIZE = 512 * 1024;
 	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1024;
 
-	public static final String   VALID_FILES_DESC = "ROM files (.bin .rom .a26 .zip)";
-	public static final String[] VALID_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip"};
+	public static final String   VALID_FILES_DESC = "ROM and Savestate files (.bin .rom .a26 .zip .jat)";
+	public static final String[] VALID_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip", "savestate"};
 	
 }

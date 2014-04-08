@@ -19,6 +19,11 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 	}
 
 	@Override
+	public void powerOn() {
+		audioClockDivider = AUDIO_CLOCK_DEFAULT_DIVIDER;
+	}
+	
+	@Override
 	public void connectBus(BUS bus) {
 		this.bus = bus;
 	}
@@ -73,6 +78,7 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 		}
 	}
 
+	// TODO Fix bug when reading register as normal fetcher while in audio mode
 	private byte readDPCRegister(int reg) {
 		// Random number
 		if (reg >= 0x00 && reg <= 0x03) {
@@ -175,6 +181,10 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 	}
 
 	private void setFetcherPointer(int f, int pointer) {
+		// TODO Remove
+		if (pointer < 0)
+			System.out.printf("Pointer: %d value: %d\n", f, pointer);
+		
 		fetcherPointer[f] = pointer;
 	}
 
@@ -254,7 +264,7 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 		@Override
 		public CartridgeFormatOption getOption(ROM rom) {
 			if (rom.content.length < ROM_SIZE || rom.content.length > ROM_SIZE + SIZE_TOLERANCE) return null;
-			return new CartridgeFormatOption(101, this, rom);
+			return new CartridgeFormatOption(110, this, rom);
 		}
 		private static final long serialVersionUID = 1L;
 	};

@@ -18,12 +18,10 @@ public final class RTS extends Instruction {
 
 	@Override
 	public void execute() {
-		// Does not perform the dummy PC + 1 read
-		// Does not perform the dummy stack read
-		cpu.PC = cpu.pullWord() + 1; 	
-		// Does not perform the dummy PC read before PC++
+		cpu.dummyStackRead();
+		cpu.PC = cpu.pullWord();
+		cpu.bus.readByte(cpu.PC++);		// Perform a dummy PC read before PC increment, discard data
 	}
-	
 
 	public static final long serialVersionUID = 1L;
 

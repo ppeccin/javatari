@@ -20,12 +20,12 @@ public abstract class CartridgeBankedByBusMonitoring extends CartridgeBanked {
 	}
 
 	@Override
-	public void monitorByteRead(int address, byte data) {
+	public void monitorBusBeforeRead(int address, byte data) {
 		performBankSwitchOnMonitoredAccess(address);
 	}
 
 	@Override
-	public void monitorByteWritten(int address, byte data) {
+	public void monitorBusBeforeWrite(int address, byte data) {
 		performBankSwitchOnMonitoredAccess(address);
 	}
 	

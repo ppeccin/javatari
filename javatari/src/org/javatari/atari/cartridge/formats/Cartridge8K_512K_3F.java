@@ -28,12 +28,12 @@ public class Cartridge8K_512K_3F extends CartridgeBankedByBusMonitoring {
 	}
 
 	@Override
-	public void monitorByteRead(int address, byte data) {
+	public void monitorBusBeforeRead(int address, byte data) {
 		// Nothing
 	}
 
 	@Override
-	public void monitorByteWritten(int address, byte data) {
+	public void monitorBusBeforeWrite(int address, byte data) {
 		// Perform bank switching as needed
 		if (address <= 0x003f) {
 			int bank = data & 0xff;		// unsigned
