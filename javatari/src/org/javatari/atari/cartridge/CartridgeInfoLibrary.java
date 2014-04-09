@@ -10,14 +10,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
+import org.javatari.atari.cartridge.formats.CartridgeSavestate;
+
 
 public class CartridgeInfoLibrary {
 	
 	static CartridgeInfo getInfo(ROM rom) {
-		return getInfo(computeHash(rom.content));
+		// Special case for Savestates
+		if (CartridgeSavestate.checkIdentifier(rom.content))
+			return getInfoForSavestate(rom.content);
+		else
+			return getInfo(computeHash(rom.content));
 	}
 
-	static CartridgeInfo getInfo(String romHash) {
+	private static CartridgeInfo getInfo(String romHash) {
 		if (library == null) initLibrary();
 		CartridgeInfo info = library.get(romHash);
 		if (info != null) {
@@ -30,7 +36,7 @@ public class CartridgeInfoLibrary {
 		return info;
 	}
 	
-	static String computeHash(byte[] content) {
+	private static String computeHash(byte[] content) {
 		if (digest == null)
 			try {
 				digest = MessageDigest.getInstance("MD5");
@@ -44,6 +50,13 @@ public class CartridgeInfoLibrary {
 		return String.format("%032x", d);
 	}
 	
+	private static CartridgeInfo getInfoForSavestate(byte[] content) {
+		CartridgeInfo info = new CartridgeInfo();
+		info.name = "Savestate";
+		System.out.println("Cartridge: " + info.name);
+		return info;
+	}
+
 	private static void initLibrary() {
 		library = new HashMap<String, CartridgeInfo>();
 		try {

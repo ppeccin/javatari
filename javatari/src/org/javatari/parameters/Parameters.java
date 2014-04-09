@@ -161,8 +161,9 @@ public final class Parameters {
 			val = prefs.get("joyP1Deadzone", null); if (val != null) JOY_P1_DEADZONE = Integer.parseInt(val);
 			val = prefs.get("joyP1PaddleCenter", null); if (val != null) JOY_P1_PADDLE_CENTER = Integer.parseInt(val);
 			val = prefs.get("joyP1PaddleSens", null); if (val != null) JOY_P1_PADDLE_SENS = Integer.parseInt(val);
-			val = prefs.get("lastROMFileChosen", null); if (val != null) LAST_ROM_FILE_CHOSEN = val;
-			val = prefs.get("lastROMURLChosen", null); if (val != null) LAST_ROM_URL_CHOSEN = val;
+			val = prefs.get("lastROMFileChosen", null); if (val != null) LAST_ROM_LOAD_FILE_CHOSEN = val;
+			val = prefs.get("lastROMURLChosen", null); if (val != null) LAST_ROM_LOAD_URL_CHOSEN = val;
+			val = prefs.get("lastROMSaveFileChosen", null); if (val != null) LAST_ROM_SAVE_FILE_CHOSEN = val;
 		} catch (Exception e) {
 			// Give up
 		}
@@ -216,8 +217,9 @@ public final class Parameters {
 			prefs.put("joyP1Deadzone", String.valueOf(JOY_P1_DEADZONE));
 			prefs.put("joyP1PaddleCenter", String.valueOf(JOY_P1_PADDLE_CENTER));
 			prefs.put("joyP1PaddleSens", String.valueOf(JOY_P1_PADDLE_SENS));
-			prefs.put("lastROMFileChosen", LAST_ROM_FILE_CHOSEN);
-			prefs.put("lastROMURLChosen", LAST_ROM_URL_CHOSEN);
+			prefs.put("lastROMFileChosen", LAST_ROM_LOAD_FILE_CHOSEN);
+			prefs.put("lastROMURLChosen", LAST_ROM_LOAD_URL_CHOSEN);
+			prefs.put("lastROMSaveFileChosen", LAST_ROM_SAVE_FILE_CHOSEN);
 		} catch (Exception e) {
 			// Give up
 		}
@@ -506,7 +508,8 @@ public final class Parameters {
 	public static int JOY_P1_PADDLE_CENTER   = DEFAULT_JOY_PADDLE_CENTER;
 	public static int JOY_P1_PADDLE_SENS     = DEFAULT_JOY_PADDLE_SENS;
 
-	public static String LAST_ROM_FILE_CHOSEN = "";
-	public static String LAST_ROM_URL_CHOSEN = "";
+	public static String LAST_ROM_LOAD_FILE_CHOSEN = "";
+	public static String LAST_ROM_LOAD_URL_CHOSEN = "";
+	public static String LAST_ROM_SAVE_FILE_CHOSEN = "";
 
 }

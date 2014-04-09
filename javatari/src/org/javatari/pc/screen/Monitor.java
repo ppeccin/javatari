@@ -527,16 +527,15 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private void loadCartridgeFromFile(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		display.displayLeaveFullscreen();
-		Cartridge cart = FileROMChooser.chooseFile();
+		Cartridge cart = FileROMChooser.chooseFileToLoad();
 		if (cart != null) cartridgeInsert(cart, autoPower);
 		else display.displayRequestFocus();
-
 	}
 
 	private void loadCartridgeFromURL(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		display.displayLeaveFullscreen();
-		Cartridge cart = URLROMChooser.chooseURL();
+		Cartridge cart = URLROMChooser.chooseURLToLoad();
 		if (cart != null) cartridgeInsert(cart, autoPower);
 		else display.displayRequestFocus();
 	}

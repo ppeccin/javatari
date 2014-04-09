@@ -8,8 +8,9 @@ import java.util.ArrayList;
 public final class CartridgeCreator {
 
 	public static Cartridge create(ROM rom) throws ROMFormatUnsupportedException {
-		// Build the Cartridge if a supported format is found
+		// Try to build the Cartridge if a supported format is found
 		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(rom);
+		
 		if (options.isEmpty())
 			throw new ROMFormatUnsupportedException("Size: " + rom.content.length);
 		

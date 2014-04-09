@@ -10,9 +10,12 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.console.savestate.SaveStateMedia;
 import org.javatari.atari.console.savestate.SaveStateSocket;
+import org.javatari.pc.cartridge.FileROMChooser;
+import org.javatari.pc.cartridge.ROMLoader;
 
 
 public final class FileSaveStateMedia implements SaveStateMedia {
@@ -22,14 +25,21 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 	}
 
 	@Override
+	public boolean saveStateFile(ConsoleState state) {
+		File file = FileROMChooser.chooseFileToSavestate();
+		if (file == null) return false;
+		return saveToFile(file.toString(), state, true);
+	}
+
+	@Override
 	public boolean saveState(int slot, ConsoleState state) {
-		return saveResource("save" + slot + ".sav", state);
+		return saveToFile(insideSavesDirectory("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION), state, true);
 	}
 
 	@Override
 	public ConsoleState loadState(int slot) {
 		try{
-			return (ConsoleState)loadResource("save" + slot + ".sav");
+			return (ConsoleState)loadFromFile(insideSavesDirectory("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION), true);
 		} catch (Exception ex) {
 			// ClassCast or any other error
 			return null;
@@ -37,7 +47,7 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 	}
 
 	@Override
-	public boolean saveResource(String name, Object data) {
+	public boolean saveToFile(String fileName, Object data, boolean isSavestate) {
 		try {
 			// Create the savestate directory if needed
 			File dir = new File(savesDirectory());
@@ -46,9 +56,15 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 			FileOutputStream file = null;
 			try {
 				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+				// Begin the file with the identifier if asked
+				if (isSavestate) {
+					byteStream.write(CartridgeSavestate.contentIdentifier);
+					byteStream.flush();
+				}
+				// Then the Savestate data
 				ObjectOutputStream stream = new ObjectOutputStream(byteStream);
 				stream.writeObject(data);
-				file = new FileOutputStream(savesDirectory() + File.separator + name);
+				file = new FileOutputStream(fileName);
 				file.write(byteStream.toByteArray());
 			} finally {
 				if (file != null) file.close();
@@ -62,15 +78,24 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 	}
 
 	@Override
-	public Object loadResource(String name) {
-		try{
+	public Object loadFromFile(String fileName, boolean isSavestate) {
+		try{ 
 			FileInputStream file = null;
 			try{
-				file = new FileInputStream(savesDirectory() + File.separator + name);
+				file = new FileInputStream(fileName);
+				// Load the state
 				byte[] data = new byte[file.available()];
 				file.read(data);
-				ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(data));
-				return stream.readObject();
+				ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
+				// If asked, check the Savestate identifier that should be present at the beginning of the file
+				if (isSavestate) {
+					if (!CartridgeSavestate.checkIdentifier(data))
+						throw new IllegalStateException("Invalid Javatari Savestate file");
+					// Skips the Savestate identifier
+					byteStream.skip(CartridgeSavestate.contentIdentifier.length);
+				}
+				ObjectInputStream objStream = new ObjectInputStream(byteStream);
+				return objStream.readObject();
 			} finally {
 				if (file != null) file.close();
 			}
@@ -81,6 +106,10 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 		}
 	}
 
+	public String insideSavesDirectory(String fileName) {
+		return savesDirectory() + File.separator + fileName;
+	}
+	
 	private String savesDirectory() {
 		if (savesDirectory != null) return savesDirectory;
 		try {

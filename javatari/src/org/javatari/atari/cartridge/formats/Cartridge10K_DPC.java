@@ -182,8 +182,8 @@ public class Cartridge10K_DPC extends CartridgeBankedByMaskedRange {
 
 	private void setFetcherPointer(int f, int pointer) {
 		// TODO Remove
-		if (pointer < 0)
-			System.out.printf("Pointer: %d value: %d\n", f, pointer);
+		// if (pointer < 0)
+		//	System.out.printf("Pointer: %d value: %d\n", f, pointer);
 		
 		fetcherPointer[f] = pointer;
 	}

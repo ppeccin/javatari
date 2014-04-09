@@ -12,6 +12,7 @@ import org.javatari.atari.cartridge.CartridgeDatabase;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
 import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.console.savestate.SaveStateMedia;
 import org.javatari.atari.console.savestate.SaveStateSocket;
@@ -66,9 +67,6 @@ public class Console {
 		powerOn = true;
 		controlsSocket.controlsStatesRedefined();
 		go();
-		
-		bus.ram.dump();
-		
 		videoStandardAutoDetectionStart();
 	}
 
@@ -305,6 +303,10 @@ public class Console {
 				}
 				return;
 			} 
+			if (control == Control.SAVE_STATE_FILE) { 
+				saveStateSocket.saveStateFile();
+				return;
+			}
 			// Toggles
 			if (!state) return;
 			switch (control) {
@@ -347,6 +349,12 @@ public class Console {
 	protected class CartridgeSocketAdapter implements CartridgeSocket {
 		@Override
 		public void insert(Cartridge cartridge, boolean autoPower) {
+			// Special case for Savestates
+			if (cartridge != null && cartridge instanceof CartridgeSavestate) {
+				insertSavestateCartridge((CartridgeSavestate) cartridge);
+				return;
+			}
+			// Normal case
 			if (autoPower && powerOn) powerOff();
 			cartridge(cartridge); 
 			if (autoPower && !powerOn) powerOn();
@@ -365,12 +373,18 @@ public class Console {
 			if (!insertionListeners.contains(listener)) { 
 				insertionListeners.add(listener);
 				listener.cartridgeInserted(inserted());		// Fire a insertion event
-				
 			}
 		}
 		@Override
 		public void removeInsertionListener(CartridgeInsertionListener listener) {
 			insertionListeners.remove(listener);
+		}
+		private void insertSavestateCartridge(CartridgeSavestate cartridge) {
+			ConsoleState state = cartridge.getConsoleState();
+			if (state != null) {
+				pauseAndLoadState(state);
+				showOSD("Savestate Cartridge loaded", true);
+			}
 		}
 		private List<CartridgeInsertionListener> insertionListeners = new ArrayList<CartridgeInsertionListener>();
 	}	
@@ -390,6 +404,14 @@ public class Console {
 		}
 		public void connectCartridge(Cartridge cartridge) {
 			cartridge.connectSaveStateSocket(this);
+		}
+		public void saveStateFile() {
+			if (!powerOn || media == null) return;
+			ConsoleState state = pauseAndSaveState();
+			if (media.saveStateFile(state))
+				showOSD("State file saved", true);
+			else 
+				showOSD("State file save failed", true);
 		}
 		public void saveState(int slot) {
 			if (!powerOn || media == null) return;

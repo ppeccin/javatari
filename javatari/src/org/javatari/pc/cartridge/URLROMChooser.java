@@ -10,15 +10,15 @@ import org.javatari.parameters.Parameters;
 
 public final class URLROMChooser {
 
-	public static Cartridge chooseURL() {
-		if (lastURLChosen == null) lastURLChosen = Parameters.LAST_ROM_URL_CHOSEN;
+	public static Cartridge chooseURLToLoad() {
+		if (lastURLChosen == null) lastURLChosen = Parameters.LAST_ROM_LOAD_URL_CHOSEN;
 		String opt = (String)JOptionPane.showInputDialog(
 			"Load Cartridge from URL:                                                  ", 
 			lastURLChosen
 		);
 		if (opt == null || opt.trim().isEmpty()) return null;
 		lastURLChosen = opt.trim();
-		Parameters.LAST_ROM_URL_CHOSEN = lastURLChosen;
+		Parameters.LAST_ROM_LOAD_URL_CHOSEN = lastURLChosen;
 		Parameters.savePreferences();
 		return ROMLoader.load(opt, false);
 	}

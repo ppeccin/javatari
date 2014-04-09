@@ -131,8 +131,8 @@ public final class ROMLoader {
 			ZipEntry entry = zipStream.getNextEntry();
 			if (entry == null) return null;
 			String entryName = entry.getName().toUpperCase();
-			for (int i = 0; i < VALID_FILE_EXTENSIONS.length; i++)
-				if (entryName.endsWith(VALID_FILE_EXTENSIONS[i].toUpperCase()))
+			for (int i = 0; i < VALID_LOAD_FILE_EXTENSIONS.length; i++)
+				if (entryName.endsWith(VALID_LOAD_FILE_EXTENSIONS[i].toUpperCase()))
 					return zipStream;
 		}
 	}
@@ -160,7 +160,10 @@ public final class ROMLoader {
 	private static final int MAX_ROM_SIZE = 512 * 1024;
 	private static final int MAX_STREAM_SIZE = MAX_ROM_SIZE + 1024;
 
-	public static final String   VALID_FILES_DESC = "ROM and Savestate files (.bin .rom .a26 .zip .jat)";
-	public static final String[] VALID_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip", "savestate"};
+	public static final String   VALID_LOAD_FILES_DESC = "ROM and Savestate files (.bin .rom .a26 .zip .jat)";
+	public static final String[] VALID_LOAD_FILE_EXTENSIONS = {"bin", "rom", "a26", "zip", "jat"};
+	
+	public static final String   VALID_STATE_FILE_DESC = "Javatari Savestate files (.jat)";
+	public static final String   VALID_STATE_FILE_EXTENSION = "jat";
 	
 }

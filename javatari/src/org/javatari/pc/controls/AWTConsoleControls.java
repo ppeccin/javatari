@@ -274,6 +274,8 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		withALTCodeMap.put(KEY_NO_COLLISIONS,    Control.NO_COLLISIONS);
 		withALTCodeMap.put(KEY_VIDEO_STANDARD,   Control.VIDEO_STANDARD);
 	
+		normalCodeMap.put(KEY_SAVE_STATE_FILE,  Control.SAVE_STATE_FILE); 
+
 		withCTRLCodeMap.put(KEY_STATE_0,  Control.SAVE_STATE_0); 
 		withCTRLCodeMap.put(KEY_STATE_1,  Control.SAVE_STATE_1); 
 		withCTRLCodeMap.put(KEY_STATE_2,  Control.SAVE_STATE_2); 
@@ -385,6 +387,8 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 	private static final int KEY_NO_COLLISIONS    = KeyEvent.VK_C;
 	private static final int KEY_VIDEO_STANDARD   = KeyEvent.VK_V;
 	
+	private static final int KEY_SAVE_STATE_FILE  = KeyEvent.VK_F8;
+
 	private static final int KEY_STATE_0        = KeyEvent.VK_QUOTE;
 	private static final int KEY_STATE_1        = KeyEvent.VK_1;
 	private static final int KEY_STATE_2        = KeyEvent.VK_2;

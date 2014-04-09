@@ -11,10 +11,10 @@ import org.javatari.atari.cartridge.Cartridge;
 
 public final class FileServiceROMChooser {
 
-	public static Cartridge chooseFile() {
+	public static Cartridge chooseFileToLoad() {
 		try {
 			FileOpenService fos = (FileOpenService)ServiceManager.lookup("javax.jnlp.FileOpenService"); 
-			FileContents fileCon = fos.openFileDialog(null, ROMLoader.VALID_FILE_EXTENSIONS);
+			FileContents fileCon = fos.openFileDialog(null, ROMLoader.VALID_LOAD_FILE_EXTENSIONS);
 			if (fileCon == null) return null;
 			return ROMLoader.load(fileCon);
 		} catch (Exception ex) {

@@ -30,6 +30,7 @@ import org.javatari.atari.cartridge.formats.Cartridge8K_FE;
 import org.javatari.atari.cartridge.formats.Cartridge8K_64K_AR;
 import org.javatari.atari.cartridge.formats.Cartridge8K_UA;
 import org.javatari.atari.cartridge.formats.Cartridge10K_DPCa;
+import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.parameters.Parameters;
 
 public class CartridgeDatabase {
@@ -165,6 +166,7 @@ public class CartridgeDatabase {
 	}
 	
 	private static List<CartridgeFormat> allFormats = Arrays.asList(new CartridgeFormat[] {
+			CartridgeSavestate.FORMAT,			// 90
 			Cartridge4K.FORMAT,					// 101
 			Cartridge2K_CV.FORMAT,				// 102
 			Cartridge8K_F8.FORMAT,				// 101
@@ -286,7 +288,7 @@ public class CartridgeDatabase {
 	private static final String HINTS_PREFIX_REGEX = "(|.*?(\\W|_|%20))";
 	private static final String HINTS_SUFFIX_REGEX = "(|(\\W|_|%20).*)";
 	
-	private static final int FORMAT_PRIORITY_BOOST = 100;
+	private static final int FORMAT_PRIORITY_BOOST = 50;
 
 	private static String CARTRIDGE_NAME = Parameters.CARTRIDGE_NAME;
 	private static String CARTRIDGE_LABEL = Parameters.CARTRIDGE_LABEL;

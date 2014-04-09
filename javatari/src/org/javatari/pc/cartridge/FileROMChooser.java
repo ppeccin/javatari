@@ -15,28 +15,54 @@ import org.javatari.parameters.Parameters;
 
 public final class FileROMChooser {
 
-	public static Cartridge chooseFile() {
-		if (lastFileChosen == null) lastFileChosen = new File(Parameters.LAST_ROM_FILE_CHOSEN);
+	public static Cartridge chooseFileToLoad() {
+		if (lastLoadFileChosen == null) lastLoadFileChosen = new File(Parameters.LAST_ROM_LOAD_FILE_CHOSEN);
 		try {
-			if (chooser == null) {
-				chooser = new JFileChooser();
-				chooser.setFileFilter(new FileNameExtensionFilter(ROMLoader.VALID_FILES_DESC, ROMLoader.VALID_FILE_EXTENSIONS));
-				chooser.setPreferredSize(new Dimension(580, 400));
-			}
-			chooser.setSelectedFile(lastFileChosen);
+			if (chooser == null) createChooser();
+			chooser.setFileFilter(new FileNameExtensionFilter(ROMLoader.VALID_LOAD_FILES_DESC, ROMLoader.VALID_LOAD_FILE_EXTENSIONS));
+			chooser.setSelectedFile(lastLoadFileChosen);
 			int res = chooser.showOpenDialog(null);
 			if (res != 0) return null;
 		} catch (AccessControlException ex) {
 			// Automatically tries FileServiceChooser if access is denied
-			return FileServiceROMChooser.chooseFile();
+			return FileServiceROMChooser.chooseFileToLoad();
 		}
-		lastFileChosen = chooser.getSelectedFile();
-		Parameters.LAST_ROM_FILE_CHOSEN = lastFileChosen.toString();
+		lastLoadFileChosen = chooser.getSelectedFile();
+		Parameters.LAST_ROM_LOAD_FILE_CHOSEN = lastLoadFileChosen.toString();
 		Parameters.savePreferences();
-		return ROMLoader.load(lastFileChosen);
+		return ROMLoader.load(lastLoadFileChosen);
+	}
+
+	public static File chooseFileToSavestate() {
+		if (chooser != null && chooser.isShowing()) return null;
+		if (lastSaveFileChosen == null) lastSaveFileChosen = new File(Parameters.LAST_ROM_SAVE_FILE_CHOSEN);
+		try {
+			if (chooser == null) createChooser();
+			chooser.setFileFilter(new FileNameExtensionFilter(ROMLoader.VALID_STATE_FILE_DESC, ROMLoader.VALID_STATE_FILE_EXTENSION));
+			chooser.setSelectedFile(lastSaveFileChosen);
+			int res = chooser.showSaveDialog(null);
+			if (res != 0) return null;
+		} catch (AccessControlException ex) {
+			// Automatically tries FileServiceChooser if access is denied
+			// return FileServiceROMChooser.chooseFileToSavestate();	TODO Implement
+			return null;
+		}
+		lastSaveFileChosen = chooser.getSelectedFile();
+		if (!lastSaveFileChosen.toString().toUpperCase().endsWith(ROMLoader.VALID_STATE_FILE_EXTENSION.toUpperCase()))
+			lastSaveFileChosen = new File(lastSaveFileChosen + "." + ROMLoader.VALID_STATE_FILE_EXTENSION);
+		Parameters.LAST_ROM_SAVE_FILE_CHOSEN = lastSaveFileChosen.toString();
+		Parameters.savePreferences();
+		return lastSaveFileChosen;
+	}
+
+	private static void createChooser() {
+		chooser = new JFileChooser();
+		chooser.setPreferredSize(new Dimension(580, 400));
 	}
 	
+	
 	private static JFileChooser chooser;
-	private static File lastFileChosen;
+	private static File lastLoadFileChosen;
+	private static File lastSaveFileChosen;
 
 }
