@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.AccessControlException;
 
 import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.atari.console.savestate.ConsoleState;
@@ -26,20 +27,25 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 
 	@Override
 	public boolean saveStateFile(ConsoleState state) {
-		File file = FileROMChooser.chooseFileToSavestate();
-		if (file == null) return false;
-		return saveToFile(file.toString(), state, true);
+		try {
+			File file = FileROMChooser.chooseFileToSavestate();
+			if (file == null) return false;
+			return internalSaveToFile(file.toString(), state, true, false);
+		} catch (AccessControlException e) {
+			// No option if in Sandboxed mode
+			return false;
+		}
 	}
 
 	@Override
 	public boolean saveState(int slot, ConsoleState state) {
-		return saveToFile(insideSavesDirectory("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION), state, true);
+		return internalSaveToFile("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION, state, true, true);
 	}
 
 	@Override
 	public ConsoleState loadState(int slot) {
 		try{
-			return (ConsoleState)loadFromFile(insideSavesDirectory("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION), true);
+			return (ConsoleState)internalLoadFromFile("javatarisave" + slot + "." + ROMLoader.VALID_STATE_FILE_EXTENSION, true, true);
 		} catch (Exception ex) {
 			// ClassCast or any other error
 			return null;
@@ -47,7 +53,16 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 	}
 
 	@Override
-	public boolean saveToFile(String fileName, Object data, boolean isSavestate) {
+	public boolean saveResourceToFile(String fileName, Object data) {
+		return internalSaveToFile(fileName, data, false, true);
+	}
+
+	@Override
+	public Object loadResourceFromFile(String fileName) {
+		return internalLoadFromFile(fileName, false, true);
+	}
+
+	private boolean internalSaveToFile(String fileName, Object data, boolean isSavestate, boolean insideSavesDirectory) {
 		try {
 			// Create the savestate directory if needed
 			File dir = new File(savesDirectory());
@@ -64,7 +79,7 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 				// Then the Savestate data
 				ObjectOutputStream stream = new ObjectOutputStream(byteStream);
 				stream.writeObject(data);
-				file = new FileOutputStream(fileName);
+				file = new FileOutputStream(insideSavesDirectory ? insideSavesDirectory(fileName) : fileName);
 				file.write(byteStream.toByteArray());
 			} finally {
 				if (file != null) file.close();
@@ -76,13 +91,12 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 			return false;
 		}
 	}
-
-	@Override
-	public Object loadFromFile(String fileName, boolean isSavestate) {
+	
+	private Object internalLoadFromFile(String fileName, boolean isSavestate, boolean insideSavesDirectory) {
 		try{ 
 			FileInputStream file = null;
 			try{
-				file = new FileInputStream(fileName);
+				file = new FileInputStream(insideSavesDirectory ? insideSavesDirectory(fileName) : fileName);
 				// Load the state
 				byte[] data = new byte[file.available()];
 				file.read(data);
@@ -105,8 +119,8 @@ public final class FileSaveStateMedia implements SaveStateMedia {
 			return null;
 		}
 	}
-
-	public String insideSavesDirectory(String fileName) {
+	
+	private String insideSavesDirectory(String fileName) {
 		return savesDirectory() + File.separator + fileName;
 	}
 	

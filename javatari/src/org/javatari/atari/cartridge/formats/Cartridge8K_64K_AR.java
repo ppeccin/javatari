@@ -11,6 +11,7 @@ import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
 import org.javatari.atari.cartridge.ROM;
+import org.javatari.atari.cartridge.ROMFormatDenialDetailException;
 import org.javatari.utils.Randomizer;
 
 /**
@@ -54,7 +55,7 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 	@Override
 	public void writeByte(int address, byte b) {
 		// No direct writes are possible
-		// Check for BIOS Load Part Hotspot range
+		// But check for BIOS Load Part Hotspot range
 		if (bank1AddressOffset == BIOS_BANK_OFFSET &&
 				maskedAddress >= BIOS_INT_EMUL_LOAD_HOTSPOT && maskedAddress < BIOS_INT_EMUL_LOAD_HOTSPOT + 256) {
 			loadPart(maskedAddress - BIOS_INT_EMUL_LOAD_HOTSPOT);
@@ -118,24 +119,29 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 		addressChangeCountdown = 0;	// Setting ControlRegister cancels any pending write
 		writeEnabled = (controlRegister & 0x02) != 0;
 		biosRomPower = (controlRegister & 0x01) == 0;
-
-//		System.out.println("Banks: " + banksConfig + "   Writes: " + (writeEnabled ? "ON" : "OFF"));
+		// System.out.println("Banks: " + banksConfig + ", Writes: " + (writeEnabled ? "ON" : "OFF"));
 	}
 
 	private void loadPart(int part) {
-		if (bus != null)
-			bus.tia.videoOutput().showOSD("Loading Part: " + part, false);
-
+		boolean tapeRewound = false;
 		do {
 			// Check for tape end
 			if (tapeOffset > rom.content.length - 1) {
+				// Check if tape was already rewound once to avoid infinite tries
+				if (tapeRewound) {
+					if (part == 0) bus.tia.videoOutput().showOSD("Could not load Tape from Start. Not a Start Tape ROM!", true);
+					else bus.tia.videoOutput().showOSD("Could not find next Part to load in Tape!", true);
+					signalPartLoadedOK(false);		// BIOS will handle this
+					return;
+				}
 				// Rewind tape
 				tapeOffset = 0;
-				System.out.println("REWIND");
+				tapeRewound = true;
 			}
 			// Check if the next part is the one we are looking for	
-			// TODO What if we do not find the right part to load?
 			if (peekPartNoOnTape(rom.content, tapeOffset) == part) {
+				if (part == 0) bus.tia.videoOutput().showOSD("Loaded Tape from Start", true); 
+				else bus.tia.videoOutput().showOSD("Loaded next Part from Tape", true);
 				loadNextPart();
 				return;
 			} else {
@@ -190,6 +196,11 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 		bytes[BIOS_BANK_OFFSET + BIOS_INT_RANDOM_SEED_ADDR - 0xf800] = (byte) Randomizer.instance.nextInt();
 		bytes[BIOS_BANK_OFFSET + BIOS_INT_START_ADDR - 0xf800] = (byte) (romStartupAddress & 0xff);
 		bytes[BIOS_BANK_OFFSET + BIOS_INT_START_ADDR + 1 - 0xf800] = (byte) ((romStartupAddress >> 8) & 0xff);
+		signalPartLoadedOK(true);
+	}
+
+	private void signalPartLoadedOK(boolean ok) {
+		bytes[BIOS_BANK_OFFSET + BIOS_INT_PART_LOADED_OK - 0xf800] = (byte) (ok ? 1 : 0);
 	}
 	
 	private void loadBIOSFromFile() {
@@ -243,6 +254,7 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 	private static final int BIOS_INT_CONTROL_REG_ADDR	= 0xfb01;
 	private static final int BIOS_INT_START_ADDR 		= 0xfb02;
 	private static final int BIOS_INT_RANDOM_SEED_ADDR	= 0xfb04;
+	private static final int BIOS_INT_PART_LOADED_OK	= 0xfb05;
 	private static final int BIOS_INT_EMUL_LOAD_HOTSPOT	= 0x0c00;
 	
 	private static final int HEADER_SIZE = 256;
@@ -265,7 +277,8 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 			// Any number of parts between 1 and 8
 			if (rom.content.length % PART_SIZE != 0 || rom.content.length / PART_SIZE < 1 || rom.content.length / PART_SIZE > 8) return null;
 			// Check if the content starts with Part 0
-			if (peekPartNoOnTape(rom.content, 0) != 0) return null;		// TODO How to show proper error?
+			if (peekPartNoOnTape(rom.content, 0) != 0)
+				throw new ROMFormatDenialDetailException("Wrong Supercharger Tape ROM file. This is NOT a Tape Start ROM!\nTry loading a First Part ROM or a Full Tape ROM.");
 			return new CartridgeFormatOption(101, this, rom);
 		}
 		private static final long serialVersionUID = 1L;

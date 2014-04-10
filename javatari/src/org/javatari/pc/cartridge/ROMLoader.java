@@ -31,7 +31,7 @@ public final class ROMLoader {
 		try {
 			return load(new URL(url), provided);
 		} catch (MalformedURLException ex) {
-			errorMessage(ex, url);
+			generalErrorMessage(ex, url);
 		}
 		return null;
 	}
@@ -40,9 +40,9 @@ public final class ROMLoader {
 		try {
 			return load(file.toURI().toURL(), false);
 		} catch (MalformedURLException ex) {
-			errorMessage(ex, file.getPath());
+			generalErrorMessage(ex, file.getPath());
 		} catch (AccessControlException ex) {
-			errorMessage(ex, file.getPath());
+			generalErrorMessage(ex, file.getPath());
 		}
 		return null;
 	}
@@ -55,9 +55,9 @@ public final class ROMLoader {
 			stream = conn.getInputStream();
 			return createFromExternalURL(stream, url.toString(), provided);
 		} catch (AccessControlException ex) {
-			errorMessage(ex, url.toString());
+			generalErrorMessage(ex, url.toString());
 		} catch (IOException ex) {
-			errorMessage(ex, url.toString());
+			generalErrorMessage(ex, url.toString());
 		}
 		return null;
 	}
@@ -69,7 +69,7 @@ public final class ROMLoader {
 			InputStream stream = fileContents.getInputStream();
 			return createFromExternalURL(stream, fileName, false);
 		} catch (IOException ex) {
-			errorMessage(ex, fileName);
+			generalErrorMessage(ex, fileName);
 			return null;
 		}
 	}
@@ -94,10 +94,10 @@ public final class ROMLoader {
 				if (romFromZIP == null) throw ex;	// Probably not zipped either
 				return createCartridge(romFromZIP, romURL, provided);
 			}
-		} catch (IOException ex) {
-			errorMessage(ex, romURL);
 		} catch (ROMFormatUnsupportedException ex) {
-			errorMessage(ex, romURL);
+			romFormatUnsupportedErrorMessage(ex, romURL);
+		} catch (IOException ex) {
+			generalErrorMessage(ex, romURL);
 		} finally {
 			try { 
 				stream.close();
@@ -143,7 +143,7 @@ public final class ROMLoader {
 		return buf;
 	}
 
-	private static void errorMessage(Exception ex, String location) {
+	private static void generalErrorMessage(Exception ex, String location) {
 		System.out.println("Could not load Cartridge from: " + location);
 		System.out.println(ex);
 		String tLoc = location == null ? "" : location.trim();
@@ -151,6 +151,19 @@ public final class ROMLoader {
 		JOptionPane.showMessageDialog(
 			null,
 			"Could not load Cartridge from:\n" + tLoc + "\n\n" + ex.getClass().getSimpleName() + ": " + ex.getMessage(),
+			"Error loading Cartridge",
+			JOptionPane.ERROR_MESSAGE
+		);
+	}
+
+	private static void romFormatUnsupportedErrorMessage(ROMFormatUnsupportedException ex, String location) {
+		System.out.println("Could not load Cartridge from: " + location);
+		System.out.println(ex.getMessage());
+		String tLoc = location == null ? "" : location.trim();
+		if (tLoc.length() > 80) tLoc = tLoc.substring(0, 79) + "...";
+		JOptionPane.showMessageDialog(
+			null,
+			"Could not load Cartridge from:\n" + tLoc + "\n\n" + ex.getMessage(),
 			"Error loading Cartridge",
 			JOptionPane.ERROR_MESSAGE
 		);

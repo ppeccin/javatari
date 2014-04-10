@@ -11,9 +11,6 @@ public final class CartridgeCreator {
 		// Try to build the Cartridge if a supported format is found
 		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(rom);
 		
-		if (options.isEmpty())
-			throw new ROMFormatUnsupportedException("Size: " + rom.content.length);
-		
 		// Choose the best option
 		CartridgeFormatOption bestOption = options.get(0);
 		System.out.println(bestOption);

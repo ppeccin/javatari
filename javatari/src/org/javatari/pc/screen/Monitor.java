@@ -14,10 +14,13 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.jnlp.FileContents;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -32,6 +35,8 @@ import org.javatari.general.board.Clock;
 import org.javatari.general.board.ClockDriven;
 import org.javatari.parameters.Parameters;
 import org.javatari.pc.cartridge.FileROMChooser;
+import org.javatari.pc.cartridge.FileServiceROMChooser;
+import org.javatari.pc.cartridge.ROMLoader;
 import org.javatari.pc.cartridge.URLROMChooser;
 import org.javatari.utils.Environment;
 import org.javatari.utils.SwingHelper;
@@ -527,7 +532,15 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private void loadCartridgeFromFile(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		display.displayLeaveFullscreen();
-		Cartridge cart = FileROMChooser.chooseFileToLoad();
+		Cartridge cart = null;
+		try {
+			File file = FileROMChooser.chooseFileToLoad();
+			if (file != null) cart = ROMLoader.load(file);
+		} catch (AccessControlException e) {
+			// Automatically tries FileServiceChooser if access is denied
+			FileContents fileContents = FileServiceROMChooser.chooseFileToLoad();
+			if (fileContents != null) cart = ROMLoader.load(fileContents);
+		}
 		if (cart != null) cartridgeInsert(cart, autoPower);
 		else display.displayRequestFocus();
 	}
@@ -535,7 +548,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	private void loadCartridgeFromURL(boolean autoPower) {
 		if (cartridgeChangeDisabledWarning()) return;
 		display.displayLeaveFullscreen();
-		Cartridge cart = URLROMChooser.chooseURLToLoad();
+		Cartridge cart = null;
+		String url = URLROMChooser.chooseURLToLoad();
+		if (url != null) cart = ROMLoader.load(url, false);
 		if (cart != null) cartridgeInsert(cart, autoPower);
 		else display.displayRequestFocus();
 	}

@@ -35,14 +35,31 @@ import org.javatari.parameters.Parameters;
 
 public class CartridgeDatabase {
 
-	public static ArrayList<CartridgeFormatOption> getFormatOptions(ROM rom) {
+	public static ArrayList<CartridgeFormatOption> getFormatOptions(ROM rom) throws ROMFormatUnsupportedException {
+		ROMFormatDenialDetailException exDenialDetail = null; 
 		ArrayList<CartridgeFormatOption> options = new ArrayList<CartridgeFormatOption>();
 		for (CartridgeFormat format : allFormats) {
-			CartridgeFormatOption option = format.getOption(rom);
+			CartridgeFormatOption option = null;
+			try {
+				option = format.getOption(rom);
+			} catch (ROMFormatDenialDetailException e) {
+				if (exDenialDetail == null) exDenialDetail = e;		// Save only the first message
+				continue;
+			}
 			if (option == null) continue;		// rejected by format
 			boostPriority(option, rom.info);	// adjust priority based on ROM info
 			options.add(option);
 		}
+
+		// If no Format could be found, throw error
+		if (options.isEmpty()) {
+			// Special message if needed
+			String message = exDenialDetail != null
+					? exDenialDetail.getMessage()
+					: "Unsupported ROM Format. Size: " + rom.content.length;
+			throw new ROMFormatUnsupportedException(message);
+		}
+		
 		Collections.sort(options);		// Sort according to priority
 		return options;
 	}

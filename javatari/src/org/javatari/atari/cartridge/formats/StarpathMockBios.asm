@@ -7,12 +7,15 @@ StartRoutAddr = $00fa                 ; RAM address for the Start Routine
 PartNoToLoad  = $fa                   ; RAM position containing Part do BE loaded
 ControlReg    = $80                   ; RAM position containing Part that WAS loaded
 
-WSYNC         = $02                   ; Some TIA registers needed
+VBLANK        = $01                   ; Some TIA registers needed
+WSYNC         = $02
 RESP0         = $10
 RESP1         = $11
 HMP0          = $20
 HMP1          = $21
 HMOVE         = $2a
+AUDV0         = $19
+AUDV1         = $1A
 
 
                 seg   LoadPart        ; Load Part entry point
@@ -24,7 +27,22 @@ LoadPart:       org   $f800
 
                 LDX   PartNoToLoad
                 STA   EmuLoadHotspot,X       ; Trigger Emulator hotspot to actually load Part X
-                JMP   StartPart
+                LDA   iPartLoadedOK          ; Check if Part sucessfuly loaded (0 = fail, 1 = success)
+                BNE   LoadOK
+                JMP   FailedLoad             ; If it failed, handle failure
+
+LoadOK:         JMP   StartPart
+
+
+                seg   FailedLoad
+FailedLoad:     org   $f880
+
+                LDA   #02             ; Try to put the TIA in a "clean" state
+                STA   VBLANK
+                LDA   #00
+                STA   AUDV0
+                STA   AUDV1
+                JMP   LoadPart        ; Try again, possible for ever...
 
 
                 seg   StartPart       ; Finish preparations and start Part loaded
@@ -85,6 +103,7 @@ iPartNoToLoad:  byte   #00
 iControlReg:    byte   #00
 iStartAddr:     word   #0000
 iRandomSeed:    byte   #00
+iPartLoadedOK:  byte   #00
 
 
                 seg    EmuLoadHotspots      ; Signals the Emulator to load Part specified

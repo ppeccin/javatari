@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="MakeJAR" name="Create Runnable All Permissions JAR for Project Javatari">
+<project default="MakeJAR" name="Create Runnable All Permissions and Sandboxed JARs for Project Javatari">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="MakeJAR">
@@ -11,6 +11,18 @@
                 <attribute name="Codebase" value="*"/>
                 <attribute name="Sealed" value="true"/>
                 <attribute name="Permissions" value="all-permissions"/>
+			</manifest>
+            <fileset dir="../bin"/>
+            <fileset dir="../../joy/bin"/>
+            </jar>
+        <jar destfile="javatari-sandbox.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Application-Name" value="Javatari 4.0"/>
+                <attribute name="Main-Class" value="org.javatari.main.Standalone"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Codebase" value="*"/>
+                <attribute name="Sealed" value="true"/>
+                <attribute name="Permissions" value="sandbox"/>
 			</manifest>
             <fileset dir="../bin"/>
             <fileset dir="../../joy/bin"/>

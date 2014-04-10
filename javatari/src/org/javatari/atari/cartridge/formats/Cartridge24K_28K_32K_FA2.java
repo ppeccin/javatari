@@ -67,7 +67,7 @@ public class Cartridge24K_28K_32K_FA2 extends CartridgeBankedByMaskedRange {
 		bus.tia.videoOutput().showOSD("Reading from Cartridge Flash Memory...", true);
 		if (saveStateSocket != null)
 			try {
-				byte[] data = (byte[])saveStateSocket.media().loadFromFile(flashMemoryResourceName(), false);
+				byte[] data = (byte[])saveStateSocket.media().loadResourceFromFile(flashMemoryResourceName());
 				if (data.length == 256) harmonyFlashMemory = data;
 			} catch(Exception ex) {
 				// Give up
@@ -79,7 +79,7 @@ public class Cartridge24K_28K_32K_FA2 extends CartridgeBankedByMaskedRange {
 		bus.tia.videoOutput().showOSD("Writing to Cartridge Flash Memory...", true);
 		harmonyFlashMemory = Arrays.copyOf(extraRAM, extraRAM.length);
 		if (saveStateSocket != null)
-			saveStateSocket.media().saveToFile(flashMemoryResourceName(), harmonyFlashMemory, false);
+			saveStateSocket.media().saveResourceToFile(flashMemoryResourceName(), harmonyFlashMemory);
 	}
 
 	private void detectFlashOperationCompletion() {
@@ -95,7 +95,7 @@ public class Cartridge24K_28K_32K_FA2 extends CartridgeBankedByMaskedRange {
 		}		
 	}
 
-	private String flashMemoryResourceName() {		// TODO Put inside saves directory
+	private String flashMemoryResourceName() {
 		return rom.info.hash + ".hfm";
 	}
 

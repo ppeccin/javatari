@@ -8,109 +8,128 @@
       7  10000 ????		00 fa	    PartNoToLoad =	$fa	; RAM position containing Part do BE loaded
       8  10000 ????		00 80	    ControlReg =	$80	; RAM position containing Part that WAS loaded
       9  10000 ????
-     10  10000 ????		00 02	    WSYNC      =	$02	; Some TIA registers needed
-     11  10000 ????		00 10	    RESP0      =	$10
-     12  10000 ????		00 11	    RESP1      =	$11
-     13  10000 ????		00 20	    HMP0       =	$20
-     14  10000 ????		00 21	    HMP1       =	$21
-     15  10000 ????		00 2a	    HMOVE      =	$2a
-     16  10000 ????
-     17  10000 ????
-     18  f810 ????				      seg	LoadPart	; Load Part entry point
-     19  f800				   LoadPart   org	$f800
-     20  f800
-     21  f800		       a2 00		      LDX	#$00	; Ensure Bank configuration, BIOS powered ON and Writes OFF
-     22  f802		       dd 00 f0 	      CMP	$f000,X
-     23  f805		       cd f8 ff 	      CMP	$fff8
-     24  f808
-     25  f808		       a6 fa		      LDX	PartNoToLoad
-     26  f80a		       9d 00 fc 	      STA	EmuLoadHotspot,X	; Trigger Emulator hotspot to actually load Part X
-     27  f80d		       4c 00 f9 	      JMP	StartPart
-     28  f810
-     29  f810
-     30  f948 ????				      seg	StartPart	; Finish preparations and start Part loaded
-     31  f900				   StartPart  org	$f900
-     32  f900
-     33  f900		       a9 00		      LDA	#00	; Clear TIA registers and RAM $80 - $9d as per original BIOS
-     34  f902		       a2 9e		      LDX	#$9e
-     35  f904		       ca	   LoopClrSome DEX
-     36  f905		       95 00		      STA	$00,X
-     37  f907		       d0 fb		      BNE	LoopClrSome
-     38  f909
-     39  f909		       a9 10		      LDA	#$10	; Set Players position as per original BIOS
-     40  f90b		       85 21		      STA	HMP1
-     41  f90d		       85 02		      STA	WSYNC
-     42  f90f		       a2 07		      LDX	#$07
-     43  f911		       ca		      DEX
-     44  f912		       ca	   LoopPos    DEX
-     45  f913		       d0 fd		      BNE	LoopPos
-     46  f915		       a9 00		      LDA	#00
-     47  f917		       85 20		      STA	HMP0
-     48  f919		       85 10		      STA	RESP0
-     49  f91b		       85 11		      STA	RESP1
-     50  f91d		       85 02		      STA	WSYNC
-     51  f91f		       85 2a		      STA	HMOVE
-     52  f921
-     53  f921		       a2 03		      LDX	#3	; Load Start Routine code into RAM
-     54  f923		       bd 00 fa    LoopLoadSR LDA	StartRoutCode,X
-     55  f926		       95 fa		      STA	StartRoutAddr,X
-     56  f928		       ca		      DEX
-     57  f929		       10 f8		      BPL	LoopLoadSR
-     58  f92b		       a2 01		      LDX	#1	; Set Start Address into Start Routine in RAM
-     59  f92d		       bd 02 fb    LoopSetSA  LDA	iStartAddr,X
-     60  f930		       95 fe		      STA	StartRoutAddr + 4,X
-     61  f932		       ca		      DEX
-     62  f933		       10 f8		      BPL	LoopSetSA
-     63  f935
-     64  f935		       ae 01 fb 	      LDX	iControlReg	; Finish preparations of registers as per original BIOS
-     65  f938		       86 80		      STX	ControlReg	; Store ControlReg
-     66  f93a		       dd 00 f0 	      CMP	$f000,X	; Signal value to set to ControlReg
-     67  f93d		       ad 04 fb 	      LDA	iRandomSeed	; Prepare final A, X, Y, SP contents as per original BIOS
-     68  f940		       a0 00		      LDY	#00
-     69  f942		       a2 ff		      LDX	#$ff
-     70  f944		       9a		      TXS
-     71  f945		       4c fa 00 	      JMP	StartRoutAddr	; Final jump to Start Routine
-     72  f948
-     73  f948
-     74  fa06 ????				      seg	StartRoutineCode	; Will be copied to and be run from RAM
-     75  fa00				   StartRoutCode org	$fa00
-     76  fa00
-     77  fa00		       cd f8 ff 	      CMP	$fff8	; Finally set ControlReg
-     78  fa03		       4c 00 00 	      JMP	$0000	; Jump to ROM Startup Address
-     79  fa06
-     80  fa06
-     81  fb05 ????				      seg	EmuInterface	; Interface area with the Emulator
-     82  fb00					      org	$fb00
-     83  fb00
-     84  fb00		       00	   iPartNoToLoad byte.b	#00
-     85  fb01		       00	   iControlReg byte.b	#00
-     86  fb02		       00 00	   iStartAddr word.w	#0000
-     87  fb04		       00	   iRandomSeed byte.b	#00
-     88  fb05
-     89  fb05
-     90  fc00 ????				      seg	EmuLoadHotspots	; Signals the Emulator to load Part specified
-     91  fc00				   EmuLoadHotspot org	$fc00	; From $fc00 to $fcff
-     92  fc00
-     93  fc00
-     94  fd0f ????				      seg	SystemReset	; Reset routine
-     95  fd00				   SysReset   org	$fd00
-     96  fd00
-     97  fd00		       78		      SEI
-     98  fd01		       d8		      CLD
-     99  fd02
-    100  fd02		       a9 00		      LDA	#00	; Clear RAM and TIA
-    101  fd04		       aa		      TAX
-    102  fd05		       ca	   LoopClrMem DEX
-    103  fd06		       95 00		      STA	$00,X
-    104  fd08		       d0 fb		      BNE	LoopClrMem
-    105  fd0a
-    106  fd0a		       85 fa		      STA	PartNoToLoad	; Order to load Part 0
-    107  fd0c		       4c 00 f8 	      JMP	LoadPart
-    108  fd0f
-    109  fd0f
-    110  10000 ????				       seg	Vectors
-    111  fffa					      org	$fffa
-    112  fffa
-    113  fffa		       00 fd	   NMI	      word.w	SysReset
-    114  fffc		       00 fd	   RESET      word.w	SysReset
-    115  fffe		       00 fd	   IRQ	      word.w	SysReset
+     10  10000 ????		00 01	    VBLANK     =	$01	; Some TIA registers needed
+     11  10000 ????		00 02	    WSYNC      =	$02
+     12  10000 ????		00 10	    RESP0      =	$10
+     13  10000 ????		00 11	    RESP1      =	$11
+     14  10000 ????		00 20	    HMP0       =	$20
+     15  10000 ????		00 21	    HMP1       =	$21
+     16  10000 ????		00 2a	    HMOVE      =	$2a
+     17  10000 ????		00 19	    AUDV0      =	$19
+     18  10000 ????		00 1a	    AUDV1      =	$1A
+     19  10000 ????
+     20  10000 ????
+     21  f818 ????				      seg	LoadPart	; Load Part entry point
+     22  f800				   LoadPart   org	$f800
+     23  f800
+     24  f800		       a2 00		      LDX	#$00	; Ensure Bank configuration, BIOS powered ON and Writes OFF
+     25  f802		       dd 00 f0 	      CMP	$f000,X
+     26  f805		       cd f8 ff 	      CMP	$fff8
+     27  f808
+     28  f808		       a6 fa		      LDX	PartNoToLoad
+     29  f80a		       9d 00 fc 	      STA	EmuLoadHotspot,X	; Trigger Emulator hotspot to actually load Part X
+     30  f80d		       ad 05 fb 	      LDA	iPartLoadedOK	; Check if Part sucessfuly loaded (0 = fail, 1 = success)
+     31  f810		       d0 03		      BNE	LoadOK
+     32  f812		       4c 80 f8 	      JMP	FailedLoad	; If it failed, handle failure
+     33  f815
+     34  f815		       4c 00 f9    LoadOK     JMP	StartPart
+     35  f818
+     36  f818
+     37  f88d ????				      seg	FailedLoad
+     38  f880				   FailedLoad org	$f880
+     39  f880
+     40  f880		       a9 02		      LDA	#02	; Try to put the TIA in a "clean" state
+     41  f882		       85 01		      STA	VBLANK
+     42  f884		       a9 00		      LDA	#00
+     43  f886		       85 19		      STA	AUDV0
+     44  f888		       85 1a		      STA	AUDV1
+     45  f88a		       4c 00 f8 	      JMP	LoadPart	; Try again, possible for ever...
+     46  f88d
+     47  f88d
+     48  f948 ????				      seg	StartPart	; Finish preparations and start Part loaded
+     49  f900				   StartPart  org	$f900
+     50  f900
+     51  f900		       a9 00		      LDA	#00	; Clear TIA registers and RAM $80 - $9d as per original BIOS
+     52  f902		       a2 9e		      LDX	#$9e
+     53  f904		       ca	   LoopClrSome DEX
+     54  f905		       95 00		      STA	$00,X
+     55  f907		       d0 fb		      BNE	LoopClrSome
+     56  f909
+     57  f909		       a9 10		      LDA	#$10	; Set Players position as per original BIOS
+     58  f90b		       85 21		      STA	HMP1
+     59  f90d		       85 02		      STA	WSYNC
+     60  f90f		       a2 07		      LDX	#$07
+     61  f911		       ca		      DEX
+     62  f912		       ca	   LoopPos    DEX
+     63  f913		       d0 fd		      BNE	LoopPos
+     64  f915		       a9 00		      LDA	#00
+     65  f917		       85 20		      STA	HMP0
+     66  f919		       85 10		      STA	RESP0
+     67  f91b		       85 11		      STA	RESP1
+     68  f91d		       85 02		      STA	WSYNC
+     69  f91f		       85 2a		      STA	HMOVE
+     70  f921
+     71  f921		       a2 03		      LDX	#3	; Load Start Routine code into RAM
+     72  f923		       bd 00 fa    LoopLoadSR LDA	StartRoutCode,X
+     73  f926		       95 fa		      STA	StartRoutAddr,X
+     74  f928		       ca		      DEX
+     75  f929		       10 f8		      BPL	LoopLoadSR
+     76  f92b		       a2 01		      LDX	#1	; Set Start Address into Start Routine in RAM
+     77  f92d		       bd 02 fb    LoopSetSA  LDA	iStartAddr,X
+     78  f930		       95 fe		      STA	StartRoutAddr + 4,X
+     79  f932		       ca		      DEX
+     80  f933		       10 f8		      BPL	LoopSetSA
+     81  f935
+     82  f935		       ae 01 fb 	      LDX	iControlReg	; Finish preparations of registers as per original BIOS
+     83  f938		       86 80		      STX	ControlReg	; Store ControlReg
+     84  f93a		       dd 00 f0 	      CMP	$f000,X	; Signal value to set to ControlReg
+     85  f93d		       ad 04 fb 	      LDA	iRandomSeed	; Prepare final A, X, Y, SP contents as per original BIOS
+     86  f940		       a0 00		      LDY	#00
+     87  f942		       a2 ff		      LDX	#$ff
+     88  f944		       9a		      TXS
+     89  f945		       4c fa 00 	      JMP	StartRoutAddr	; Final jump to Start Routine
+     90  f948
+     91  f948
+     92  fa06 ????				      seg	StartRoutineCode	; Will be copied to and be run from RAM
+     93  fa00				   StartRoutCode org	$fa00
+     94  fa00
+     95  fa00		       cd f8 ff 	      CMP	$fff8	; Finally set ControlReg
+     96  fa03		       4c 00 00 	      JMP	$0000	; Jump to ROM Startup Address
+     97  fa06
+     98  fa06
+     99  fb06 ????				      seg	EmuInterface	; Interface area with the Emulator
+    100  fb00					      org	$fb00
+    101  fb00
+    102  fb00		       00	   iPartNoToLoad byte.b	#00
+    103  fb01		       00	   iControlReg byte.b	#00
+    104  fb02		       00 00	   iStartAddr word.w	#0000
+    105  fb04		       00	   iRandomSeed byte.b	#00
+    106  fb05		       00	   iPartLoadedOK byte.b	#00
+    107  fb06
+    108  fb06
+    109  fc00 ????				      seg	EmuLoadHotspots	; Signals the Emulator to load Part specified
+    110  fc00				   EmuLoadHotspot org	$fc00	; From $fc00 to $fcff
+    111  fc00
+    112  fc00
+    113  fd0f ????				      seg	SystemReset	; Reset routine
+    114  fd00				   SysReset   org	$fd00
+    115  fd00
+    116  fd00		       78		      SEI
+    117  fd01		       d8		      CLD
+    118  fd02
+    119  fd02		       a9 00		      LDA	#00	; Clear RAM and TIA
+    120  fd04		       aa		      TAX
+    121  fd05		       ca	   LoopClrMem DEX
+    122  fd06		       95 00		      STA	$00,X
+    123  fd08		       d0 fb		      BNE	LoopClrMem
+    124  fd0a
+    125  fd0a		       85 fa		      STA	PartNoToLoad	; Order to load Part 0
+    126  fd0c		       4c 00 f8 	      JMP	LoadPart
+    127  fd0f
+    128  fd0f
+    129  10000 ????				       seg	Vectors
+    130  fffa					      org	$fffa
+    131  fffa
+    132  fffa		       00 fd	   NMI	      word.w	SysReset
+    133  fffc		       00 fd	   RESET      word.w	SysReset
+    134  fffe		       00 fd	   IRQ	      word.w	SysReset

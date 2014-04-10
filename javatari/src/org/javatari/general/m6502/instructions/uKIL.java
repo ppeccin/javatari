@@ -13,13 +13,17 @@ public final class uKIL extends Instruction {
 
 	@Override
 	public int fetch() {
-		// Actually no cycles should be taken, as the CPU would Halt. But we will simulate a NOP with a Debug hook
-		return 2;
+		// Actually no cycles should be taken, as the CPU would Halt. 
+		// But we will simulate a VERY long instruction
+		return Integer.MAX_VALUE;
 	}
 
 	@Override
 	public void execute() {
-		cpu.debug(">>> Undocumented opcode KIL (HLT)");
+		cpu.debug(">>> Undocumented opcode KIL/HLT/JAM");
+		// Forces the CPU to stay stuck in this instruction forever
+		if (cpu.PC == 0) cpu.PC = 0xffff;
+		else cpu.PC--;
 	}
 
 	

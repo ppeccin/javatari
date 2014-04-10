@@ -9,7 +9,7 @@ public interface SaveStateMedia {
 	public boolean saveState(int slot, ConsoleState state);
 	public ConsoleState loadState(int slot);
 	
-	public boolean saveToFile(String name, Object data, boolean isSavestate);
-	public Object loadFromFile(String name, boolean isSavestate);
+	public boolean saveResourceToFile(String name, Object data);
+	public Object loadResourceFromFile(String name);
 	
 }

@@ -59,6 +59,7 @@ import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeDatabase;
 import org.javatari.atari.cartridge.CartridgeFormat;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
+import org.javatari.atari.cartridge.ROMFormatUnsupportedException;
 import org.javatari.atari.console.Console;
 import org.javatari.atari.controls.ConsoleControls.Control;
 import org.javatari.atari.network.ConnectionStatusListener;
@@ -265,10 +266,15 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			Cartridge cart = room.currentConsole().cartridgeSocket().inserted();
 			romNameTf.setText(cart.rom().info.name);
 			romNameTf.setCaretPosition(0);
-			ArrayList<CartridgeFormatOption> formatOptions = CartridgeDatabase.getFormatOptions(cart.rom());
 			ArrayList<CartridgeFormat> formats = new ArrayList<CartridgeFormat>();
-			for (CartridgeFormatOption option : formatOptions)
-				formats.add(option.format);
+			try {
+				ArrayList<CartridgeFormatOption> formatOptions;
+				formatOptions = CartridgeDatabase.getFormatOptions(cart.rom());
+				for (CartridgeFormatOption option : formatOptions)
+					formats.add(option.format);
+			} catch (ROMFormatUnsupportedException e) {
+				// Leave formats empty
+			}
 			if (!formats.contains(cart.format())) formats.add(0, cart.format());
 			romFormatLb.setListData(formats.toArray());
 			romFormatLb.setSelectedValue(cart.format(), true);
@@ -754,8 +760,12 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 		Console console = room.currentConsole();
 		Cartridge cart = console.cartridgeSocket().inserted();
 		if (cart == null) return;
-		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cart.rom());
-		if (options.isEmpty()) return;
+		ArrayList<CartridgeFormatOption> options;
+		try {
+			options = CartridgeDatabase.getFormatOptions(cart.rom());
+		} catch (ROMFormatUnsupportedException e) {
+			return;
+		}
 		Cartridge newCart = options.get(0).format.createCartridge(cart.rom());
 		console.cartridgeSocket().insert(newCart, true);
 		refreshCartridge();

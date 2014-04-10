@@ -36,26 +36,6 @@ public final class Bxx extends Instruction {
 		if (branch) cpu.PC = newPC;		// TODO Check if we have to make additional reads here
 	}
 	
-	// TODO Verify
-	public int fetch2() {
-		newPC = cpu.fetchRelativeAddress() + cpu.PC;		// Reads operand regardless of the branch being taken or not
-		if (bit == bZERO) 			{ branch = cpu.ZERO == cond; }
-		else if (bit == bNEGATIVE)	{ branch = cpu.NEGATIVE == cond; }
-		else if (bit == bCARRY)		{ branch = cpu.CARRY == cond; }
-		else if (bit == bOVERFLOW)	{ branch = cpu.OVERFLOW == cond; }
-		else throw new IllegalStateException("Bxx Invalid StatusBit: " + bit);
-
-		if (!branch) return 2;
-		if ((newPC & 0xff00) != (cpu.PC & 0xff00))
-			return 4;
-		else
-			return 3;
-	}
-
-	public void execute2() {
-		if (branch) cpu.PC = newPC;	
-	}
-
 
 	private final int bit;
 	private final boolean cond;

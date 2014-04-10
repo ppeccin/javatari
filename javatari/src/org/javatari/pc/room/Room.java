@@ -35,8 +35,8 @@ public class Room {
 		screen.powerOn();
 	 	speaker.powerOn();
 	 	awtControls.powerOn();
-	 	insertCartridgeProvidedIfNoneInserted();
-	 	if (currentConsole.cartridgeSocket().inserted() != null) currentConsole.powerOn();
+	 	insertCartridgeProvidedIfNoneInserted();	// Will power Console ON if Cartridge is provided
+	 	if (currentConsole.cartridgeSocket().inserted() != null && !currentConsole.powerOn) currentConsole.powerOn();
 	}
 
 	public void powerOff() {
@@ -178,7 +178,7 @@ public class Room {
 	private void insertCartridgeProvidedIfNoneInserted() {
 		if (currentConsole.cartridgeSocket().inserted() != null) return;
 		loadCartridgeProvided();
-		if (cartridgeProvided != null) currentConsole.cartridgeSocket().insert(cartridgeProvided, false);
+		if (cartridgeProvided != null) currentConsole.cartridgeSocket().insert(cartridgeProvided, true);
 	}
 
 	private void loadCartridgeProvided() {

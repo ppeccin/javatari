@@ -12,6 +12,7 @@ import org.javatari.atari.cartridge.CartridgeDatabase;
 import org.javatari.atari.cartridge.CartridgeFormatOption;
 import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.cartridge.ROMFormatUnsupportedException;
 import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.console.savestate.SaveStateMedia;
@@ -230,8 +231,12 @@ public class Console {
 			showOSD("NO CARTRIDGE INSERTED!", true);
 			return;
 		}
-		ArrayList<CartridgeFormatOption> options = CartridgeDatabase.getFormatOptions(cartridge().rom());
-		if (options.isEmpty()) return;
+		ArrayList<CartridgeFormatOption> options;
+		try {
+			options = CartridgeDatabase.getFormatOptions(cartridge().rom());
+		} catch (ROMFormatUnsupportedException e) {
+			return;
+		}
 		CartridgeFormatOption currOption = null;
 		for (CartridgeFormatOption option : options)
 			if (option.format.equals(cartridge().format())) currOption = option;
