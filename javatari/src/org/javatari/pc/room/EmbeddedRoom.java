@@ -27,7 +27,7 @@ public class EmbeddedRoom extends Room {
 		if (windowScreen == null) windowScreen = buildDesktopScreenPeripheral();
 		currentConsole.pause();
 		windowScreen.monitor().setCartridgeChangeEnabled(embeddedScreen.monitor().isCartridgeChangeEnabled());
-		windowScreen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
+		windowScreen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket(), currentConsole.saveStateSocket());
 		awtControls.connectScreen(windowScreen);
 		windowScreen.powerOn(fullScreen);
 		embeddedScreen.powerOff();
@@ -40,7 +40,7 @@ public class EmbeddedRoom extends Room {
 		if (screen != windowScreen) return;
 		currentConsole.pause();
 		embeddedScreen.monitor().setCartridgeChangeEnabled(windowScreen.monitor().isCartridgeChangeEnabled());
-		embeddedScreen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
+		embeddedScreen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket(), currentConsole.saveStateSocket());
 		awtControls.connectScreen(embeddedScreen);
 		embeddedScreen.powerOn();
 		windowScreen.powerOff();

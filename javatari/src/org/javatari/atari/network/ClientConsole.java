@@ -207,7 +207,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	private static List<Control> DISABLED_CONTROLS = Arrays.asList(new Control[] {
-			Control.CARTRIDGE_FORMAT, Control.SAVE_STATE_FILE	
+			Control.CARTRIDGE_FORMAT	
 		});
 
 }

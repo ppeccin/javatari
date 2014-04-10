@@ -6,12 +6,13 @@ import java.awt.Component;
 import java.util.List;
 
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
 
 public interface Screen {
 
-	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket);
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, SaveStateSocket savestateSocket);
 
 	public Monitor monitor();
 

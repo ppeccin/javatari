@@ -308,10 +308,6 @@ public class Console {
 				}
 				return;
 			} 
-			if (control == Control.SAVE_STATE_FILE) {
-				saveStateSocket.saveStateFile();
-				return;
-			}
 			// Toggles
 			if (!state) return;
 			switch (control) {
@@ -410,6 +406,7 @@ public class Console {
 		public void connectCartridge(Cartridge cartridge) {
 			cartridge.connectSaveStateSocket(this);
 		}
+		@Override
 		public void saveStateFile() {
 			if (!powerOn || media == null) return;
 			ConsoleState state = pauseAndSaveState();

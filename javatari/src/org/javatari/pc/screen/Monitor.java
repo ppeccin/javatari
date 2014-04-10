@@ -28,6 +28,7 @@ import javax.swing.border.EmptyBorder;
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeInsertionListener;
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.general.av.video.VideoMonitor;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.general.av.video.VideoStandard;
@@ -49,8 +50,9 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		init();
 	}
 
-	public void connect(VideoSignal videoSignal, CartridgeSocket cartridgeSocket) {
+	public void connect(VideoSignal videoSignal, CartridgeSocket cartridgeSocket, SaveStateSocket savestateSocket) {
 		this.cartridgeSocket = cartridgeSocket;
+		this.savestateSocket = savestateSocket;
 		cartridgeSocket.addInsertionListener(this);
 		this.videoSignal = videoSignal;
 		videoSignal.connectMonitor(this);
@@ -573,6 +575,10 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		}
 	}
 
+	private void saveStateCartridge() {
+		savestateSocket.saveStateFile();
+	}
+
 	private boolean cartridgeChangeDisabledWarning() {
 		if (!isCartridgeChangeEnabled()) {
 			showOSD("Cartridge change is disabled", true);
@@ -609,6 +615,8 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 				loadCartridgeEmpty(); break;
 			case LOAD_CARTRIDGE_PASTE:
 				loadCartridgePaste(); break;
+			case SAVE_STATE_CARTRIDGE:
+				saveStateCartridge(); break;
 			case CRT_FILTER:
 				crtFilter = !crtFilter;
 				showOSD(crtFilter ? "CRT Filter: ON" : "CRT Filter: OFF", true);
@@ -669,6 +677,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 	
 	private VideoSignal videoSignal;
 	private CartridgeSocket cartridgeSocket;
+	private SaveStateSocket savestateSocket;
 	private final double fps;
 	
 	private VideoStandard signalStandard;
@@ -783,6 +792,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 		LOAD_CARTRIDGE_URL, LOAD_CARTRIDGE_URL_NO_AUTO_POWER,
 		LOAD_CARTRIDGE_EMPTY,
 		LOAD_CARTRIDGE_PASTE,
+		SAVE_STATE_CARTRIDGE,
 		CRT_FILTER, CRT_MODES,
 		DEBUG, STATS
 	}

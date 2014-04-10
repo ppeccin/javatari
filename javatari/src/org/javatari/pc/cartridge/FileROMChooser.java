@@ -11,7 +11,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.javatari.parameters.Parameters;
 
-
+/**
+ * This class must ONLY be used from Swing Event Dispatcher Thread
+ */
 public final class FileROMChooser {
 
 	public static File chooseFileToLoad() throws AccessControlException {
@@ -46,9 +48,6 @@ public final class FileROMChooser {
 
 	private static synchronized void createChooser() throws AccessControlException {
 		if (chooser != null) return;
-
-		System.out.println("HAHA!");
-		
 		chooser = new JFileChooser();
 		chooser.setPreferredSize(new Dimension(580, 400));
 	}

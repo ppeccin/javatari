@@ -169,7 +169,7 @@ public class Room {
 	private void plugConsole(Console console) {
 		if (currentConsole == console) return;
 		currentConsole = console;
-		screen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
+		screen.connect(currentConsole.videoOutput(), currentConsole.controlsSocket(), currentConsole.cartridgeSocket(), currentConsole.saveStateSocket());
 		speaker.connect(currentConsole.audioOutput());
 		awtControls.connect(currentConsole.controlsSocket(), currentConsole.cartridgeSocket());
 		stateMedia.connect(currentConsole.saveStateSocket());

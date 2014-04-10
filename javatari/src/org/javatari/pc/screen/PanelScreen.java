@@ -16,6 +16,7 @@ import javax.swing.TransferHandler;
 
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.parameters.Parameters;
@@ -32,8 +33,8 @@ public final class PanelScreen extends JPanel implements Screen {
 	}
 
 	@Override
-	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
-		monitorPanel.connect(videoSignal, controlsSocket, cartridgeSocket);
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, SaveStateSocket savestateSocket) {
+		monitorPanel.connect(videoSignal, controlsSocket, cartridgeSocket, savestateSocket);
 		if (consolePanel != null) consolePanel.connect(controlsSocket, cartridgeSocket);
 	}
 	

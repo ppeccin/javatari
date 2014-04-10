@@ -25,9 +25,10 @@ public final class MonitorControls implements KeyListener {
 	}
 	
 	private void init() {
-		keyCodeMap.put(KEY_CART_FILE,    Control.LOAD_CARTRIDGE_FILE);
-		keyCodeMap.put(KEY_CART_URL,     Control.LOAD_CARTRIDGE_URL);
-		keyCodeMap.put(KEY_CART_EMPTY,   Control.LOAD_CARTRIDGE_EMPTY);
+		keyCodeMap.put(KEY_CART_FILE,       Control.LOAD_CARTRIDGE_FILE);
+		keyCodeMap.put(KEY_CART_URL,        Control.LOAD_CARTRIDGE_URL);
+		keyCodeMap.put(KEY_CART_EMPTY,      Control.LOAD_CARTRIDGE_EMPTY);
+		keyCodeMap.put(KEY_CART_SAVESTATE,  Control.SAVE_STATE_CARTRIDGE);
 
 		keyAltCodeMap.put(KEY_CRT_FILTER,   Control.CRT_FILTER);
 		keyAltCodeMap.put(KEY_DEBUG,     	Control.DEBUG);
@@ -123,6 +124,7 @@ public final class MonitorControls implements KeyListener {
 	public static final int KEY_CART_PASTE_V   = KeyEvent.VK_V;
 	public static final int KEY_CART_PASTE_INS = KeyEvent.VK_INSERT;
 	public static final int KEY_CART_EMPTY     = KeyEvent.VK_F7;
+	public static final int KEY_CART_SAVESTATE = KeyEvent.VK_F8;
 
 	public static final int KEY_CRT_FILTER     = KeyEvent.VK_T;
 	public static final int KEY_CRT_MODES      = KeyEvent.VK_R;

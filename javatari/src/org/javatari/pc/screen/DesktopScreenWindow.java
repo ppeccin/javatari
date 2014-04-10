@@ -38,6 +38,7 @@ import javax.swing.TransferHandler;
 
 import org.javatari.atari.cartridge.Cartridge;
 import org.javatari.atari.cartridge.CartridgeSocket;
+import org.javatari.atari.console.savestate.SaveStateSocket;
 import org.javatari.atari.controls.ConsoleControlsSocket;
 import org.javatari.general.av.video.VideoSignal;
 import org.javatari.parameters.Parameters;
@@ -56,8 +57,8 @@ public final class DesktopScreenWindow extends SlickFrame implements MonitorDisp
 	}
 
 	@Override
-	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket) {
-		monitor.connect(videoSignal, cartridgeSocket);
+	public void connect(VideoSignal videoSignal, ConsoleControlsSocket controlsSocket, CartridgeSocket cartridgeSocket, SaveStateSocket savestateSocket) {
+		monitor.connect(videoSignal, cartridgeSocket, savestateSocket);
 		if (consolePanelWindow != null) consolePanelWindow.connect(controlsSocket, cartridgeSocket);
 	}
 

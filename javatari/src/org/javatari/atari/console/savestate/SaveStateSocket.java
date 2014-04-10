@@ -9,5 +9,7 @@ public interface SaveStateSocket {
 	public SaveStateMedia media();
 	
 	public void externalStateChange();
+
+	public void saveStateFile();
 	
 }
