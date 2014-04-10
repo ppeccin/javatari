@@ -1,20 +1,17 @@
 <jnlp spec="6.0+"
 	codebase="http://javatari.org/files/"
-	href="javatari330-applet.jnlp" >
+	href="javatari41-applet-sandbox.jnlp" >
 	<information>
-		<title>Javatari 4.0 Applet</title>
+		<title>Javatari 4.1 Applet</title>
 		<vendor>Paulo Augusto Peccin</vendor>
 		<homepage href="http://javatari.org" />
 		<icon href="javatari-icon.png" />
 		<icon kind="shortcut" href="javatari-icon.png" />
 	</information>
 	<update check="always" policy="always" />
- 	<security>
-		<all-permissions />
-	</security>
 	<resources>
 		<j2se version="1.6+" />
-		<jar href="javatari40-signed.jar" main="true" />
+		<jar href="javatari41-signed-sandbox.jar" main="true" />
 	</resources>
 	<applet-desc 
         name="javatari"
