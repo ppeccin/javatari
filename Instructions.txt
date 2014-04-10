@@ -28,6 +28,7 @@ ALT + F1:      Fry Console (quickly power off/on)
 
 Ctr + 1-0:     Save State
 Alt + 1-0:     Load State
+F8:            Save State Cartridge to file
 
 Shft + Arrows: Screen Size	
 Backspace:     Default Screen Size
