@@ -577,6 +577,7 @@ public final class Monitor implements ClockDriven, VideoMonitor, CartridgeInsert
 
 	private void saveStateCartridge() {
 		savestateSocket.saveStateFile();
+		display.displayRequestFocus();
 	}
 
 	private boolean cartridgeChangeDisabledWarning() {
