@@ -221,7 +221,7 @@ public class Console {
 			pia.saveState(),
 			ram.saveState(),
 			cpu.saveState(),
-			cartridge(),
+			cartridge() != null ? cartridge().saveState() : null,
 			videoStandard()
 		);
 	}
@@ -308,7 +308,7 @@ public class Console {
 				}
 				return;
 			} 
-			if (control == Control.SAVE_STATE_FILE) { 
+			if (control == Control.SAVE_STATE_FILE) {
 				saveStateSocket.saveStateFile();
 				return;
 			}
@@ -384,7 +384,7 @@ public class Console {
 		public void removeInsertionListener(CartridgeInsertionListener listener) {
 			insertionListeners.remove(listener);
 		}
-		private void insertSavestateCartridge(CartridgeSavestate cartridge) {
+		protected void insertSavestateCartridge(CartridgeSavestate cartridge) {
 			ConsoleState state = cartridge.getConsoleState();
 			if (state != null) {
 				pauseAndLoadState(state);

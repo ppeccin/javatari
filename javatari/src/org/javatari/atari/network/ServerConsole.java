@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.javatari.atari.cartridge.Cartridge;
+import org.javatari.atari.cartridge.formats.CartridgeSavestate;
 import org.javatari.atari.console.Console;
 import org.javatari.atari.console.savestate.ConsoleState;
 import org.javatari.atari.controls.ConsoleControlsSocket;
@@ -169,6 +170,12 @@ public final class ServerConsole extends Console implements ClockDriven {
 	private class ServerConsoleCartridgeSocketAdapter extends CartridgeSocketAdapter {
 		@Override
 		public void insert(Cartridge cartridge, boolean autoPower) {
+			// Special case for Savestates
+			if (cartridge != null && cartridge instanceof CartridgeSavestate) {
+				insertSavestateCartridge((CartridgeSavestate) cartridge);
+				return;
+			}
+			// Normal case
 			if (autoPower && powerOn) powerOff();
 			cartridge(cartridge);
 			// Send powerOn as a user event so the Console don't get turned on before the state update is sent

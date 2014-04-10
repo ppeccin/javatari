@@ -103,6 +103,15 @@ public final class Cartridge8K_64K_AR extends CartridgeBankedByBusMonitoring {
 		}
 	}
 
+	@Override
+	public Cartridge8K_64K_AR clone() {
+		Cartridge8K_64K_AR clone = (Cartridge8K_64K_AR)super.clone();
+		clone.bytes = bytes.clone();	// all is RAM, so can get modified
+		clone.header = header.clone();
+		if (romPageOffsets != null) clone.romPageOffsets = romPageOffsets.clone();
+		return clone;
+	}
+
 	private void setControlRegister(byte controlRegister) {
 		int banksConfig = (controlRegister >> 2) & 0x07;
 		switch (banksConfig) {

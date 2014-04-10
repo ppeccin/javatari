@@ -60,7 +60,7 @@ public final class Cartridge16K_E7 extends CartridgeBanked {
 	@Override
 	public Cartridge16K_E7 clone() {
 		Cartridge16K_E7 clone = (Cartridge16K_E7)super.clone();
-		if (extraRAM != null) clone.extraRAM = extraRAM.clone();
+		clone.extraRAM = extraRAM.clone();
 		return clone;
 	}
 

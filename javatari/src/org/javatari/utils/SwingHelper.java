@@ -93,7 +93,10 @@ public final class SwingHelper {
 		if (!SwingUtilities.isEventDispatchThread())
 			try {
 				SwingUtilities.invokeAndWait(block);
-			} catch (InterruptedException e) {} catch (InvocationTargetException e) {}
+			} catch (InterruptedException e) {
+			} catch (InvocationTargetException e) {
+				if (e.getCause() instanceof RuntimeException) throw (RuntimeException) e.getCause();
+			}
 		else
 			block.run();
 	}

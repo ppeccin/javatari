@@ -150,7 +150,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 		@Override
 		public void controlStateChanged(Control control, boolean state) {
 			if (DISABLED_CONTROLS.contains(control)) {
-				showOSD("Only the Server can change Cartridge Formats", true);
+				showOSD("This function is only available on the Server", true);
 				return;
 			}
 			synchronized (queuedChanges) {
@@ -207,7 +207,7 @@ public final class ClientConsole extends Console implements ClockDriven {
 	}
 
 	private static List<Control> DISABLED_CONTROLS = Arrays.asList(new Control[] {
-			Control.CARTRIDGE_FORMAT	
+			Control.CARTRIDGE_FORMAT, Control.SAVE_STATE_FILE	
 		});
 
 }

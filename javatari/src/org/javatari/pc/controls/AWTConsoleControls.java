@@ -274,7 +274,7 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		withALTCodeMap.put(KEY_NO_COLLISIONS,    Control.NO_COLLISIONS);
 		withALTCodeMap.put(KEY_VIDEO_STANDARD,   Control.VIDEO_STANDARD);
 	
-		normalCodeMap.put(KEY_SAVE_STATE_FILE,  Control.SAVE_STATE_FILE); 
+		normalCodeMap.put(KEY_SAVE_STATE_FILE,   Control.SAVE_STATE_FILE); 
 
 		withCTRLCodeMap.put(KEY_STATE_0,  Control.SAVE_STATE_0); 
 		withCTRLCodeMap.put(KEY_STATE_1,  Control.SAVE_STATE_1); 

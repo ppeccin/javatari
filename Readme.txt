@@ -1,13 +1,21 @@
 Visit http://javatari.org for downloads and online play
 Discuss at http://groups.google.com/group/javatari
 
+Version 4.1
+============
+- Support for Starpath/Supercharger tape ROM format
+- Added ability to save individual Savestate files to disk (press F8)
+- Savestate files can now be shared and loaded as normal ROMs
+- Savestate files can also be embedded as normal auto-load ROMs
+- Bugfixes and improvements
+
+
+Previous Versions:
+
 Version 4.0
 ============
 - Full support for the upcoming Java security requirements
 - Both all-permissions and sandboxed deployment options
-
-
-Previous Versions:
 
 Version 3.40
 ============

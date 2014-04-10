@@ -1666,7 +1666,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnAltF.setOpaque(false);
 			txtpnAltF.setBackground(noBackground);
 			txtpnAltF.setEditable(false);
-			txtpnAltF.setText("ALT + F1:\r\n\r\nALT + F5:\r\nALT + F6:\r\nF7:\r\n\r\nDrag/Drop or Copy/Paste of files and URLs\r\n\r\nSHIFT + Arrows:\r\nSHIFT-ALT + Arrows:\r\nCTR-SHIFT + Arrows:\r\nCTR-ALT + Arrows:\r\nBACKSPACE:");
+			txtpnAltF.setText("ALT + F1:\r\nALT + F5:\r\nALT + F6:\r\nF7:\r\nF8:\r\n\r\nDrag/Drop or Copy/Paste of files and URLs\r\n\r\nSHIFT + Arrows:\r\nSHIFT-ALT + Arrows:\r\nCTR-SHIFT + Arrows:\r\nCTR-ALT + Arrows:\r\nBACKSPACE:");
 			txtpnAltF.setFont(fontLabel);
 			txtpnAltF.setBounds(201, 39, 309, 226);
 			helpPanel.add(txtpnAltF);
@@ -1675,7 +1675,7 @@ public final class SettingsDialog extends JDialog implements ConnectionStatusLis
 			txtpnFryConsoleLoad.setOpaque(false);
 			txtpnFryConsoleLoad.setBackground(noBackground);
 			txtpnFryConsoleLoad.setEditable(false);
-			txtpnFryConsoleLoad.setText("Fry Console\r\n\r\nLoad Cartridge\r\nwith no Power Cycle\r\nRemove Cartridge");
+			txtpnFryConsoleLoad.setText("Fry Console\r\nLoad Cartridge\r\nwith no Power Cycle\r\nRemove Cartridge\nSave State file");
 			txtpnFryConsoleLoad.setFont(fontLabel);
 			txtpnFryConsoleLoad.setBounds(277, 39, 194, 117);
 			helpPanel.add(txtpnFryConsoleLoad);

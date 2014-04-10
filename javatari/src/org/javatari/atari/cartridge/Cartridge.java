@@ -49,6 +49,10 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 		// Nothing
 	}
 
+	public Cartridge saveState() {
+		return this.clone();
+	}
+
 	@Override
 	public void clockPulse() {
 		// Nothing
@@ -109,7 +113,7 @@ public abstract class Cartridge implements BUS16Bits, ClockDriven, Cloneable, Se
 	public void controlsStateReport(Map<Control, Boolean> report) {
 		// Nothing
 	}
-
+	
 
 	protected final ROM rom;
 	protected byte[] bytes;		// for fast access to ROM content
