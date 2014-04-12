@@ -3,10 +3,11 @@ Discuss at http://groups.google.com/group/javatari
 
 Version 4.1
 ============
-- Support for Starpath/Supercharger tape ROM format
-- Added ability to save individual Savestate files to disk (press F8)
-- Savestate files can now be shared and loaded as normal ROMs
-- Savestate files can also be embedded as normal auto-load ROMs
+- New concept: Savestate Cartridges!
+- Store emulator state as Savestate Cartridge files to disk any time (press F8)
+- Savestate Cartridges can be distributed and loaded as normal ROMs
+- Savestate Cartridges can also be embedded as auto-load ROMs
+- Support for Starpath/Supercharger Tape ROM format
 - Bugfixes and improvements
 
 
