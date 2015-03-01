@@ -13,6 +13,9 @@ public final class uSBX extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode SBX");
+
 		ea = cpu.fetchImmediateAddress(); return 2;		
 	}
 

@@ -7,14 +7,14 @@ import java.io.Serializable;
 
 public class ROM implements Serializable {
 
-	public ROM(String url, byte[] content) {
+	public ROM(String source, byte[] content) {
 		super();
-		this.url = url;
+		this.source = source;
 		this.content = content;
 		this.info = CartridgeDatabase.produceInfo(this);
 	}
 
-	public final String url;
+	public final String source;
 	public final byte[] content;
 	public final CartridgeInfo info;
 

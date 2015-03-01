@@ -15,6 +15,9 @@ public final class uNOP extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode DOP");
+
 		if (type == OperandType.IMM) 		{ ea = cpu.fetchImmediateAddress(); return 2; }
 		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
 		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 4; }

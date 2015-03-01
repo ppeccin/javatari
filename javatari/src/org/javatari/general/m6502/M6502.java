@@ -106,7 +106,7 @@ public final class M6502 implements ClockDriven {
 	public void clockPulse() {
 		// If this is the last execution cycle of the instruction, execute it ignoring the !RDY signal 
 		if (remainingCycles == 1) {
-			//if (trace) showDebug(">>> TRACE");
+			// if (trace) showDebug(">>> TRACE");
 			currentInstruction.execute();
 			remainingCycles = 0;
 			return;
@@ -267,8 +267,10 @@ public final class M6502 implements ClockDriven {
 	}
 
 	public void debug(String title) {
-		if (trace) showDebug(title);
-		else if (debug) System.out.println(title);
+		if (debug) {
+			System.out.println(title);
+			if (trace) showDebug(title);
+		}
 	}
 	
 	public void showDebug(String title) {
@@ -567,7 +569,7 @@ public final class M6502 implements ClockDriven {
 	/*   EC - CPX  - Absolute      */  new CPx(this, rX, ABS),
 	/*   ED - SBC  - Absolute      */  new SBC(this, ABS),
 	/*   EE - INC  - Absolute      */  new INC(this, ABS),
-	/* @ EF - uISB - Absolute      */  new uISB(this, ABS),
+	/* # EF - uISB - Absolute      */  new uISB(this, ABS),
 	/*   F0 - BEQ                  */  new Bxx(this, bZERO, true),
 	/*   F1 - SBC  - (Indirect),Y  */  new SBC(this, IND_Y),
 	/* # F2 - uKIL                 */  new uKIL(this),

@@ -143,7 +143,7 @@ public final class PALPalette {
 		0x949494,		// F8
 		0xB4B4B4,		// FA
 		0xD0D0D0,		// FC
-		0xF1F1F1,		// FE
+		0xF1F1F1		// FE
 	};
 		
 }

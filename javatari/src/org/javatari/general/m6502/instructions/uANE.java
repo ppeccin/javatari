@@ -13,6 +13,9 @@ public final class uANE extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode ANE");
+
 		ea = cpu.fetchImmediateAddress(); return 2;		
 	}
 
@@ -20,7 +23,6 @@ public final class uANE extends Instruction {
 	public void execute() {
 		cpu.bus.readByte(ea);
 		// Exact operation unknown. Lets do nothing!
-		cpu.debug(">>> Undocumented opcode ANE (XAA)");
 	}
 
 	private int ea;

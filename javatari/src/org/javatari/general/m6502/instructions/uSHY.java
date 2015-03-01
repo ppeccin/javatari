@@ -13,6 +13,9 @@ public final class uSHY extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode SHY");
+
 		ea = cpu.fetchAbsoluteXAddress(); return 5;		
 	}
 	

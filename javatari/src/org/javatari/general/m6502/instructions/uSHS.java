@@ -13,6 +13,9 @@ public final class uSHS extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode SHS");
+
 		ea = cpu.fetchAbsoluteYAddress(); return 5;		
 	}
 	

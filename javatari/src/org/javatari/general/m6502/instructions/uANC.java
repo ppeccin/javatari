@@ -13,6 +13,9 @@ public final class uANC extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode ANC");
+
 		ea = cpu.fetchImmediateAddress(); return 2;		
 	}
 	

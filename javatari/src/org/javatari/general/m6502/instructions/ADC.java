@@ -52,9 +52,9 @@ public final class ADC extends Instruction {
 		// Decimal Mode computations
 		uAux = (uOldA & 0x0f) + (uB & 0x0f) + (cpu.CARRY?1:0);
 		if (uAux >= 0x0A) uAux = ((uAux + 0x06) & 0x0f) + 0x10;
-			aux = (byte)(uOldA & 0xf0) + (byte)(uB & 0xf0) + (byte)uAux;     // Holy shit, that was the *unsigned* operation
-			cpu.NEGATIVE = (aux & 0x80) > 0;
-			cpu.OVERFLOW = (aux > 127) | (aux < -128);
+		aux = (byte)(uOldA & 0xf0) + (byte)(uB & 0xf0) + (byte)uAux;     // Holy shit, that was the *unsigned* operation
+		cpu.NEGATIVE = (aux & 0x80) > 0;
+		cpu.OVERFLOW = (aux > 127) | (aux < -128);
 		uAux = (uOldA & 0xf0) + (uB & 0xf0) + uAux;
 		if (uAux >= 0xA0) uAux += 0x60;
 		cpu.CARRY = uAux > 0xff;							

@@ -15,6 +15,9 @@ public final class uLAX extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode LAX");
+
 		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 3; }
 		if (type == OperandType.Z_PAGE_Y) 	{ ea = cpu.fetchZeroPageYAddress(); return 4; }
 		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 4; }

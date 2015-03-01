@@ -15,9 +15,12 @@ public final class uSHA extends Instruction {
 
 	@Override
 	public int fetch() {
-		if (type == OperandType.ABS_Y) { ea = cpu.fetchZeroPageXAddress(); return 5; }
-		if (type == OperandType.IND_Y) { ea = cpu.fetchZeroPageXAddress(); return 6; }
-		throw new IllegalStateException("uAXA Invalid Operand Type: " + type);
+
+		cpu.debug(">>> Undocumented opcode SHA");
+
+		if (type == OperandType.ABS_Y) { ea = cpu.fetchAbsoluteYAddress(); return 5; }
+		if (type == OperandType.IND_Y) { ea = cpu.fetchIndirectYAddress(); return 6; }
+		throw new IllegalStateException("uSHA Invalid Operand Type: " + type);
 	}
 
 	@Override

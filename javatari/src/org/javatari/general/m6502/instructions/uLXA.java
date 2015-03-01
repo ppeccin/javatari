@@ -13,6 +13,9 @@ public final class uLXA extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode LXA");
+
 		ea = cpu.fetchImmediateAddress(); return 2;		
 	}
 	

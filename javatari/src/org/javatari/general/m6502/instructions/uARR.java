@@ -13,6 +13,9 @@ public final class uARR extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode ARR");
+
 		ea = cpu.fetchImmediateAddress(); return 2;
 	}
 

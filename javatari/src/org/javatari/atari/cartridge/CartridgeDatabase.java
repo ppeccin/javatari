@@ -68,7 +68,7 @@ public class CartridgeDatabase {
 		// Get info from the library
 		CartridgeInfo info = CartridgeInfoLibrary.getInfo(rom);
 		// If ROM is unknown (name == null), produce name from information found in the ROM URL			
-		if (info.name == null) info.name = produceCartridgeName(rom.url);
+		if (info.name == null) info.name = produceCartridgeName(rom.source);
 		finishInfo(info, rom);
 		return info;
 	}
@@ -106,7 +106,7 @@ public class CartridgeDatabase {
 		// Adjust Format information if absent
 		Format: if (info.format == null || info.format.isEmpty()) {
 			// First by explicit format hint
-			String romURL = rom.url.toUpperCase();
+			String romURL = rom.source.toUpperCase();
 			for (CartridgeFormat format : allFormats) {
 				if (formatMatchesByHint(format, name) || formatMatchesByHint(format, romURL)) {
 					info.format = format.id;
@@ -240,7 +240,7 @@ public class CartridgeDatabase {
 				".*MINER.*2049.*",			".*MNR2049R.*",
 				".*MINER.*2049.*VOLUME.*",	".*MINRVOL2.*",
 				".*ESPIAL.*",
-				".*ANDREW.*DAVIE.*"								// Various 32K Image demos
+	            ".*ANDREW.*DAVIE.*",        ".*DEMO.*IMAGE.*AD.*" 		// Various 32K Image demos
 		}),
 		new FormatRomNameMatcher(Cartridge8K_512K_3E.FORMAT, new String[] {
 				".*BOULDER.*DASH.*", 		".*BLDRDASH.*"
@@ -298,7 +298,8 @@ public class CartridgeDatabase {
 
 	private static final String[] crtModeRomNames = new String[] {
 		".*STAR.*CASTLE.*",
-		".*SEAWEED.*"
+		".*SEAWEED.*",
+        ".*ANDREW.*DAVIE.*",        ".*DEMO.*IMAGE.*AD.*" 		// Various 32K Image demos
 	};
 
 		

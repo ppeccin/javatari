@@ -13,6 +13,9 @@ public final class uLAS extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode LAS");
+
 		ea = cpu.fetchAbsoluteYAddress(); return 4 + (cpu.pageCrossed?1:0);		
 	}
 	

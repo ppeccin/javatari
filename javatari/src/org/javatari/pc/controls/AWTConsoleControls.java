@@ -77,22 +77,6 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		paddleMode(!paddleMode, true);
 	}
 	
-	public void paddleMode(boolean mode, boolean showOSD) {
-		paddleMode = mode;
-		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
-		paddle0Speed = paddle1Speed = 2;
-		paddle0Position = paddle1Position = (paddleMode ? 190 : -1);	// -1 = disconnected, won't charge POTs
-		// Reset all controls to default state
-		for (Control control : playerDigitalControls)
-			consoleControlsSocket.controlStateChanged(control, false);
-		consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
-		consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
-		joystickControls.paddleMode(paddleMode);
-		if (showOSD) showModeOSD();
-		if (paddleMode) paddlesUpdateActive();
-		else paddlesUpdateInactive();
-	}
-
 	public JoystickConsoleControls joystickControls() {
 		return joystickControls;
 	}
@@ -131,6 +115,22 @@ public final class AWTConsoleControls extends KeyFilteredRepeatsAdapter implemen
 		
 	private void showModeOSD() {
 		videoMonitor.showOSD("Controllers: " + (paddleMode ? "Paddles" : "Joysticks") + (p1ControlsMode ? ", Swapped" : ""), true);
+	}
+
+	private void paddleMode(boolean mode, boolean showOSD) {
+		paddleMode = mode;
+		paddle0MovingLeft = paddle0MovingRight = paddle1MovingLeft = paddle1MovingRight = false;
+		paddle0Speed = paddle1Speed = 2;
+		paddle0Position = paddle1Position = (paddleMode ? 190 : -1);	// -1 = disconnected, won't charge POTs
+		// Reset all controls to default state
+		for (Control control : playerDigitalControls)
+			consoleControlsSocket.controlStateChanged(control, false);
+		consoleControlsSocket.controlStateChanged(Control.PADDLE0_POSITION, paddle0Position);
+		consoleControlsSocket.controlStateChanged(Control.PADDLE1_POSITION, paddle1Position);
+		joystickControls.paddleMode(paddleMode);
+		if (showOSD) showModeOSD();
+		if (paddleMode) paddlesUpdateActive();
+		else paddlesUpdateInactive();
 	}
 
 	private boolean checkLocalControlKey(int keyCode, int modif, boolean press) {

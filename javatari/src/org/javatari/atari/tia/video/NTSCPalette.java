@@ -143,7 +143,7 @@ public final class NTSCPalette {
 		0xb89c58,		// F8
 		0xd0b46c,		// FA
 		0xe8cc7c,		// FC
-		0xfce08c,		// FE
+		0xfce08c		// FE
 	};
 		
 }

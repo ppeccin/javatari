@@ -13,6 +13,9 @@ public final class uKIL extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode KIL/HLT/JAM");
+
 		// Actually no cycles should be taken, as the CPU would Halt. 
 		// But we will simulate a VERY long instruction
 		return Integer.MAX_VALUE;
@@ -20,7 +23,6 @@ public final class uKIL extends Instruction {
 
 	@Override
 	public void execute() {
-		cpu.debug(">>> Undocumented opcode KIL/HLT/JAM");
 		// Forces the CPU to stay stuck in this instruction forever
 		if (cpu.PC == 0) cpu.PC = 0xffff;
 		else cpu.PC--;

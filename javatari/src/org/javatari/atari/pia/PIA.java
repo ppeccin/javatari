@@ -64,7 +64,7 @@ public final class PIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 
 	private void swchbWrite(int val) {
 		// Only bits 2, 4 and 5 can be written
-		SWCHB = (SWCHB & 0xcb) | (val & 34); 
+		SWCHB = (SWCHB & 0xcb) | (val & 0x34); 
 	}
 	
 	private void debugInfo(String str) {

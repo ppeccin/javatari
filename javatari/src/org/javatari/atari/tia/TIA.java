@@ -148,7 +148,7 @@ public final class TIA implements BUS16Bits, ClockDriven, ConsoleControlsInput {
 		if ((clock & 0x03) == 0 || clock == lastObservableChangeClock)		// clock & 0x03 is the same as clock % 4
 			playfieldUpdateCurrentPixel();
 		// Pixel color
-		int color = 1;		// All valid colors are between 0xffffffff ad 0x00000000, therefore <= 0
+		int color = 1;		// All valid colors are between 0xffffffff and 0x00000000, therefore <= 0
 		// Flags for Collision latches
 		boolean P0 = false, P1 = false, M0 = false, M1 = false, FL = false, BL = false;
 		// Get the value for the PlayField and Ball first only if PlayField and Ball have higher priority

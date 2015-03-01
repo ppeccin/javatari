@@ -15,6 +15,9 @@ public final class uRLA extends Instruction {
 
 	@Override
 	public int fetch() {
+
+		cpu.debug(">>> Undocumented opcode RLA");
+
 		if (type == OperandType.Z_PAGE) 	{ ea = cpu.fetchZeroPageAddress(); return 5; }
 		if (type == OperandType.Z_PAGE_X) 	{ ea = cpu.fetchZeroPageXAddress(); return 6; }
 		if (type == OperandType.ABS) 		{ ea = cpu.fetchAbsoluteAddress(); return 6; }
@@ -33,7 +36,7 @@ public final class uRLA extends Instruction {
 		val = (byte) ((val << 1) | oldCarry);
 		cpu.bus.writeByte(ea, val);
 		cpu.A = (byte) (cpu.A & val);
-		cpu.ZERO = val == 0;
+		cpu.ZERO = val == 0;			// TODO Verify. May be A instead of val in the flags setting 
 		cpu.NEGATIVE = val < 0;
 	}
 

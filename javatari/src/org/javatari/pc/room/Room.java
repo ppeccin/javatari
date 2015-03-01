@@ -36,6 +36,12 @@ public class Room {
 	 	speaker.powerOn();
 	 	awtControls.powerOn();
 	 	insertCartridgeProvidedIfNoneInserted();	// Will power Console ON if Cartridge is provided
+	
+	 	// TODO ServerConsole ROM Auto Load Bug
+	 	// Problem lies here... As the power on control update is sent by the line above,
+	 	// there is a delay... The power on directly sent by the line below is executed first,
+	 	// then the control update (a switch control) is executed and powers the console off
+	 	
 	 	if (currentConsole.cartridgeSocket().inserted() != null && !currentConsole.powerOn) currentConsole.powerOn();
 	}
 
