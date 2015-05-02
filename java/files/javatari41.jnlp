@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="6.0+"
-	codebase="http://javatari.org/files/"
+	codebase="http://javatari.org/java/files/"
 	href="javatari41.jnlp" >
 	<information>
 		<title>Javatari 4.1</title>

@@ -1,5 +1,5 @@
 <jnlp spec="6.0+"
-	codebase="http://javatari.org/files/"
+	codebase="http://javatari.org/java/files/"
 	href="javatari41-applet.jnlp" >
 	<information>
 		<title>Javatari 4.1 Applet</title>
