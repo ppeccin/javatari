@@ -1,155 +1,179 @@
 <!DOCTYPE html>
 <html>
 
-	<head>
-		<meta charset='utf-8' />
-		<meta http-equiv="X-UA-Compatible" content="chrome=1" />
-		<meta name="description" content="javatari : A multiplayer Atari 2600 emulator written in pure Java with no external libs." />
-		<link rel="icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
-		<link rel="shortcut icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
-		<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">   
-		<title>javatari - A multiplayer Atari 2600 emulator in pure Java</title>
-		<script type="text/javascript">
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-31008590-1']);
-			_gaq.push(['_setDomainName', 'javatari.org']);
-			_gaq.push(['_setAllowLinker', true]);
-			_gaq.push(['_trackPageview']);
-			(function() {
-				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			})();
-		</script>
-	</head>
-	
-	<body>
+    <head lang="en">
+        <meta charset="UTF-8">
+        <title>Javatari.js</title>
+        <link rel="icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
+        <link rel="shortcut icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
 
-		<div id="fb-root"></div>
-		<script>
-			(function(d, s, id) {
-				var js, fjs = d.getElementsByTagName(s)[0];
-				if (d.getElementById(id)) return;
-				js = d.createElement(s); js.id = id;
-				js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
-				fjs.parentNode.insertBefore(js, fjs);
-			}(document, 'script', 'facebook-jssdk'));
-		</script>
+        <style>
+            body{
+                margin: 0;
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 15px;
+                font-weight: normal;
+                color: rgba(0, 0, 0, .92);
+                background: #f5f4ed;
+            }
+            #topbar, #footer {
+                color: rgba(255, 255, 255, .95);
+                overflow: hidden;
+                background: rgb(55, 55, 55);
+                box-shadow: 0 2px 4px rgb(80, 80, 80);
+            }
+            #topbar {
+                height: 54px;
+            }
+            #footer {
+                padding-top: 6px;
+            }
+            .container {
+                max-width: 700px;
+                min-width: 640px;
+                margin: 0 auto;
+            }
+            #logo {
+                float: left;
+                width: 186px;
+                height: 26px;
+                margin-top: 15px;
+                background: url('images/logositebar.png');
+            }
+            #desc {
+                float: right;
+                font-size: 12px;
+                line-height: 13px;
+                margin: 16px 10px;
+                font-weight: 600;
+            }
+            #desc {
+                float: right;
+                font-size: 14px;
+                _line-height: 13px;
+                margin: 26px 20px;
+                font-weight: 600;
+            }
+            #git {
+                display: block;
+                float: right;
+                width: 30px;
+                height: 30px;
+                margin-top: 12px;
+                background: url('../images/blacktocat.png')no-repeat;
+            }
+            h1 {
+                margin: 35px 0 20px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            ul {
+                line-height: 140%;
+            }
+            a {
+                font-weight: 600;
+                text-decoration: none;
+                color: #0070df;
+            }
+            a:hover {
+                color: #0062ba;
+                text-shadow: #00aaf0 0 0 2px;
+            }
+        </style>
+    </head>
 
-		<!-- HEADER -->
-		<div id="header_wrap" class="outer">
-        	<div class="inner">
-				<a id="forkme_banner" href="https://github.com/ppeccin/javatari">Source Code on GitHub</a>
+    <body>
 
-				<img src="images/logo.png" alt="" 
-					style="
-						position: relative;
-						display: inline-block; 
-						float: left; 
-						width: 178px;
-						height: 148px;
-						border: none;
-						box-shadow: none;
-						margin: 0px 15px 0px 0px; 
-						padding: 0px;
-					"
-				/>
+        <div id="fb-root"></div>
+        <script>
+            (function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
 
-				<img src="images/logotextonly.png" alt="" 
-					style="
-						position: relative;
-						display: block; 
-						_float: left; 
-						width: 200px;
-						height: 38px;
-						border: none;
-						box-shadow: none;
-						margin: 10px 0px 20px 0px; 
-						padding: 0px;
-					"
-				/>
+        <div id="topbar">
+            <div class="container">
+                <div id="logo">
+                </div>
+                <a id="git" href="https://github.com/ppeccin/javatari" title="Project Homepage on GitHub"></a>
+                <div id="desc">100% Javascript Atari 2600 Emulator</div>
+            </div>
+        </div>
 
-				<h2 id="project_tagline">A multiplayer Atari 2600 emulator written in pure Java. </br>No external libs.</h2>
-				<div id="downloads">
-					<a class="zip_download_link" href="https://github.com/ppeccin/javatari/zipball/master">Download this project as a .zip file</a>
-					<a class="tar_download_link" href="https://github.com/ppeccin/javatari/tarball/master">Download this project as a tar.gz file</a>
-				</div >
-			</div >
-		</div>
+        <div id="javatari-screen" style="
+                margin: 24px auto 0;
+                box-shadow: 2px 2px 10px rgb(60, 60, 60);">
+        </div>
 
-		<!-- MAIN CONTENT -->
-		<div id="main_content_wrap" class="outer">
-			<div id="main_content" class="inner">
+        <div id="javatari-console-panel" style="
+                margin: 0 auto;
+                box-shadow: 2px 2px 10px rgb(60, 60, 60);">
+        </div>
 
-				<a href="online.html">
-					<img src="images/javatari-shot1.png" alt="" 
-						style="
-							position: relative;
-							display: block; 
-							width: 622px;
-							height: 563px;
-							border: none;
-							box-shadow: none;
-							margin: 12px auto 20px auto; 
-							padding: 0px;
-						"
-					/>
-				</a>
+        <script src="javatari/javatari.js"></script>
 
-				<h3><a href="online.html">Click the screenshot</a> to launch it online, or download the full version <a href="./files/javatari41.jar">executable JAR</a></h3>
-				<p style="display: inline-block;"
->Needs <b><a href="http://java.com">Java 6</a></b> or greater and Atari <b><a href="http://www.google.com/search?q=atari+2600+roms">ROMs</a></b>.   Like Javatari? Make a donation!
+        <script>Javatari.ROM_AUTO_LOAD_URL = "roms/Enduro.bin";</script>
 
-<form style="padding: 0; margin-left: 15px; display: inline-block; vertical-align: middle;" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----MIIHFgYJKoZIhvcNAQcEoIIHBzCCBwMCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYCr+YNVqS5ZQaZp4Xg31dfkLEBsuid8qWVL6wUv1iZx0VXGfCsQisfcbaLhRNMh9b+NF+U1ed/IGjrzsowbS+AzKivX4Qwa9ls9pa0JOELQP6ofy8oOJVKWKkYjCGEquxe8U96Y3eZQxHgH3V4pqL2V7879HH+++Zys9RJ63pNEezELMAkGBSsOAwIaBQAwgZMGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIZ3A9UYY2FyCAcJoRWFQuG2cPgDQkWJtp9qMQ0HD3ta6rMBUDREJ0NCOv3/OYqqMjHJtaxW+7KmuXbz1i1mrddbVl5J9pu+5aRJunhUR2XtFjlm6LbUB2WrqVDYdJ7sT+/iGpMb7qTMPPA6JaW0dTTSi4GL75+SryeDCgggOHMIIDgzCCAuygAwIBAgIBADANBgkqhkiG9w0BAQUFADCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20wHhcNMDQwMjEzMTAxMzE1WhcNMzUwMjEzMTAxMzE1WjCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMFHTt38RMxLXJyO2SmS+Ndl72T7oKJ4u4uw+6awntALWh03PewmIJuzbALScsTS4sZoS1fKciBGoh11gIfHzylvkdNe/hJl66/RGqrj5rFb08sAABNTzDTiqqNpJeBsYs/c2aiGozptX2RlnBktH+SUNpAajW724Nv2Wvhif6sFAgMBAAGjge4wgeswHQYDVR0OBBYEFJaffLvGbxe9WT9S1wob7BDWZJRrMIG7BgNVHSMEgbMwgbCAFJaffLvGbxe9WT9S1wob7BDWZJRroYGUpIGRMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbYIBADAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBBQUAA4GBAIFfOlaagFrl71+jq6OKidbWFSE+Q4FqROvdgIONth+8kSK//Y/4ihuE4Ymvzn5ceE3S/iBSQQMjyvb+s2TWbQYDwcp129OPIbD9epdr4tJOUNiSojw7BHwYRiPh58S1xGlFgHFXwrEBb3dgNbMUa+u4qectsMAXpVHnD9wIyfmHMYIBmjCCAZYCAQEwgZQwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tAgEAMAkGBSsOAwIaBQCgXTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNDExMDMwMDQ5MDZaMCMGCSqGSIb3DQEJBDEWBBSd7z/dq5gAQYK35geWeqXGQku6BjANBgkqhkiG9w0BAQEFAASBgIOEXOo36XLqQHykDnOv378DEM/kZIWDD3hlbVm875uDjzNPVNHiZQvTHYtUEituoAbddI+xfXE8JFhMQb7ss9FDsjlAPYEj+o/aTT3sKYXNhqjQqmCeJYMWx/QNP3xGUotNjVzrGEE1PHsa3PVsio1f3eW/As1kkcAWIeS44Vh8-----END PKCS7-----
-">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-</form>
+        <div class="container">
 
-</p>
+            <h1 style="margin: 40px 0 10px; text-align: center;">
+                Load <a href="http://www.google.com/search?q=atari+2600+roms">Atari ROMs</a> from disk with F5, or drag & drop files and links.
+            </h1>
 
-				<h3>New in version 4.1</h3>
-				<ul>
-<li>New concept: Savestate Cartridges!</li>
-<li>Store emulator state as Savestate Cartridge files to disk any time (press F8)</li>
-<li>Savestate Cartridges can be distributed and loaded as normal ROMs</li>
-<li>Savestate Cartridges can also be embedded as auto-load ROMs</li>
-<li>Support for Starpath/Supercharger Tape ROM format</li>
-<li>Bugfixes and improvements</li>
-				</ul>
-				<p>Visit the <b><a href="https://github.com/ppeccin/javatari">project homepage</a></b> for changelog and release notes.</p>
-				<h3>Unique Features</h3>
-				<ul>
-					<li>Client-Server multiplayer mode. Runs great in low-latency networks such as LANs.</li>
-					<li>Drag&Drop and Copy&Paste of ROM files or URLs. Very easy to try ROMs from websites!</li>
-					<li>Scanlines and TV screen emulation modes.</li>
-					<li>Real Atari console user interface.</li>
-				</ul>
-				<h3>Controls</h3>
-				<p>Please see Help tab in the integrated Settings window</p>
+            <div style="text-align: center;">
+                <span>Liked Javatari?</span>
+                <form style="padding: 0; margin: 0 7px; display: inline-block; vertical-align: middle;" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                    <input type="hidden" name="cmd" value="_s-xclick">
+                    <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+                    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                </form>
+                <span>Looking for the <a href="http://javatari.org/java">Java version</a>?</span>
+            </div>
 
-				<h3>To start Multiplayer Client/Server sessions:</h3>
-				<p>No more command line options! Just use the Multiplayer tab in Settings window</p>
-			</div >
-		</div>
+            <h1>Features and Highlights</h1>
+            <ul>
+                <li>Real Atari Console user interface.</li>
+                <li>Runs in any modern Web Browser. Tested in Chrome and Firefox.</li>
+                <li>All major ROM formats supported.</li>
+                <li>Save and load Game States easily, or create a Save Game file.</li>
+                <li>Support for Keyboard and Gamepad controllers.</li>
+                <li>Full Screen mode.</li>
+            </ul>
 
-	    <!-- FOOTER  -->
-		<div id="footer_wrap" class="outer">
-			<div id="footer" class="inner">
-				<div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="650" data-show-faces="false" data-colorscheme="dark"></div>
-				<div>
-					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://javatari.org" data-text="Multiplayer Atari 2600 Emulator written in Java using no libs: " data-count="none">Tweet</a>
-					<a href="https://twitter.com/ppeccin" class="twitter-follow-button" data-show-count="false">Follow @ppeccin</a>
-					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>	
-				</div>
-				<p>Discuss at <a href="http://groups.google.com/group/javatari">http://groups.google.com/group/javatari</a></p>
-				<p class="copyright">javatari created by <a href="https://github.com/ppeccin">Paulo Augusto Peccin</a></p>
-				<!-- <p class="copyright">javatari created by <a href="./files/javatari.jnlp">Paulo Augusto Peccin</a></p> -->
-				<p>Java, Atari, Video Computer System, Activision, River Raid and Pitfall are trademarks of their respective owners.</p>
-			</div >
-		</div>
+            <p>Visit the <b><a href="https://github.com/ppeccin/javatari">Project Homepage</a></b> for changelog and release notes.</p>
 
-	</body>
+            <h1>New in version 0.9</h1>
+            <ul>
+                <li>Keyboard controls now configurable!</li>
+                <li>Starpath/Arcadia ROM format support.</li>
+                <li>Full Screen mode bugfix.</li>
+                <li>Paddle analog control with Gamepad controllers.</li>
+            </ul>
+
+            <h1>Controls</h1>
+            <p>Please see Help tab in the integrated Settings window</p>
+
+        </div>
+        <br>
+
+        <div id="footer">
+            <div class="container">
+                <div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="650" data-show-faces="false" data-colorscheme="dark"></div>
+                <div>
+                    <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://javatari.org" data-text="Multiplayer Atari 2600 Emulator written in Java using no libs: " data-count="none">Tweet</a>
+                    <a href="https://twitter.com/ppeccin" class="twitter-follow-button" data-show-count="false">Follow @ppeccin</a>
+                    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+                </div>
+                <p>Discuss at <a href="http://groups.google.com/group/javatari">http://groups.google.com/group/javatari</a></p>
+                <p class="copyright">Javatari created by <a href="https://github.com/ppeccin">Paulo Augusto Peccin</a></p>
+                <p>Java, Atari and Video Computer System are trademarks of their respective owners.</p>
+            </div>
+        </div>
+
+    </body>
 
 </html>
