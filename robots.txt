@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /alpha/
+Disallow: /games/
+Disallow: /roms/
+
