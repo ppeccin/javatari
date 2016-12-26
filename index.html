@@ -3,9 +3,25 @@
 
     <head lang="en">
         <meta charset="UTF-8">
-        <title>Javatari.js</title>
+        <title>Javatari - The online Atari 2600 Emulator</title>
+        <meta name="description" content="Javatari - The online Atari 2600 Emulator">
         <link rel="icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
         <link rel="shortcut icon" href="images/favicon.ico" type="image/vnd.microsoft.icon">
+
+        <meta property="og:type"         content="website">
+        <meta property="og:url"          content="http://javatari.org">
+        <meta property="og:title"        content="Javatari - The online Atari 2600 Emulator">
+        <meta property="og:description"  content="Play Atari 2600 games right in your browser!">
+        <meta property="og:image"        content="http://javatari.org/images/logo.png">
+
+        <meta name="twitter:card"        content="summary">
+        <meta name="twitter:site"        content="@ppeccin">
+        <meta name="twitter:creator"     content="@ppeccin">
+        <meta name="twitter:url"         content="http://javatari.org">
+        <meta name="twitter:title"       content="Javatari - The online Atari 2600 Emulator">
+        <meta name="twitter:description" content="Play Atari 2600 games right in your browser!">
+        <meta name="twitter:image"       content="http://javatari.org/images/logo.png">
+
 		<script type="text/javascript">
 			var _gaq = _gaq || [];
 			_gaq.push(['_setAccount', 'UA-31008590-1']);
@@ -19,10 +35,10 @@
 			})();
 		</script>
 
-
         <style>
-            body{
+            html, body{
                 margin: 0;
+                min-height: 1000px;
                 font-family: Helvetica, Arial, sans-serif;
                 font-size: 15px;
                 font-weight: normal;
@@ -36,10 +52,7 @@
                 box-shadow: 0 2px 4px rgb(80, 80, 80);
             }
             #topbar {
-                height: 54px;
-            }
-            #footer {
-                padding-top: 16px;
+                height: 47px;
             }
             .container {
                 width: 640px;
@@ -49,23 +62,25 @@
                 float: left;
                 width: 186px;
                 height: 26px;
-                margin-top: 15px;
+                margin: 12px 0 0 5px;
                 background: url('images/logositebar.png');
             }
             #desc {
                 float: right;
                 font-size: 14px;
                 line-height: 13px;
-                margin: 26px 20px;
+                margin: 23px 20px;
                 font-weight: 600;
             }
-            #git {
+            .social {
                 display: block;
                 float: right;
-                width: 30px;
-                height: 30px;
-                margin-top: 12px;
-                background: url('images/blacktocat.png') no-repeat;
+                width: 28px;
+                height: 28px;
+                margin: 12px 0 0 5px;
+            }
+            #git {
+                margin-right: 5px;
             }
             h1 {
                 margin: 35px 0 20px;
@@ -89,34 +104,23 @@
 
     <body>
 
-        <!-- <div id="fb-root"></div> -->
-        <script>
-            (function(d, s, id) {
-                var js, fjs = d.getElementsByTagName(s)[0];
-                if (d.getElementById(id)) return;
-                js = d.createElement(s); js.id = id;
-                js.src = "http://connect.facebook.net/en_US/all.js#xfbml=1";
-                fjs.parentNode.insertBefore(js, fjs);
-            }(document, 'script', 'facebook-jssdk'));
-        </script>
-
         <div id="topbar">
             <div class="container">
                 <div id="logo">
                 </div>
-                <a id="git" href="https://github.com/ppeccin/javatari.js" title="Project Homepage on GitHub"></a>
-                <div id="desc">100% Javascript Atari 2600 Emulator</div>
+                <a id="git" class="social" style="background: url('images/github.png') no-repeat;" href="https://github.com/ppeccin/javatari.js" title="Project Homepage on GitHub" target="_blank"></a>
+                <a class="social" style="background: url('images/twitter.png') no-repeat;" href="https://twitter.com/intent/tweet?source=http%3A%2F%2Fjavatari.org&text=:%20http%3A%2F%2Fjavatari.org&via=ppeccin" target="_blank" title="Tweet" onclick="window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(document.title) + ':%20'  + encodeURIComponent(document.URL)); return false;"></a>
+                <a class="social" style="background: url('images/facebook.png') no-repeat;" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fjavatari.org&t=" title="Share on Facebook" target="_blank" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(document.URL) + '&t=' + encodeURIComponent(document.URL)); return false;"></a>
+                <div id="desc">The online Atari 2600 Emulator</div>
             </div>
         </div>
 
-        <div style="margin: 30px auto 0; min-height: 594px;">
+        <div style="margin: 26px auto 0; min-height: 594px;">
             <div id="javatari-screen" style="margin: 0 auto; box-shadow: 2px 2px 10px rgb(60, 60, 60);"></div>
             <div id="javatari-console-panel" style="margin: 0 auto; box-shadow: 2px 2px 10px rgb(60, 60, 60);"></div>
         </div>
 
         <script src="javatari/javatari.js"></script>
-
-        <!-- <script>Javatari.ROM_AUTO_LOAD_URL = "roms/Enduro.bin";</script> -->
 
         <div class="container">
 
@@ -165,12 +169,6 @@
 
         <div id="footer">
             <div class="container">
-                <div class="fb-like" data-href="http://javatari.org" data-send="true" data-width="650" data-show-faces="false" data-colorscheme="dark"></div>
-                <div style="padding-top: 6px;">
-                    <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://javatari.org" data-text="Multiplayer Atari 2600 Emulator written in Java using no libs: " data-count="none">Tweet</a>
-                    <a href="https://twitter.com/ppeccin" class="twitter-follow-button" data-show-count="false">Follow @ppeccin</a>
-                    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-                </div>
                 <p>Discuss at <a href="http://groups.google.com/group/javatari">http://groups.google.com/group/javatari</a></p>
                 <p class="copyright">Javatari created by <a href="https://github.com/ppeccin">Paulo Augusto Peccin</a></p>
                 <p>Java, Atari and Video Computer System are trademarks of their respective owners.</p>
