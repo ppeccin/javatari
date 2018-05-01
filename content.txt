@@ -2,13 +2,15 @@ Javatari - The online Atari 2600 emulator,
 
 Play Atari 2600 games online in your browser,
 
+Join muitiplayer sessions with NetPlay!
+
 Javascript HTML5 Atari 2600 Emulator,
 
 Javatari.js, Javatari.thml, javatari.js, javatari.thml,
 
 ROM, ROMS,
 
-Touch Screen, Mobile, Tablet, Android, iPhone, iPad, iPod, iOS,
+Touch Screen, Mobile, Tablet, Android, iPhone, iPad, iPod, iOS, P2P, WebRTC,
 
 App, offline, add to home screen
 
